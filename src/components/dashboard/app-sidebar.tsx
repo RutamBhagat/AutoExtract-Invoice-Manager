@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import DashboardSidebarMenuSection from "./dashboard-sidebar-menu-section";
+import { FileText } from "lucide-react";
 import { SearchForm } from "@/components/search-form";
 
 const data = {
@@ -57,17 +57,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <GalleryVerticalEnd className="size-4" />
+                  <FileText className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Documentation</span>
-                  <span className="">v1.0.0</span>
+                  <span className="font-semibold">Data Extractor</span>
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <SearchForm />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
