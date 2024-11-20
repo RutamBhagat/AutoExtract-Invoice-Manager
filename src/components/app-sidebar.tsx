@@ -22,45 +22,44 @@ import {
 
 import { SearchForm } from "@/components/search-form";
 
-// This is sample data.
-const data = {
-  navMain: [
-    {
-      title: "File Management",
-      url: "/file-management",
-      items: [
-        {
-          title: "File Upload",
-          url: "/file-management/file-upload",
-          isActive: true,
-        },
-      ],
-    },
-    {
-      title: "Data Views",
-      url: "/data-views",
-      items: [
-        {
-          title: "Invoices",
-          url: "/data-views/invoices",
-          isActive: false,
-        },
-        {
-          title: "Products",
-          url: "/data-views/products",
-          isActive: false,
-        },
-        {
-          title: "Customers",
-          url: "/data-views/customers",
-          isActive: false,
-        },
-      ],
-    },
-  ],
-};
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const data = {
+    navMain: [
+      {
+        title: "File Management",
+        url: "/file-management",
+        items: [
+          {
+            title: "File Upload",
+            url: "/file-management/file-upload",
+            isActive: true,
+          },
+        ],
+      },
+      {
+        title: "Data Views",
+        url: "/data-views",
+        items: [
+          {
+            title: "Invoices",
+            url: "/data-views/invoices",
+            isActive: false,
+          },
+          {
+            title: "Products",
+            url: "/data-views/products",
+            isActive: false,
+          },
+          {
+            title: "Customers",
+            url: "/data-views/customers",
+            isActive: false,
+          },
+        ],
+      },
+    ],
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
