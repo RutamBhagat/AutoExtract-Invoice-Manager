@@ -1,8 +1,10 @@
 "use client";
 
+import React from "react";
 import { useCounterStore } from "@/providers/counter-store-provider";
 
-export const HomePage = () => {
+export default function page() {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { count, incrementCount, decrementCount } = useCounterStore(
     (state) => state,
   );
@@ -19,4 +21,4 @@ export const HomePage = () => {
       </button>
     </div>
   );
-};
+}
