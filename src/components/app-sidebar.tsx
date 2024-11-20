@@ -41,17 +41,14 @@ const data = {
         {
           title: "Invoices",
           url: "/data-views/invoices",
-          isActive: false,
         },
         {
           title: "Products",
           url: "/data-views/products",
-          isActive: false,
         },
         {
           title: "Customers",
           url: "/data-views/customers",
-          isActive: false,
         },
       ],
     },
