@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SidebarMenuSubButton } from "./ui/sidebar";
+import { SidebarMenuSubButton } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
 
 type Props = {
