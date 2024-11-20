@@ -1,165 +1,32 @@
 # Engineering Requirements Document: Automated Invoice Processing Application for Swipe
 
-This document outlines the engineering requirements for the automated invoice processing application for Swipe, as described in the provided PRD and technical documentation.
+This document outlines the engineering requirements for the automated invoice processing application for Swipe.
 
 ## 1. System Overview
 
-This application aims to automate the extraction, processing, and management of invoice data from various file formats (Excel, PDF, images) using AI-powered extraction. The extracted data will be organized into Invoices, Products, and Customers sections within a React application, with real-time synchronization using Zustand.
-
-### High-Level Architecture Diagram
-
-![alt text](<images/1. High-Level Architecture Diagram.png>)
-
-```
-graph LR
-    Upload[File Upload - React Dropzone]
-    Extract[Data Extraction - Google Gemini]
-    Process[Data Processing - zustand/backend]
-    Present[Data Presentation - React Components]
-
-    Storage[File Storage]
-    DB[Database]
-    Invoices[Invoices]
-    Customers[Customers]
-    Products[Products]
-
-    Upload --> Extract
-    Extract --> Process
-    Process --> Present
-
-    Upload -.-> Storage
-    Extract -.-> Storage
-    Extract -.-> DB
-    Process -.-> DB
-
-    Present --> Invoices
-    Present --> Customers
-    Present --> Products
-
-    Storage -.-> Products
-    DB -.-> Products
-```
-
-### System Context Diagram
-
-![alt text](<images/2. System Context Diagram.png>)
-
-```
-graph TD
-    App[Invoice Processing App]
-    User1[User]
-    GeminiAPI[Gemini API]
-    User2[User]
-    DB[Database]
-    Invoices[Invoices]
-    Customers[Customers]
-    Products[Products]
-
-    User1 -->|File Upload| App
-    App -->|Data| GeminiAPI
-    App -->|File Metadata| GeminiAPI
-
-    User2 -->|View Data| App
-    App -->|Data Sync| DB
-
-    App --> Invoices
-    App --> Customers
-    App --> Products
-```
-
-### Invoice Processing Sequence Diagrams
-
-![alt text](<images/3. Invoice Processing Sequence Diagrams.png>)
-
-```
-sequenceDiagram
-    actor User
-    participant UI as React Frontend
-    participant Store as Zustand Store
-    participant Gemini as Google Gemini API
-    participant DB as Database
-
-    User->>UI: Upload invoice file
-    UI->>Store: Update upload status
-    UI->>Gemini: Send file for processing
-
-    activate Gemini
-    Gemini-->>Store: Processing status updates
-    Gemini->>Gemini: Extract invoice data
-    Gemini-->>UI: Return structured data
-    deactivate Gemini
-
-    UI->>Store: Update invoice data
-    Store->>DB: Save invoice data
-    DB-->>Store: Confirm save
-    Store-->>UI: Update UI state
-    UI-->>User: Display processed invoice
-
-    Note over UI,Store: Real-time sync with Zustand
-
-    alt Validation Required
-        User->>UI: Edit/Correct data
-        UI->>Store: Update data
-        Store->>DB: Save changes
-        DB-->>UI: Confirm update
-    end
-```
-
-### Data Synchronization Sequence
-
-![alt text](<images/4. Data Synchronization Sequence.png>)
-
-```
-sequenceDiagram
-    participant Client as React Client
-    participant Store as Zustand Store
-    participant DB as Database
-    participant API as Backend API
-
-    Client->>Store: Subscribe to store changes
-
-    loop Real-time Sync
-        Store->>API: Push data changes
-        API->>DB: Update database
-        DB-->>API: Confirm update
-        API-->>Store: Sync confirmation
-        Store-->>Client: Update UI state
-    end
-
-    alt Data Conflict
-        API-->>Store: Conflict detected
-        Store->>Store: Resolve conflict
-        Store->>API: Send resolved data
-        API->>DB: Update with resolved data
-        DB-->>Client: Sync complete
-    end
-
-    Note over Store,API: Automatic conflict resolution
-```
+This application automates invoice data extraction, processing, and management from various file formats (Excel, PDF, images) using AI-powered extraction. The extracted data is organized into Invoices, Products, and Customers sections within a **Next.js 15 App Router** application, with real-time synchronization using Zustand. Styling will be done with **Tailwind CSS**, and UI components will be sourced from the **shadcn component library**. Tables will specifically use **shadcn table components**.
 
 ### Major Components and Interactions
 
 - **File Upload Component:** Handles user file uploads (Excel, PDF, image).
 - **Data Extraction Service:** Utilizes the Google Gemini API for extracting data from uploaded files.
-- **Data Processing Layer:** Manages data transformation, validation, and synchronization using Zustand. May include a backend (tRPC) for complex operations or persistent storage.
-- **Data Presentation Components:** React components for displaying Invoices, Products, and Customers data in tabular format, enabling editing and real-time updates.
+- **Data Processing Layer:** Manages data transformation, validation, and synchronization using Zustand. May include a backend (tRPC) for complex operations or persistent storage (this is **optional**).
+- **Data Presentation Components:** React components for displaying Invoices, Products, and Customers data in tabular format (using **shadcn tables**), enabling editing and real-time updates.
 - **Database (Optional):** For persistent data storage (e.g., Prisma with a PostgreSQL database).
-- **File Storage:** Temporary storage for uploaded files before and after processing (potentially using the Gemini File API's temporary storage).
+- **File Storage:**  Gemini File API.
 
 ### Technical Constraints and Limitations
 
-- **File Size Limits:** Dependent on the Gemini API and chosen file storage solution.
+- **File Size Limits:** Dependent on the Gemini API.
 - **Gemini API Rate Limits:** Need to handle API limits and implement retry mechanisms.
 - **Supported File Formats:** Currently limited to Excel, PDF, and common image formats.
-- **Browser Compatibility:** Ensure compatibility with target browsers.
-- **Offline Functionality:** Not supported in the initial scope.
 
 ### Technology Stack
 
-- **Frontend:** React, Zustand, Tailwind CSS, tRPC (optional)
-- **Backend (Optional):** Node.js, tRPC, Prisma, PostgreSQL
+- **Frontend:** Next.js 15 App Router, React, Zustand, **Tailwind CSS**, **shadcn UI component library**, tRPC (optional)
+- **Backend (Optional):** Node.js, tRPC, Prisma, PostgreSQL (if implementing a backend)
 - **AI/Data Extraction:** Google Gemini API
-- **File Storage:** Gemini File API or cloud storage (e.g., AWS S3, Google Cloud Storage)
+- **File Storage:** Gemini File API
 
 ## 2. Functional Requirements Breakdown
 
@@ -178,124 +45,94 @@ sequenceDiagram
 - **Data Mapping:** Define clear mapping between extracted data and application data models.
 - **Error Handling:** Handle API errors, potentially retrying requests or prompting user intervention.
 
-### Invoices Tab
+## Assignment Requirements (Emphasized Required Fields)
 
-- **Data Display:** Table with Serial Number, Customer Name, Product Name, Quantity, Tax, Total Amount, and Date.
-- **Data Editing:** Inline editing enabled for all fields (with appropriate validations).
-- **Data Synchronization:** Real-time updates via Zustand.
+### File Uploads, AI-Powered Data Extraction, and Organization
 
-### Products Tab
+- Accept the following file types as input:
+  - **Excel files**: Contains transaction details (serial number, net/total amount, customer info).
+  - **PDF/Images**: Invoices with customer and item details, totals, tax, etc.
+- Implement a generic **AI-based extraction solution** (using Google Gemini) for all file types (Excel, PDF, images) to identify and organize relevant data into the appropriate tabs (**Invoices**, **Products**, **Customers**).
+- Dataset link: [assignment_test_cases](https://drive.google.com/drive/folders/1k4Cz1YX39cU47yU--TG6GpKbhhXvhZLk?usp=sharing)
 
-- **Data Display:** Table with Name, Quantity, Unit Price, Tax, Price with Tax, and optional Discount.
-- **Data Editing:** Inline editing with validation for numeric fields.
-- **Data Synchronization:** Real-time updates via Zustand.
+### React App Structure with Tabs
 
-### Customers Tab
+#### **Invoices Tab** (**Required Fields**):
 
-- **Data Display:** Table with Customer Name, Phone Number, and Total Purchase Amount. Additional fields can be added.
-- **Data Entry/Editing:** Allow users to add missing customer information and edit existing data.
-- **Data Validation:** Basic validation for phone numbers and other fields as needed.
+- Display a table (using **shadcn table components**) with the **following mandatory columns**:
+  - **Serial Number** 
+  - **Customer Name**
+  - **Product Name**
+  - **Quantity**
+  - **Tax**
+  - **Total Amount**
+  - **Date**
+- Additional columns are optional.
 
-## 3. Non-Functional Requirements
+#### **Products Tab** (**Required Fields**):
 
-### Performance
+- Display a table (using **shadcn table components**) with the **following mandatory columns**:
+  - **Name** 
+  - **Quantity**
+  - **Unit Price**
+  - **Tax**
+  - **Price with Tax** 
+- Optional column: **Discount** for additional detail.
 
-- **Response Time:** File upload and data extraction < 5 seconds for average files. Data display and updates < 200ms.
-- **Throughput:** Handle concurrent uploads and processing for multiple users.
-- **Concurrent Users:** Support at least 50 concurrent users.
+#### **Customers Tab** (**Required Fields**):
 
-### Scalability
+- Display a table (using **shadcn table components**) with the **following mandatory columns**:
+  - **Customer Name**
+  - **Phone Number**
+  - **Total Purchase Amount**
+- Additional fields are allowed for more comprehensive customer data.
+- **Bonus points** for including additional data fields.
 
-- **Growth Projections:** Assume 10x growth in users and data volume within the next year.
-- **Scaling Strategy:** Primarily horizontal scaling for the backend (if applicable) and database.
 
-### Security
-
-- **Authentication:** Implement user authentication (e.g., using NextAuth.js) to protect sensitive data.
-- **Authorization:** Control access to data based on user roles.
-- **Data Encryption:** Encrypt sensitive data at rest and in transit.
-- **Compliance:** Adhere to relevant data privacy regulations (e.g., GDPR).
-
-### Reliability
-
-- **Availability:** Target 99.9% uptime.
-- **Backup and Recovery:** Implement regular backups of data and files.
-- **Failover:** Design for redundancy in critical components.
 
 ## 4. Integration Requirements
 
 - **Gemini API:** Integration with Document and Vision APIs.
-- **File Storage:** Integration with chosen storage solution (e.g., Gemini File API, AWS S3).
-- **Database (Optional):** Integration with chosen database (e.g., PostgreSQL).
+- **File Storage:** Integration with Gemini File API.
+- **Database (Optional):** Integration with chosen database (e.g., PostgreSQL) if using a backend.
 
-## 5. Development & Testing
 
-### Development Environment
-
-- Node.js, npm/yarn, React development tools.
-- Local development server.
-- Access to Google Cloud Project and Gemini API credentials.
-
-### Build and Deployment
-
-- Automated build process using a CI/CD pipeline (e.g., GitHub Actions, Vercel).
-- Deployment to a serverless platform like Vercel or Netlify.
-
-### Testing Strategy
-
-- **Unit Tests:** Cover individual components and functions.
-- **Integration Tests:** Test interactions between components and external APIs.
-- **End-to-End Tests:** Simulate user workflows and ensure all components work together correctly.
-- **Performance Tests:** Measure response times, throughput, and resource utilization under load.
-- **Security Tests:** Penetration testing and vulnerability scanning.
-
-### Code Quality
-
-- Linting and code formatting using ESLint and Prettier.
-- Code reviews before merging changes.
 
 ## 6. Data Requirements
 
+### Data Validation
+
+- Implement robust data validation to ensure the completeness and accuracy of extracted data.
+- Validation rules should include:
+    - **Data Types:** Verify that extracted values match the expected data types (e.g., numbers, strings, dates).
+    - **Required Fields:** Ensure that all mandatory fields (as specified for each tab) are populated.
+    - **Format Checks:** Validate data formats (e.g., email addresses, phone numbers, dates).
+    - **Range Checks:** Verify that numerical values fall within acceptable ranges (e.g., quantity should be positive).
+- Clearly highlight missing or invalid data in the UI and provide user-friendly prompts for correction.
+
 ### Database Design (Optional)
 
-- Tables for Invoices, Products, and Customers.
-- Relationships between tables to reflect data associations.
+- **Tables:** Design tables for Invoices, Products, and Customers (if implementing a backend).
+- **Relationships:** Establish relationships between tables to reflect data associations (e.g., an Invoice can have multiple Products, a Customer can have multiple Invoices).
+- **Indexes:** Implement appropriate indexes for efficient data retrieval.
 
-### Data Migration (If Applicable)
 
-- Plan for migrating existing data to the new system.
-
-### Data Retention
-
-- Define policies for data retention and archival.
-
-## 7. Deployment & Operations
-
-### Deployment Architecture
-
-- Serverless deployment on Vercel or similar platform.
-
-### Infrastructure
-
-- Cloud-based infrastructure provided by the chosen deployment platform.
-
-### Monitoring and Logging
-
-- Implement logging and monitoring to track application performance and errors.
-- Use a monitoring service like Datadog or Sentry.
-
-## 8. Technical Constraints & Assumptions
-
-- Reliance on external APIs (Gemini).
-- Assumption of reliable internet connectivity.
 
 ## 9. Timeline & Milestones
 
-- **Phase 1 (Day 1):** Project setup, basic UI, file upload, initial Gemini API integration.
-- **Phase 2 (Day 2):** Data extraction refinement, data processing and validation, Zustand integration.
-- **Phase 3 (Day 3):** Invoices, Products, and Customers tabs implementation, real-time updates.
-- **Phase 4 (Day 4):** Testing, bug fixes, deployment.
+- **Phase 1 (Day 1):**
+    - Project setup (**Next.js 15 App Router** app, state management with Zustand, install **Tailwind CSS and shadcn**).
+    - Basic UI implementation with tabs (using **shadcn components**).
+    - File upload functionality.
+    - Initial integration with Gemini API for basic data extraction.
+- **Phase 2 (Day 2):**
+    - Refine data extraction logic using Gemini Document and Vision APIs.
+    - Implement data processing and transformation based on extracted data.
+    - Implement data validation rules and error handling.
+    - Integrate Zustand for centralized state management.
+- **Phase 3 (Day 3):**
+    - Develop the Invoices, Products, and Customers tabs with table displays (using **shadcn tables**).
+    - Implement real-time data synchronization across tabs using Zustand.
+    - Address UI/UX refinements for user-friendliness.
 
 **(Detailed breakdown of requirements, acceptance criteria, dependencies, priority, estimated effort, and technical risks will be added as the project progresses and more specific information becomes available.)**
-
-This document provides a comprehensive starting point for the engineering team. Further details and refinements will be added during the project lifecycle.

@@ -1,120 +1,213 @@
-## Engineering Requirements Document: Automated Data Extraction and Management for Invoices
 
-This document outlines the engineering requirements for a React application designed to automate data extraction and management from invoices, catering to the needs of Swipe. The application leverages AI-powered extraction, specifically Google Gemini, and utilizes Zustand for real-time state management across different data views.
+### Major Components and Interactions
 
----
+- **File Upload Component:** Handles user file uploads (Excel, PDF, image).
+- **Data Extraction Service:** Utilizes the Google Gemini API for extracting data from uploaded files.
+- **Data Processing Layer:** Manages data transformation, validation, and synchronization using Zustand. May include a backend (tRPC) for complex operations or persistent storage (this is **optional**).
+- **Data Presentation Components:** React components for displaying Invoices, Products, and Customers data in tabular format, enabling editing and real-time updates.
+- **Database (Optional):** For persistent data storage (e.g., Prisma with a PostgreSQL database).
+- **File Storage:** Temporary storage for uploaded files before and after processing (potentially using the Gemini File API's temporary storage).
 
-**1. Introduction**
+### Technical Constraints and Limitations
 
-This application aims to streamline invoice processing by automating data extraction from various file formats (Excel, PDF, and images) and organizing this data into manageable sections: Invoices, Products, and Customers. Real-time synchronization ensures data consistency across all sections.
+- **File Size Limits:** Dependent on the Gemini API and chosen file storage solution.
+- **Gemini API Rate Limits:** Need to handle API limits and implement retry mechanisms.
+- **Supported File Formats:** Currently limited to Excel, PDF, and common image formats.
 
-**2. Goals**
+### Technology Stack
 
-- **Automate Data Extraction:** Eliminate manual data entry from invoices, reducing human error and saving time.
-- **Centralized Data Management:** Provide a single platform for accessing and managing invoice-related data.
-- **Real-time Synchronization:** Ensure data consistency across all application sections through dynamic updates.
-- **User-Friendly Interface:** Offer an intuitive and easy-to-navigate interface for seamless user experience.
-- **Robust Error Handling:** Implement comprehensive validation and error management to maintain data integrity.
+- **Frontend:** React, Zustand, Tailwind CSS, tRPC (optional)
+- **Backend (Optional):** Node.js, tRPC, Prisma, PostgreSQL (if implementing a backend)
+- **AI/Data Extraction:** Google Gemini API
+- **File Storage:** Gemini File API or cloud storage (e.g., AWS S3, Google Cloud Storage)
 
-**3. Scope**
+## 2. Functional Requirements Breakdown
 
-This application will handle the following:
+### File Upload (This step might vary, prefer Gemini File API over this approach)
 
-- **Supported File Formats:** Excel (.xlsx, .xls), PDF (.pdf), and common image formats (JPEG, PNG, etc.).
-- **Data Extraction:** Utilize Google Gemini API for AI-powered data extraction from supported file formats.
-- **Data Organization:** Structure extracted data into three main sections: Invoices, Products, and Customers.
-- **Data Synchronization:** Implement real-time updates using Zustand to maintain consistency across all sections.
-- **Data Validation:** Validate extracted data to ensure accuracy and completeness.
-- **Error Handling:** Provide user-friendly feedback for unsupported file formats, extraction errors, and missing fields.
+- **Endpoint:** `/api/upload` (if using tRPC) or handled directly in the frontend.
+- **Method:** `POST`
+- **Request Format:** `multipart/form-data`
+- **Response Format:** JSON containing file URI, status, and any error messages.
+- **Input Validation:** File type, size.
+- **Error Handling:** Display user-friendly error messages for invalid files or upload failures using sonner toast.
 
-**4. Functional Requirements**
+### Data Extraction
 
-**4.1. File Upload and Data Extraction**
+- **Gemini API Integration:** Use the Document and Vision APIs as appropriate.
+- **Data Mapping:** Define clear mapping between extracted data and application data models.
+- **Error Handling:** Handle API errors, potentially retrying requests or prompting user intervention.
 
-- **FR1.1:** The application shall accept file uploads via drag-and-drop and file selection dialog.
-- **FR1.2:** The application shall support uploading multiple files simultaneously.
-- **FR1.3:** The application shall utilize Google Gemini API for data extraction from uploaded files.
-- **FR1.4:** The application shall display a progress indicator during file upload and data extraction.
-- **FR1.5:** The application shall handle unsupported file formats gracefully, providing informative error messages to the user.
+## Assignment Requirements (Emphasized Required Fields)
 
-**4.2. Invoices Section**
+### File Uploads, AI-Powered Data Extraction, and Organization
 
-- **FR2.1:** The Invoices section shall display extracted invoice data in a tabular format.
-- **FR2.2:** The table shall include the following columns: Serial Number, Customer Name, Product Name, Quantity, Tax, Total Amount, and Date.
-- **FR2.3:** The table shall support sorting and pagination.
-- **FR2.4:** The table shall allow inline editing of invoice data.
-- **FR2.5:** Changes made to invoice data shall be reflected in real-time in other relevant sections.
+- Accept the following file types as input:
+  - **Excel files**: Contains transaction details (serial number, net/total amount, customer info).
+  - **PDF/Images**: Invoices with customer and item details, totals, tax, etc.
+- Implement a generic **AI-based extraction solution** (preferably using Google Gemini, see the provided docs for Gemini document processing and vision API) for all file types (Excel, PDF, images) to identify and organize relevant data into the appropriate tabs (**Invoices**, **Products**, **Customers**).
+- Dataset link: [assignment_test_cases](https://drive.google.com/drive/folders/1k4Cz1YX39cU47yU--TG6GpKbhhXvhZLk?usp=sharing)
 
-**4.3. Products Section**
+### React App Structure with Tabs
 
-- **FR3.1:** The Products section shall display extracted product data in a tabular format.
-- **FR3.2:** The table shall include the following columns: Name, Quantity, Unit Price, Tax, Price with Tax, and Discount (optional).
-- **FR3.3:** The table shall support sorting and pagination.
-- **FR3.4:** The table shall allow inline editing of product data.
-- **FR3.5:** Changes made to product data shall be reflected in real-time in other relevant sections.
+#### **Invoices Tab** (**Required Fields**):
 
-**4.4. Customers Section**
+- Display a table with the **following mandatory columns**:
+  - **Serial Number** 
+  - **Customer Name**
+  - **Product Name**
+  - **Quantity**
+  - **Tax**
+  - **Total Amount**
+  - **Date**
+- Additional columns are optional.
 
-- **FR4.1:** The Customers section shall display extracted customer data in a tabular format.
-- **FR4.2:** The table shall include the following columns: Customer Name, Phone Number, and Total Purchase Amount.
-- **FR4.3:** The table shall support adding custom fields for additional customer information.
-- **FR4.4:** The table shall highlight missing or incomplete customer data.
-- **FR4.5:** The table shall allow inline editing of customer data.
-- **FR4.6:** Changes made to customer data shall be reflected in real-time in other relevant sections.
+#### **Products Tab** (**Required Fields**):
 
-**4.5. Data Validation and Error Handling**
+- Display a table with the **following mandatory columns**:
+  - **Name** 
+  - **Quantity**
+  - **Unit Price**
+  - **Tax**
+  - **Price with Tax** 
+- Optional column: **Discount** for additional detail.
 
-- **FR5.1:** The application shall validate extracted data for completeness and accuracy.
-- **FR5.2:** The application shall highlight missing or invalid data fields.
-- **FR5.3:** The application shall provide clear and informative error messages to the user.
-- **FR5.4:** The application shall handle API errors gracefully, displaying user-friendly messages.
+#### **Customers Tab** (**Required Fields**):
 
-**4.6. State Management**
+- Display a table with the **following mandatory columns**:
+  - **Customer Name**
+  - **Phone Number**
+  - **Total Purchase Amount**
+- Additional fields are allowed for more comprehensive customer data.
+- **Bonus points** for including additional data fields.
 
-- **FR6.1:** The application shall utilize Zustand for centralized state management.
-- **FR6.2:** Zustand middleware shall be employed to handle asynchronous operations and optimize performance.
-- **FR6.3:** State changes shall trigger real-time updates across all relevant components.
+## 3. Non-Functional Requirements
 
-**5. Non-Functional Requirements**
+### Performance
 
-- **Performance:** The application shall be responsive and performant, with minimal loading times.
-- **Scalability:** The application shall be designed to handle a large volume of data.
-- **Security:** The application shall protect sensitive data through appropriate security measures.
-- **Usability:** The application shall be user-friendly and intuitive to use.
-- **Maintainability:** The codebase shall be well-structured, documented, and easy to maintain.
+- **Response Time:** File upload and data extraction < 5 seconds for average files. Data display and updates < 200ms.
+- **Throughput:** Handle concurrent uploads and processing for multiple users.
+- **Concurrent Users:** Support at least 50 concurrent users.
 
-**6. Technical Design**
+### Scalability
 
-- **Frontend:** React
-- **State Management:** Zustand, potentially with middleware like `zustand-saga` for asynchronous actions.
-- **UI Library:** A suitable UI library like Material UI, Ant Design, or similar will be chosen for rapid development and consistent styling.
-- **AI Integration:** Google Gemini API for document and vision processing. API responses will be cached to improve performance.
-- **File Handling:** Libraries like `react-dropzone` will be used for drag-and-drop file uploads. File uploads will be validated for size and type.
-- **Table Libraries:** Libraries like `ag-Grid` or `react-table` will be used to provide advanced table functionalities like sorting, filtering, and inline editing.
-- **Form Validation:** Libraries like `Yup` or `Formik` can be used for form validation and data sanitization.
-- **Notification System:** A library like `react-toastify` will be used to provide feedback to the user.
+- **Growth Projections:** Assume 10x growth in users and data volume within the next year.
+- **Scaling Strategy:** Primarily horizontal scaling for the backend (if applicable) and database.
 
-**7. Testing and Quality Assurance**
+### Security
 
-- **Unit Tests:** Unit tests will be written for all core components and functionalities.
-- **Integration Tests:** Integration tests will be performed to verify interactions between components and API calls.
-- **End-to-End Tests:** End-to-end tests will simulate user workflows to ensure the application functions correctly as a whole.
-- **User Acceptance Testing (UAT):** UAT will be conducted with representative users to validate the application meets their needs.
+- **Authentication:** Implement user authentication (e.g., using NextAuth.js) to protect sensitive data.
+- **Authorization:** Control access to data based on user roles.
+- **Data Encryption:** Encrypt sensitive data at rest and in transit.
+- **Compliance:** Adhere to relevant data privacy regulations (e.g., GDPR).
 
-**8. Deployment**
+### Reliability
 
-The application will be deployed to a platform like Vercel or Netlify. CI/CD pipelines will be implemented for automated build and deployment processes.
+- **Availability:** Target 99.9% uptime.
+- **Backup and Recovery:** Implement regular backups of data and files.
+- **Failover:** Design for redundancy in critical components.
 
-**9. Documentation**
+## 4. Integration Requirements
 
-- **Code Documentation:** The codebase will be thoroughly documented using JSDoc.
-- **User Documentation:** User documentation will be provided to guide users on using the application.
-- **API Documentation:** Documentation will be maintained for AI integration and other API usage.
+- **Gemini API:** Integration with Document and Vision APIs.
+- **File Storage:** Integration with chosen storage solution (e.g., Gemini File API, AWS S3).
+- **Database (Optional):** Integration with chosen database (e.g., PostgreSQL) if using a backend.
 
-**10. Future Considerations**
+## 5. Development & Testing
 
-- **Enhanced Reporting:** Generate reports based on extracted data.
-- **Integration with other systems:** Integrate with accounting software or other relevant platforms.
-- **Multi-language support:** Support multiple languages for a wider user base.
+### Development Environment
 
-This Engineering Requirements Document serves as a guide for the development of the automated data extraction and management application. It outlines the functional and non-functional requirements, technical design, testing procedures, and deployment strategy. This document will be updated as the project progresses and new requirements arise.
+- Node.js, npm/yarn, React development tools.
+- Local development server.
+- Access to Google Cloud Project and Gemini API credentials.
+
+### Build and Deployment
+
+- Automated build process using a CI/CD pipeline (e.g., GitHub Actions, Vercel).
+- Deployment to a serverless platform like Vercel or Netlify.
+
+### Testing Strategy
+
+- **Unit Tests:** Cover individual components and functions.
+- **Integration Tests:** Test interactions between components and external APIs (especially Gemini API).
+- **End-to-End Tests:** Simulate user workflows and ensure all components work together correctly.
+- **AI Extraction Accuracy Testing:**  Crucial to verify the correctness of data extracted by the AI. Define metrics for accuracy, use a benchmark dataset with expected outputs, and perform manual verification.
+- **Performance Tests:** Measure response times, throughput, and resource utilization under load.
+- **Security Tests:** Penetration testing and vulnerability scanning.
+
+### Code Quality
+
+- Linting and code formatting using ESLint and Prettier.
+- Code reviews before merging changes.
+
+## 6. Data Requirements
+
+### Data Validation
+
+- Implement robust data validation to ensure the completeness and accuracy of extracted data.
+- Validation rules should include:
+    - **Data Types:** Verify that extracted values match the expected data types (e.g., numbers, strings, dates).
+    - **Required Fields:** Ensure that all mandatory fields (as specified for each tab) are populated.
+    - **Format Checks:** Validate data formats (e.g., email addresses, phone numbers, dates).
+    - **Range Checks:** Verify that numerical values fall within acceptable ranges (e.g., quantity should be positive).
+- Clearly highlight missing or invalid data in the UI and provide user-friendly prompts for correction.
+
+### Database Design (Optional)
+
+- **Tables:** Design tables for Invoices, Products, and Customers (if implementing a backend).
+- **Relationships:** Establish relationships between tables to reflect data associations (e.g., an Invoice can have multiple Products, a Customer can have multiple Invoices).
+- **Indexes:** Implement appropriate indexes for efficient data retrieval.
+
+### Data Migration (If Applicable)
+
+- Plan for migrating existing data to the new system if transitioning from a legacy system.
+
+### Data Retention
+
+- Define policies for data retention and archival based on business requirements and legal obligations.
+
+## 7. Deployment & Operations
+
+### Deployment Architecture
+
+- Serverless deployment on Vercel or a similar platform is recommended for ease of scalability and management.
+
+### Infrastructure
+
+- Cloud-based infrastructure provided by the chosen deployment platform.
+
+### Monitoring and Logging
+
+- Implement logging to track application events, errors, and user activities.
+- Use a monitoring service (e.g., Datadog, Sentry) to monitor application performance, identify issues, and receive alerts.
+- Log important events like file uploads, extraction results, and data updates.
+
+## 8. Technical Constraints & Assumptions
+
+- **Reliance on External APIs:** The application's functionality depends on the availability and performance of the Gemini API.
+- **Gemini API Rate Limits:** Consider potential rate limits imposed by the Gemini API and implement mechanisms to handle them (e.g., retry logic, exponential backoff).
+
+## 9. Timeline & Milestones
+
+- **Phase 1 (Day 1):**
+    - Project setup (React app, state management with Zustand).
+    - Basic UI implementation with tabs.
+    - File upload functionality using React Dropzone.
+    - Initial integration with Gemini API for basic data extraction.
+- **Phase 2 (Day 2):**
+    - Refine data extraction logic using Gemini Document and Vision APIs.
+    - Implement data processing and transformation based on extracted data.
+    - Implement data validation rules and error handling.
+    - Integrate Zustand for centralized state management.
+- **Phase 3 (Day 3):**
+    - Develop the Invoices, Products, and Customers tabs with table displays.
+    - Implement real-time data synchronization across tabs using Zustand.
+    - Address UI/UX refinements for user-friendliness.
+- **Phase 4 (Day 4):**
+    - Thorough testing (unit, integration, end-to-end, AI extraction accuracy, performance, security).
+    - Bug fixes and refinements based on testing results.
+    - Final code review and deployment to the chosen platform (e.g., Vercel).
+
+**(Detailed breakdown of requirements, acceptance criteria, dependencies, priority, estimated effort, and technical risks will be added as the project progresses and more specific information becomes available.)**
+
+This document serves as a comprehensive guide for the development team to ensure a successful implementation of the automated invoice processing application. Regular communication, updates, and adjustments will be made as needed during the project lifecycle.
