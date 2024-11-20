@@ -23,7 +23,12 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.2",
     "@prisma/client": "^5.14.0",
+    "@radix-ui/react-collapsible": "^1.1.1",
+    "@radix-ui/react-dialog": "^1.1.2",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
+    "@radix-ui/react-tooltip": "^1.1.4",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tanstack/react-query": "^5.60.6",
     "@trpc/client": "^11.0.0-rc.446",
