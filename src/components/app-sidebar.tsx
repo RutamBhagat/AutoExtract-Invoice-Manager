@@ -15,51 +15,50 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 
+import DashboardSidebarSubMenuButton from "./dashboard-sidebar-sub-menu-button";
 import { SearchForm } from "@/components/search-form";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const data = {
-    navMain: [
-      {
-        title: "File Management",
-        url: "/file-management",
-        items: [
-          {
-            title: "File Upload",
-            url: "/file-management/file-upload",
-            isActive: true,
-          },
-        ],
-      },
-      {
-        title: "Data Views",
-        url: "/data-views",
-        items: [
-          {
-            title: "Invoices",
-            url: "/data-views/invoices",
-            isActive: false,
-          },
-          {
-            title: "Products",
-            url: "/data-views/products",
-            isActive: false,
-          },
-          {
-            title: "Customers",
-            url: "/data-views/customers",
-            isActive: false,
-          },
-        ],
-      },
-    ],
-  };
+const data = {
+  navMain: [
+    {
+      title: "File Management",
+      url: "/file-management",
+      items: [
+        {
+          title: "File Upload",
+          url: "/file-management/file-upload",
+        },
+      ],
+    },
+    {
+      title: "Data Views",
+      url: "/data-views",
+      items: [
+        {
+          title: "Invoices",
+          url: "/data-views/invoices",
+          isActive: false,
+        },
+        {
+          title: "Products",
+          url: "/data-views/products",
+          isActive: false,
+        },
+        {
+          title: "Customers",
+          url: "/data-views/customers",
+          isActive: false,
+        },
+      ],
+    },
+  ],
+};
 
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -102,12 +101,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <SidebarMenuSub>
                         {item.items.map((item) => (
                           <SidebarMenuSubItem key={item.title}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={item.isActive}
-                            >
-                              <a href={item.url}>{item.title}</a>
-                            </SidebarMenuSubButton>
+                            <DashboardSidebarSubMenuButton item={item} />
                           </SidebarMenuSubItem>
                         ))}
                       </SidebarMenuSub>
