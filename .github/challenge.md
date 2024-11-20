@@ -2,7 +2,7 @@
 
 ## Overview
 
-Develop a **React application** for **Swipe** that automates the extraction, processing, and management of invoice data from various file formats. The app will organize the extracted data into three main sections: **Invoices**, **Products**, and **Customers**, and synchronize changes in real-time using **Redux**.
+Develop a **React application** for **Swipe** that automates the extraction, processing, and management of invoice data from various file formats. The app will organize the extracted data into three main sections: **Invoices**, **Products**, and **Customers**, and synchronize changes in real-time using **zustand**.
 
 ---
 
@@ -51,7 +51,7 @@ Develop a **React application** for **Swipe** that automates the extraction, pro
 
 ### 3. Centralized State Management
 
-- Use **React Redux** for centralized state management:
+- Use **React zustand** for centralized state management:
   - Ensure consistent data handling across the app.
   - Dynamically update values in real-time across all tabs. For example:
     - If a **Product Name** is updated in the Products tab, the change should reflect instantly in the corresponding entry within the **Invoices tab**.
@@ -68,7 +68,7 @@ Develop a **React application** for **Swipe** that automates the extraction, pro
 
 ### 5. Code Quality and Documentation
 
-- Follow **React/Redux best practices** to maintain modular, well-documented code.
+- Follow **React/zustand best practices** to maintain modular, well-documented code.
 - Include documentation for the **AI data extraction feature**.
 - Provide evidence of solved test cases with screenshots or videos.
 

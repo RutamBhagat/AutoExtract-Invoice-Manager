@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Develop a **React-based application** for **Swipe** that automates the extraction and management of invoice data from diverse file types (Excel, PDF, images). The app will organize extracted information into **Invoices**, **Products**, and **Customers** tabs, with real-time updates using **Redux** for centralized state management. It will also include validation, user feedback, and error handling to ensure a smooth experience.
+Develop a **React-based application** for **Swipe** that automates the extraction and management of invoice data from diverse file types (Excel, PDF, images). The app will organize extracted information into **Invoices**, **Products**, and **Customers** tabs, with real-time updates using **zustand** for centralized state management. It will also include validation, user feedback, and error handling to ensure a smooth experience.
 
 ---
 
@@ -165,17 +165,17 @@ Imagine uploading a mix of PDFs and Excel files, then seeing all data neatly org
 2. **File Upload Handling**:
    - Restrict uploads to supported formats and validate them before processing.
 3. **State Management**:
-   - Use Redux Toolkit for cleaner state management code.
-   - Consider middleware like Redux-Saga for asynchronous tasks.
+   - Use zustand Toolkit for cleaner state management code.
+   - Consider middleware like zustand-Saga for asynchronous tasks.
 
 ---
 
 ## Estimated Milestones and Sequencing
 
-1. **Day 1–2**: Initial setup, including React, Redux, and UI components.
+1. **Day 1–2**: Initial setup, including React, zustand, and UI components.
 2. **Day 3–4**: AI integration for data extraction and file upload handling.
 3. **Day 5**: Implement Invoices, Products, and Customers tabs with tables and validations.
-4. **Day 6**: Real-time updates and Redux integration.
+4. **Day 6**: Real-time updates and zustand integration.
 5. **Day 7**: Final testing, error handling, and deployment.
 
 ---
