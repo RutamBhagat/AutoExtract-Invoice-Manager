@@ -8,12 +8,14 @@ This application aims to automate the extraction, processing, and management of 
 
 ### High-Level Architecture Diagram
 
+![alt text](<images/1. High-Level Architecture Diagram.png>)
+
 ```
 graph LR
-    Upload[File Upload\nReact Dropzone]
-    Extract[Data Extraction\nGoogle Gemini]
-    Process[Data Processing\nzustand/backend]
-    Present[Data Presentation\nReact Components]
+    Upload[File Upload - React Dropzone]
+    Extract[Data Extraction - Google Gemini]
+    Process[Data Processing - zustand/backend]
+    Present[Data Presentation - React Components]
 
     Storage[File Storage]
     DB[Database]
@@ -40,6 +42,8 @@ graph LR
 
 ### System Context Diagram
 
+![alt text](<images/2. System Context Diagram.png>)
+
 ```
 graph TD
     App[Invoice Processing App]
@@ -64,6 +68,8 @@ graph TD
 ```
 
 ### Invoice Processing Sequence Diagrams
+
+![alt text](<images/3. Invoice Processing Sequence Diagrams.png>)
 
 ```
 sequenceDiagram
@@ -100,6 +106,8 @@ sequenceDiagram
 ```
 
 ### Data Synchronization Sequence
+
+![alt text](<images/4. Data Synchronization Sequence.png>)
 
 ```
 sequenceDiagram
@@ -283,10 +291,10 @@ sequenceDiagram
 
 ## 9. Timeline & Milestones
 
-- **Phase 1 (Week 1):** Project setup, basic UI, file upload, initial Gemini API integration.
-- **Phase 2 (Week 2):** Data extraction refinement, data processing and validation, Zustand integration.
-- **Phase 3 (Week 3):** Invoices, Products, and Customers tabs implementation, real-time updates.
-- **Phase 4 (Week 4):** Testing, bug fixes, deployment.
+- **Phase 1 (Day 1):** Project setup, basic UI, file upload, initial Gemini API integration.
+- **Phase 2 (Day 2):** Data extraction refinement, data processing and validation, Zustand integration.
+- **Phase 3 (Day 3):** Invoices, Products, and Customers tabs implementation, real-time updates.
+- **Phase 4 (Day 4):** Testing, bug fixes, deployment.
 
 **(Detailed breakdown of requirements, acceptance criteria, dependencies, priority, estimated effort, and technical risks will be added as the project progresses and more specific information becomes available.)**
 
