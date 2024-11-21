@@ -16,9 +16,10 @@ export interface FileStoreProviderProps {
 }
 
 export const FileStoreProvider = ({ children }: FileStoreProviderProps) => {
-  const storeRef = useRef<FileStoreApi>();
+  const storeRef = useRef<FileStoreApi>(); // Use useRef to store the instance
+
   if (!storeRef.current) {
-    storeRef.current = createFileStore();
+    storeRef.current = createFileStore(); // Create the store only if it doesn't exist
   }
 
   return (
