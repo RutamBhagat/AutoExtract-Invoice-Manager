@@ -10,9 +10,17 @@ import {
 import { type FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
+
+interface UploadResponse {
+  fileUri: string;
+  displayName: string;
+}
 
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadResults, setUploadResults] = useState<UploadResponse[]>([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -32,7 +40,7 @@ export default function FileUploadDemo() {
       "application/vnd.ms-excel": [".xls"],
       "image/*": [".png", ".jpg", ".jpeg"],
     },
-    multiple: true, // Enable multiple file selection
+    multiple: true,
   });
 
   const getFileIcon = (file: FileWithPath | null) => {
@@ -43,6 +51,55 @@ export default function FileUploadDemo() {
     if (file.type.includes("sheet"))
       return <FileSpreadsheetIcon className="h-6 w-6" />;
     return <FileIcon className="h-6 w-6" />;
+  };
+
+  const uploadFiles = async () => {
+    setIsUploading(true);
+    
+    // Show loading toast
+    toast.loading('Uploading files...', {
+      id: 'upload-toast',
+    });
+
+    try {
+      const uploads = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Add file size validation
+        if (file.size > 2 * 1024 * 1024 * 1024) { // 2GB limit
+          throw new Error(`${file.name} exceeds the 2GB size limit`);
+        }
+
+        const response = await fetch("/api/files", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+
+        return await response.json();
+      });
+
+      const results = await Promise.all(uploads);
+      setUploadResults(results);
+      setFiles([]); // Clear files after successful upload
+      
+      // Show success toast
+      toast.success(`Successfully uploaded ${results.length} files`, {
+        id: 'upload-toast',
+      });
+    } catch (error) {
+      console.error("Upload failed:", error);
+      // Show error toast
+      toast.error(error instanceof Error ? error.message : 'Upload failed', {
+        id: 'upload-toast',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -97,15 +154,27 @@ export default function FileUploadDemo() {
       <CardFooter>
         <Button
           size="lg"
-          disabled={files.length === 0}
-          onClick={() => {
-            // Handle upload here
-            console.log("Files to upload:", files);
-          }}
+          disabled={files.length === 0 || isUploading}
+          onClick={uploadFiles}
         >
-          Upload {files.length > 0 && `(${files.length} files)`}
+          {isUploading
+            ? "Uploading..."
+            : `Upload ${files.length > 0 ? `(${files.length} files)` : ""}`}
         </Button>
       </CardFooter>
+
+      {uploadResults.length > 0 && (
+        <div className="border-t p-4">
+          <h3 className="mb-2 text-sm font-medium">Uploaded Files:</h3>
+          <div className="space-y-2">
+            {uploadResults.map((result, index) => (
+              <div key={index} className="text-sm">
+                {result.displayName} - {result.fileUri}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
