@@ -19,12 +19,7 @@ export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
 
   const { isUploading, setUploading, addUploadResult, uploadResults } =
-    useFileStore((state) => ({
-      isUploading: state.isUploading,
-      setUploading: state.setUploading,
-      addUploadResult: state.addUploadResult,
-      uploadResults: state.uploadResults,
-    }));
+    useFileStore.getState();
 
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);

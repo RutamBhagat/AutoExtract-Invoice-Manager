@@ -13,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFileStore } from "@/stores/file-store";
 
 export default function FileList() {
-  const uploadResults = useFileStore((state) => state.uploadResults);
+  const { uploadResults } = useFileStore.getState();
 
   const getFileIcon = (fileUri: string) => {
     const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
