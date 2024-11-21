@@ -13,7 +13,6 @@ import {
 
 import DashboardSidebarMenuSection from "./dashboard-sidebar-menu-section";
 import { FileText } from "lucide-react";
-import { SearchForm } from "@/components/search-form";
 
 const data = {
   navMain: [
