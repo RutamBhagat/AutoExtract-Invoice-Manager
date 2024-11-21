@@ -11,16 +11,17 @@ import { type FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-
-interface UploadResponse {
-  fileUri: string;
-  displayName: string;
-}
+import { useFileStore } from "@/providers/file-store-provider";
 
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadResults, setUploadResults] = useState<UploadResponse[]>([]);
+  const { uploadResults, isUploading, setUploadResults, setUploading } =
+    useFileStore((state) => ({
+      uploadResults: state.uploadResults,
+      isUploading: state.isUploading,
+      setUploadResults: state.setUploadResults,
+      setUploading: state.setUploading,
+    }));
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -54,7 +55,7 @@ export default function FileUploadDemo() {
   };
 
   const uploadFiles = async () => {
-    setIsUploading(true);
+    setUploading(true);
 
     // Show loading toast
     toast.loading("Uploading files...", {
@@ -86,6 +87,7 @@ export default function FileUploadDemo() {
       });
 
       const results = await Promise.all(uploads);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       setUploadResults(results);
       setFiles([]); // Clear files after successful upload
 
@@ -100,7 +102,7 @@ export default function FileUploadDemo() {
         id: "upload-toast",
       });
     } finally {
-      setIsUploading(false);
+      setUploading(false);
     }
   };
 
