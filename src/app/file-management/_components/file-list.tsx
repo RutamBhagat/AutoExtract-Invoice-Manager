@@ -11,9 +11,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFileStore } from "@/stores/file-store";
+import { useShallow } from "zustand/react/shallow";
 
 export default function FileList() {
-  const { uploadResults } = useFileStore.getState();
+  const uploadResults = useFileStore(
+    useShallow((state) => state.uploadResults),
+  );
 
   const getFileIcon = (fileUri: string) => {
     const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i;

@@ -14,12 +14,20 @@ import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useFileStore } from "@/stores/file-store";
+import { useShallow } from "zustand/react/shallow";
 
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
 
   const { isUploading, setUploading, addUploadResult, uploadResults } =
-    useFileStore.getState();
+    useFileStore(
+      useShallow((state) => ({
+        isUploading: state.isUploading,
+        setUploading: state.setUploading,
+        addUploadResult: state.addUploadResult,
+        uploadResults: state.uploadResults,
+      })),
+    );
 
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
