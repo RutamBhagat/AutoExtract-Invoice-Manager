@@ -1,5 +1,10 @@
 "use client";
 
+interface UploadResponse {
+  displayName: string;
+  fileUri: string;
+}
+
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
   FileIcon,
@@ -16,6 +21,10 @@ import { useFileStore } from "@/stores/file-store";
 import { useShallow } from "zustand/react/shallow";
 import { fileUploadSchema } from "@/lib/validations/file";
 
+/**
+ * Component for uploading files via drag-and-drop or browser selection.
+ * Supports PDF, Excel, and image files.
+ */
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
 
@@ -29,14 +38,25 @@ export default function FileUploadDemo() {
       })),
     );
 
+  /**
+   * Callback function for handling dropped files.
+   * Appends accepted files to the current file list.
+   */
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
   }, []);
 
+  /**
+   * Removes a specific file from the current file list.
+   * @param fileToRemove The file to be removed.
+   */
   const removeFile = (fileToRemove: FileWithPath) => {
     setFiles((files) => files.filter((file) => file !== fileToRemove));
   };
 
+  /**
+   * Configures the dropzone with accepted file types and multiple file selection.
+   */
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
@@ -45,14 +65,19 @@ export default function FileUploadDemo() {
         ".xlsx",
       ],
       "application/vnd.ms-excel": [".xls"],
-      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"], // Added more image types
+      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
     },
     multiple: true,
   });
 
+  /**
+   * Returns the appropriate icon for a given file based on its type.
+   * @param file The file for which to get the icon.
+   * @returns The icon component corresponding to the file type.
+   */
   const getFileIcon = (file: FileWithPath | null) => {
     if (!file) return <FileIcon className="h-6 w-6" />;
-    const fileType = file.type.toLowerCase(); // Normalize for easier checking
+    const fileType = file.type.toLowerCase();
     if (fileType.startsWith("image/")) return <ImageIcon className="h-6 w-6" />;
     if (fileType === "application/pdf")
       return <FileTextIcon className="h-6 w-6" />;
@@ -67,13 +92,16 @@ export default function FileUploadDemo() {
     return <FileIcon className="h-6 w-6" />;
   };
 
+  /**
+   * Uploads the selected files to the server.
+   * Validates each file before uploading and displays toast notifications for progress and status.
+   */
   const uploadFiles = async () => {
     setUploading(true);
     toast.loading("Uploading files...", { id: "upload-toast" });
 
     try {
       for (const file of files) {
-        // Validate file before upload
         const validateResult = fileUploadSchema.safeParse({ file });
         if (!validateResult.success) {
           throw new Error(
@@ -84,25 +112,17 @@ export default function FileUploadDemo() {
         const formData = new FormData();
         formData.append("file", file);
 
-        if (file.size > 2 * 1024 * 1024 * 1024) {
-          throw new Error(`${file.name} exceeds the 2GB size limit`);
-        }
-
         const response = await fetch("/api/files", {
           method: "POST",
           body: formData,
         });
 
         if (!response.ok) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          const error = await response.json();
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-          throw new Error(error.error || `Failed to upload ${file.name}`);
+          const errorData = (await response.json()) as { error?: string };
+          throw new Error(errorData.error ?? `Failed to upload ${file.name}`);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const result = await response.json();
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        const result = (await response.json()) as UploadResponse;
         addUploadResult(result);
         toast.success(`${file.name} uploaded!`);
       }
