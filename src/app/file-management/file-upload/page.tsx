@@ -9,7 +9,7 @@ export default function Home() {
   return (
     <div className="flex-1 bg-gray-50 p-8">
       {/* Header */}
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-3xl space-y-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Upload Documents</h1>
           <p className="mt-2 text-gray-600">
