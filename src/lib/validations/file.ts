@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+/**
+ * Schema for validating file uploads.
+ * Ensures the file is a valid File instance and its size is less than 2GB.
+ */
 export const fileUploadSchema = z.object({
   file: z
     .instanceof(File, {
@@ -10,10 +14,20 @@ export const fileUploadSchema = z.object({
     }),
 });
 
+/**
+ * Schema for validating file deletion requests.
+ * Ensures the fileUri is a non-empty string.
+ */
 export const fileDeleteSchema = z.object({
   fileUri: z.string().min(1, "File URI is required"),
-  displayName: z.string().min(1, "Display name is required"),
 });
 
+/**
+ * Type for the input of file uploads, inferred from fileUploadSchema.
+ */
 export type FileUploadInput = z.infer<typeof fileUploadSchema>;
+
+/**
+ * Type for the input of file deletions, inferred from fileDeleteSchema.
+ */
 export type FileDeleteInput = z.infer<typeof fileDeleteSchema>;

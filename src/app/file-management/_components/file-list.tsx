@@ -16,6 +16,9 @@ import { toast } from "sonner";
 import { useFileStore } from "@/stores/file-store";
 import { useShallow } from "zustand/react/shallow";
 
+/**
+ * Component that displays a list of uploaded files with options to delete them.
+ */
 export default function FileList() {
   const { uploadResults, removeUploadResult } = useFileStore(
     useShallow((state) => ({
@@ -24,6 +27,10 @@ export default function FileList() {
     })),
   );
 
+  /**
+   * Handles the deletion of a file.
+   * @param fileUri The URI of the file to delete.
+   */
   const handleDelete = async (fileUri: string) => {
     const deleteToastId = toast.loading("Deleting file...");
     try {
@@ -41,14 +48,19 @@ export default function FileList() {
       toast.success("File deleted successfully", {
         id: deleteToastId,
       });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (error: unknown) {
+      console.error("Failed to delete file", error);
       toast.error("Failed to delete file", {
         id: deleteToastId,
       });
     }
   };
 
+  /**
+   * Returns the appropriate icon for a given file URI based on its extension.
+   * @param fileUri The URI of the file.
+   * @returns The icon component corresponding to the file type.
+   */
   const getFileIcon = (fileUri: string) => {
     const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
     const pdfRegex = /\.pdf$/i;
