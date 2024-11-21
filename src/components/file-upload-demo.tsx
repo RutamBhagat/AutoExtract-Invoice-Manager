@@ -55,10 +55,10 @@ export default function FileUploadDemo() {
 
   const uploadFiles = async () => {
     setIsUploading(true);
-    
+
     // Show loading toast
-    toast.loading('Uploading files...', {
-      id: 'upload-toast',
+    toast.loading("Uploading files...", {
+      id: "upload-toast",
     });
 
     try {
@@ -67,7 +67,8 @@ export default function FileUploadDemo() {
         formData.append("file", file);
 
         // Add file size validation
-        if (file.size > 2 * 1024 * 1024 * 1024) { // 2GB limit
+        if (file.size > 2 * 1024 * 1024 * 1024) {
+          // 2GB limit
           throw new Error(`${file.name} exceeds the 2GB size limit`);
         }
 
@@ -80,22 +81,23 @@ export default function FileUploadDemo() {
           throw new Error(`Failed to upload ${file.name}`);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return await response.json();
       });
 
       const results = await Promise.all(uploads);
       setUploadResults(results);
       setFiles([]); // Clear files after successful upload
-      
+
       // Show success toast
       toast.success(`Successfully uploaded ${results.length} files`, {
-        id: 'upload-toast',
+        id: "upload-toast",
       });
     } catch (error) {
       console.error("Upload failed:", error);
       // Show error toast
-      toast.error(error instanceof Error ? error.message : 'Upload failed', {
-        id: 'upload-toast',
+      toast.error(error instanceof Error ? error.message : "Upload failed", {
+        id: "upload-toast",
       });
     } finally {
       setIsUploading(false);
