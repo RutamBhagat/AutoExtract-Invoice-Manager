@@ -3,15 +3,29 @@ import { type NextRequest, NextResponse } from "next/server";
 import { fileDeleteSchema, fileUploadSchema } from "@/lib/validations/file";
 import { z } from "zod";
 
+/**
+ * Configuration for the API route.
+ * Specifies that the body should not be parsed automatically.
+ */
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
+/**
+ * Initializes a new GoogleAIFileManager with the API key from environment variables.
+ */
 const fileManager = new GoogleAIFileManager(process.env.GOOGLE_API_KEY!);
 
-export async function POST(request: NextRequest) {
+/**
+ * Handles POST requests to upload a file.
+ * Validates the file, converts it to base64, and uploads it using GoogleAIFileManager.
+ *
+ * @param request - The incoming NextRequest object containing the file to upload.
+ * @returns A NextResponse with the file URI and display name if successful, or an error message.
+ */
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -20,7 +34,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file
     const result = fileUploadSchema.safeParse({ file });
     if (!result.success) {
       return NextResponse.json(
@@ -51,12 +64,17 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: Request) {
+/**
+ * Handles DELETE requests to delete a file.
+ * Validates the request body and deletes the file using GoogleAIFileManager.
+ *
+ * @param request - The incoming Request object containing the file URI to delete.
+ * @returns A NextResponse indicating success or an error message.
+ */
+export async function DELETE(request: Request): Promise<NextResponse> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const body = await request.json();
+    const body: unknown = await request.json();
 
-    // Validate request body
     const result = fileDeleteSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
