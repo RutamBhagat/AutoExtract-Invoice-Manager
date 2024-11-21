@@ -1,8 +1,8 @@
 "use client";
 
 interface UploadResponse {
-  displayName: string;
   fileUri: string;
+  displayName: string;
 }
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card";

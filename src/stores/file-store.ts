@@ -2,16 +2,25 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 import { create } from "zustand";
 
+/**
+ * Interface representing the response from a file upload.
+ */
 interface UploadResponse {
   fileUri: string;
   displayName: string;
 }
 
+/**
+ * Interface representing the state of the file store.
+ */
 interface FileState {
   uploadResults: UploadResponse[];
   isUploading: boolean;
 }
 
+/**
+ * Interface representing the actions available in the file store.
+ */
 interface FileActions {
   setUploadResults: (results: UploadResponse[]) => void;
   addUploadResult: (result: UploadResponse) => void;
@@ -20,8 +29,15 @@ interface FileActions {
   removeUploadResult: (fileUri: string) => void;
 }
 
+/**
+ * Type representing the combined state and actions of the file store.
+ */
 type FileStore = FileState & FileActions;
 
+/**
+ * Creates the file store with persistence using Zustand.
+ * @returns A hook to access the file store.
+ */
 const createFileStore = () =>
   create<FileStore>()(
     persist(
@@ -44,15 +60,15 @@ const createFileStore = () =>
       }),
       {
         name: "file-store",
-        // Only use localStorage on the client
         storage: createJSONStorage(() =>
           typeof window !== "undefined" ? localStorage : undefined!,
-        ), // Provide a fallback for server-side
-        partialize: (state) => ({ uploadResults: state.uploadResults }), // Persist only uploadResults
+        ),
+        partialize: (state) => ({ uploadResults: state.uploadResults }),
       },
     ),
   );
 
-// Create the store outside of the component
-// but let useFileStore be a hook
+/**
+ * Hook to access the file store.
+ */
 export const useFileStore = createFileStore();
