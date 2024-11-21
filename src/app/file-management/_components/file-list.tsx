@@ -10,21 +10,21 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFileStore } from "@/stores/file-store"; // Import directly from the store
+import { useFileStore } from "@/stores/file-store";
 
 export default function FileList() {
   const uploadResults = useFileStore((state) => state.uploadResults);
 
   const getFileIcon = (fileUri: string) => {
-    const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i; // Added webp
+    const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
     const pdfRegex = /\.pdf$/i;
-    const spreadsheetRegex = /\.(xlsx|xls|csv)$/i; // Added csv
+    const spreadsheetRegex = /\.(xlsx|xls|csv)$/i;
 
     if (imageRegex.test(fileUri)) return <ImageIcon className="h-4 w-4" />;
     if (pdfRegex.test(fileUri)) return <FileTextIcon className="h-4 w-4" />;
     if (spreadsheetRegex.test(fileUri))
       return <FileSpreadsheetIcon className="h-4 w-4" />;
-    return <FileIcon className="h-4 w-4" />; // Default file icon
+    return <FileIcon className="h-4 w-4" />;
   };
 
   return (
@@ -43,9 +43,8 @@ export default function FileList() {
             </div>
           ) : (
             <ul className="space-y-4">
-              {/* Use a list for better semantics */}
               {uploadResults.map((file) => (
-                <li //removed index from key, key should be unique enough
+                <li
                   key={file.fileUri}
                   className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
                 >
@@ -60,7 +59,6 @@ export default function FileList() {
                       </span>
                     </div>
                   </div>
-                  {/* Add more actions here if needed (e.g., delete, download) */}
                 </li>
               ))}
             </ul>

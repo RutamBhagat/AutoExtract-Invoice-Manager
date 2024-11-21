@@ -1,3 +1,4 @@
+// file-upload-demo.tsx
 "use client";
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -5,31 +6,25 @@ import {
   FileIcon,
   FileSpreadsheetIcon,
   FileTextIcon,
-  ImageIcon, // Import ImageIcon
+  ImageIcon,
   XIcon,
 } from "lucide-react";
 import { type FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useFileStore } from "@/stores/file-store"; // Updated import path
+import { useFileStore } from "@/stores/file-store";
 
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
 
-  const {
-    uploadResults,
-    isUploading,
-    setUploadResults,
-    setUploading,
-    addUploadResult,
-  } = useFileStore((state) => ({
-    uploadResults: state.uploadResults,
-    isUploading: state.isUploading,
-    setUploadResults: state.setUploadResults, // No longer used, but good to keep for future modifications
-    setUploading: state.setUploading,
-    addUploadResult: state.addUploadResult, // For single file upload updates
-  }));
+  const { isUploading, setUploading, addUploadResult, uploadResults } =
+    useFileStore((state) => ({
+      isUploading: state.isUploading,
+      setUploading: state.setUploading,
+      addUploadResult: state.addUploadResult,
+      uploadResults: state.uploadResults,
+    }));
 
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
@@ -74,14 +69,11 @@ export default function FileUploadDemo() {
     toast.loading("Uploading files...", { id: "upload-toast" });
 
     try {
-      // Iterate and upload individually:
       for (const file of files) {
-        //looping instead of mapping
         const formData = new FormData();
         formData.append("file", file);
 
         if (file.size > 2 * 1024 * 1024 * 1024) {
-          // Add file size validation
           throw new Error(`${file.name} exceeds the 2GB size limit`);
         }
 
@@ -95,14 +87,13 @@ export default function FileUploadDemo() {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const result = await response.json(); // Get individual result
+        const result = await response.json();
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        addUploadResult(result); // Add to Zustand
-        toast.success(`${file.name} uploaded!`); // Individual success
+        addUploadResult(result);
+        toast.success(`${file.name} uploaded!`);
       }
       setFiles([]);
-
-      toast.success(`All files uploaded!`, { id: "upload-toast" }); // Overall success message
+      toast.success("All files uploaded!", { id: "upload-toast" });
     } catch (error) {
       console.error("Upload failed:", error);
       toast.error(error instanceof Error ? error.message : "Upload failed", {
@@ -118,7 +109,9 @@ export default function FileUploadDemo() {
       <CardContent className="space-y-4 p-6">
         <div
           {...getRootProps()}
-          className={`flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed p-6 transition-colors ${isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-200"} ${files.length > 0 ? "border-green-500 bg-green-50" : ""}`}
+          className={`flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed p-6 transition-colors ${
+            isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-200"
+          } ${files.length > 0 ? "border-green-500 bg-green-50" : ""}`}
         >
           <input {...getInputProps()} />
           <FileIcon className="h-12 w-12" />
@@ -173,7 +166,6 @@ export default function FileUploadDemo() {
             : `Upload ${files.length > 0 ? `(${files.length} files)` : ""}`}
         </Button>
       </CardFooter>
-
       {uploadResults.length > 0 && (
         <div className="border-t p-4">
           <h3 className="mb-2 text-sm font-medium">Uploaded Files:</h3>
