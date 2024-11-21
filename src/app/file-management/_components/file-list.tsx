@@ -10,29 +10,28 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFileStore } from "@/providers/file-store-provider";
+import { useFileStore } from "@/stores/file-store"; // Import directly from the store
 
 export default function FileList() {
-  // Add client-side only state
   const uploadResults = useFileStore((state) => state.uploadResults);
 
   const getFileIcon = (fileUri: string) => {
-    const imageRegex = /\.(jpg|jpeg|png|gif)$/i;
+    const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i; // Added webp
     const pdfRegex = /\.pdf$/i;
-    const spreadsheetRegex = /\.(xlsx|xls)$/i;
+    const spreadsheetRegex = /\.(xlsx|xls|csv)$/i; // Added csv
 
-    if (imageRegex.exec(fileUri)) return <ImageIcon className="h-4 w-4" />;
-    if (pdfRegex.exec(fileUri)) return <FileTextIcon className="h-4 w-4" />;
-    if (spreadsheetRegex.exec(fileUri))
+    if (imageRegex.test(fileUri)) return <ImageIcon className="h-4 w-4" />;
+    if (pdfRegex.test(fileUri)) return <FileTextIcon className="h-4 w-4" />;
+    if (spreadsheetRegex.test(fileUri))
       return <FileSpreadsheetIcon className="h-4 w-4" />;
-    return <FileIcon className="h-4 w-4" />;
+    return <FileIcon className="h-4 w-4" />; // Default file icon
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Uploaded Files</span>
+          Uploaded Files
           <Badge variant="secondary">{uploadResults.length} files</Badge>
         </CardTitle>
       </CardHeader>
@@ -43,10 +42,11 @@ export default function FileList() {
               No files uploaded yet
             </div>
           ) : (
-            <div className="space-y-4">
-              {uploadResults.map((file, index) => (
-                <div
-                  key={`${file.fileUri}-${index}`}
+            <ul className="space-y-4">
+              {/* Use a list for better semantics */}
+              {uploadResults.map((file) => (
+                <li //removed index from key, key should be unique enough
+                  key={file.fileUri}
                   className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
                 >
                   <div className="flex items-center gap-3">
@@ -60,9 +60,10 @@ export default function FileList() {
                       </span>
                     </div>
                   </div>
-                </div>
+                  {/* Add more actions here if needed (e.g., delete, download) */}
+                </li>
               ))}
-            </div>
+            </ul>
           )}
         </ScrollArea>
       </CardContent>

@@ -5,25 +5,33 @@ import {
   FileIcon,
   FileSpreadsheetIcon,
   FileTextIcon,
+  ImageIcon, // Import ImageIcon
   XIcon,
 } from "lucide-react";
 import { type FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useFileStore } from "@/providers/file-store-provider";
+import { useFileStore } from "@/stores/file-store"; // Updated import path
 
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
-  const { uploadResults, isUploading, setUploadResults, setUploading } =
-    useFileStore((state) => ({
-      uploadResults: state.uploadResults,
-      isUploading: state.isUploading,
-      setUploadResults: state.setUploadResults,
-      setUploading: state.setUploading,
-    }));
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const {
+    uploadResults,
+    isUploading,
+    setUploadResults,
+    setUploading,
+    addUploadResult,
+  } = useFileStore((state) => ({
+    uploadResults: state.uploadResults,
+    isUploading: state.isUploading,
+    setUploadResults: state.setUploadResults, // No longer used, but good to keep for future modifications
+    setUploading: state.setUploading,
+    addUploadResult: state.addUploadResult, // For single file upload updates
+  }));
+
+  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
   }, []);
 
@@ -39,37 +47,41 @@ export default function FileUploadDemo() {
         ".xlsx",
       ],
       "application/vnd.ms-excel": [".xls"],
-      "image/*": [".png", ".jpg", ".jpeg"],
+      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"], // Added more image types
     },
     multiple: true,
   });
 
   const getFileIcon = (file: FileWithPath | null) => {
     if (!file) return <FileIcon className="h-6 w-6" />;
-
-    if (file.type.includes("image")) return <FileIcon className="h-6 w-6" />;
-    if (file.type.includes("pdf")) return <FileTextIcon className="h-6 w-6" />;
-    if (file.type.includes("sheet"))
+    const fileType = file.type.toLowerCase(); // Normalize for easier checking
+    if (fileType.startsWith("image/")) return <ImageIcon className="h-6 w-6" />;
+    if (fileType === "application/pdf")
+      return <FileTextIcon className="h-6 w-6" />;
+    if (
+      fileType.startsWith("application/vnd.ms-excel") ||
+      fileType.startsWith(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml",
+      )
+    )
       return <FileSpreadsheetIcon className="h-6 w-6" />;
+
     return <FileIcon className="h-6 w-6" />;
   };
 
   const uploadFiles = async () => {
     setUploading(true);
-
-    // Show loading toast
-    toast.loading("Uploading files...", {
-      id: "upload-toast",
-    });
+    toast.loading("Uploading files...", { id: "upload-toast" });
 
     try {
-      const uploads = files.map(async (file) => {
+      // Iterate and upload individually:
+      for (const file of files) {
+        //looping instead of mapping
         const formData = new FormData();
         formData.append("file", file);
 
-        // Add file size validation
         if (file.size > 2 * 1024 * 1024 * 1024) {
-          // 2GB limit
+          // Add file size validation
           throw new Error(`${file.name} exceeds the 2GB size limit`);
         }
 
@@ -82,22 +94,17 @@ export default function FileUploadDemo() {
           throw new Error(`Failed to upload ${file.name}`);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return await response.json();
-      });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const result = await response.json(); // Get individual result
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        addUploadResult(result); // Add to Zustand
+        toast.success(`${file.name} uploaded!`); // Individual success
+      }
+      setFiles([]);
 
-      const results = await Promise.all(uploads);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      setUploadResults(results);
-      setFiles([]); // Clear files after successful upload
-
-      // Show success toast
-      toast.success(`Successfully uploaded ${results.length} files`, {
-        id: "upload-toast",
-      });
+      toast.success(`All files uploaded!`, { id: "upload-toast" }); // Overall success message
     } catch (error) {
       console.error("Upload failed:", error);
-      // Show error toast
       toast.error(error instanceof Error ? error.message : "Upload failed", {
         id: "upload-toast",
       });
