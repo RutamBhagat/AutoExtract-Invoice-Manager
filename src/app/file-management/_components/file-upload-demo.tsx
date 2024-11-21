@@ -1,4 +1,3 @@
-// file-upload-demo.tsx
 "use client";
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -15,6 +14,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useFileStore } from "@/stores/file-store";
 import { useShallow } from "zustand/react/shallow";
+import { fileUploadSchema } from "@/lib/validations/file";
 
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
@@ -73,6 +73,14 @@ export default function FileUploadDemo() {
 
     try {
       for (const file of files) {
+        // Validate file before upload
+        const validateResult = fileUploadSchema.safeParse({ file });
+        if (!validateResult.success) {
+          throw new Error(
+            validateResult.error.errors[0]?.message ?? "Invalid file format",
+          );
+        }
+
         const formData = new FormData();
         formData.append("file", file);
 
@@ -86,7 +94,10 @@ export default function FileUploadDemo() {
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to upload ${file.name}`);
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          const error = await response.json();
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+          throw new Error(error.error || `Failed to upload ${file.name}`);
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

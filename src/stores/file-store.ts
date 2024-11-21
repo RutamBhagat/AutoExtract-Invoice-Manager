@@ -18,6 +18,7 @@ interface FileActions {
   addUploadResult: (result: UploadResponse) => void;
   clearUploadResults: () => void;
   setUploading: (isUploading: boolean) => void;
+  removeUploadResult: (fileUri: string) => void;
 }
 
 type FileStore = FileState & FileActions;
@@ -35,6 +36,12 @@ const createFileStore = () =>
           })),
         clearUploadResults: () => set({ uploadResults: [] }),
         setUploading: (isUploading) => set({ isUploading }),
+        removeUploadResult: (fileUri) =>
+          set((state) => ({
+            uploadResults: state.uploadResults.filter(
+              (result) => result.fileUri !== fileUri,
+            ),
+          })),
       }),
       {
         name: "file-store",

@@ -6,17 +6,48 @@ import {
   FileSpreadsheetIcon,
   FileTextIcon,
   ImageIcon,
+  Trash2Icon,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "sonner";
 import { useFileStore } from "@/stores/file-store";
 import { useShallow } from "zustand/react/shallow";
 
 export default function FileList() {
-  const uploadResults = useFileStore(
-    useShallow((state) => state.uploadResults),
+  const { uploadResults, removeUploadResult } = useFileStore(
+    useShallow((state) => ({
+      uploadResults: state.uploadResults,
+      removeUploadResult: state.removeUploadResult,
+    })),
   );
+
+  const handleDelete = async (fileUri: string) => {
+    const deleteToastId = toast.loading("Deleting file...");
+    try {
+      const response = await fetch("/api/files", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileUri }),
+      });
+
+      if (!response.ok) throw new Error("Failed to delete file");
+
+      removeUploadResult(fileUri);
+      toast.success("File deleted successfully", {
+        id: deleteToastId,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      toast.error("Failed to delete file", {
+        id: deleteToastId,
+      });
+    }
+  };
 
   const getFileIcon = (fileUri: string) => {
     const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
@@ -62,6 +93,14 @@ export default function FileList() {
                       </span>
                     </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(file.fileUri)}
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                  </Button>
                 </li>
               ))}
             </ul>
