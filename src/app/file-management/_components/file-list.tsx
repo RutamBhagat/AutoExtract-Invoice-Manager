@@ -47,11 +47,22 @@ export default function FileList() {
       removeUploadResult(fileUri);
       toast.success("File deleted successfully", {
         id: deleteToastId,
+        description: `The file ${fileUri} has been deleted.`,
+        action: {
+          label: "Undo",
+          onClick: () => {
+            toast("Undo not implemented yet", {
+              description: "This feature is not yet available.",
+            });
+          },
+        },
       });
     } catch (error: unknown) {
       console.error("Failed to delete file", error);
       toast.error("Failed to delete file", {
         id: deleteToastId,
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred.",
       });
     }
   };
