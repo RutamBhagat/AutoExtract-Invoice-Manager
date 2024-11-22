@@ -1,12 +1,15 @@
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import { type NextRequest, NextResponse } from "next/server";
-import formidable, { File } from "formidable";
+import formidable from "formidable";
 import { promises as fs } from "fs";
 import path from "path";
 import { IncomingMessage } from "http";
 import { fileDeleteSchema } from "@/lib/validations/file";
 import { z } from "zod";
 
+/**
+ * Handles file uploads, saves them temporarily, and uploads to Google AI
+ */
 export const config = {
   api: {
     bodyParser: false,
@@ -14,24 +17,17 @@ export const config = {
 };
 
 const fileManager = new GoogleAIFileManager(process.env.GOOGLE_API_KEY!);
+const uploadDir = path.join(process.cwd(), "public", "uploads");
 
-export default async function POST(req: NextRequest) {
-  if (req.method !== "POST") {
-    return NextResponse.json(
-      { message: "Method not allowed" },
-      { status: 405 },
-    );
-  }
-
+export default async function POST(request: NextRequest) {
   const form = formidable({ multiples: true });
-  let fields: formidable.Fields;
-  let files: formidable.Files;
 
   try {
-    // Parse the incoming form data
-    [fields, files] = await new Promise((resolve, reject) => {
+    const [fields, files] = await new Promise<
+      [formidable.Fields, formidable.Files]
+    >((resolve, reject) => {
       form.parse(
-        req.body as unknown as IncomingMessage,
+        request as unknown as IncomingMessage,
         (err, fields, files) => {
           if (err) reject(err);
           resolve([fields, files]);
@@ -39,38 +35,27 @@ export default async function POST(req: NextRequest) {
       );
     });
 
-    console.log("files:", files);
     const imageFile = Array.isArray(files.image) ? files.image[0] : files.image;
-    console.log("imageFile:", imageFile);
 
-    if (!imageFile || !imageFile.filepath) {
+    if (!imageFile?.filepath) {
       return NextResponse.json(
         { message: "No image file uploaded" },
         { status: 400 },
       );
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-
-    // Create the upload directory if it doesn't exist
     await fs.mkdir(uploadDir, { recursive: true });
 
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const newFileName = `${uniqueSuffix}-${imageFile.originalFilename}`;
+    const newFileName = `${Date.now()}-${imageFile.originalFilename}`;
     const newFilePath = path.join(uploadDir, newFileName);
 
-    // Move the uploaded file to the target directory
     await fs.rename(imageFile.filepath, newFilePath);
 
-    console.log("Uploaded image:", newFilePath);
-
-    // Upload to Google AI
     const uploadResponse = await fileManager.uploadFile(newFilePath, {
       mimeType: imageFile.mimetype || "application/octet-stream",
       displayName: imageFile.originalFilename || "unknown",
     });
 
-    // Delete the file after upload
     await fs.unlink(newFilePath);
 
     return NextResponse.json({
