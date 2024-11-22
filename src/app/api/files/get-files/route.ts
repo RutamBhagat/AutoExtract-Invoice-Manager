@@ -14,22 +14,13 @@ export async function GET(): Promise<NextResponse> {
 
   try {
     const listFilesResponse = await fileManager.listFiles();
-    console.log('Response:', JSON.stringify(listFilesResponse, null, 2));
 
     // Return empty array if no files exist or if response structure is invalid
     if (!listFilesResponse?.files || !Array.isArray(listFilesResponse.files)) {
       return NextResponse.json({ files: [] });
     }
 
-    const files = listFilesResponse.files.map((file) => ({
-      name: file.name,
-      uri: file.uri,
-      displayName: file.displayName,
-      mimeType: file.mimeType,
-      createTime: file.createTime,
-    }));
-
-    return NextResponse.json({ files });
+    return NextResponse.json({ files: listFilesResponse.files });
   } catch (error) {
     console.error("List files error:", error);
     return NextResponse.json(
