@@ -16,6 +16,7 @@ interface UploadResponse {
 interface FileState {
   uploadResults: UploadResponse[];
   isUploading: boolean;
+  isLoading: boolean;
 }
 
 /**
@@ -27,6 +28,7 @@ interface FileActions {
   clearUploadResults: () => void;
   setUploading: (isUploading: boolean) => void;
   removeUploadResult: (fileUri: string) => void;
+  fetchFiles: () => Promise<void>;
 }
 
 /**
@@ -38,12 +40,31 @@ type FileStore = FileState & FileActions;
  * Creates the file store with persistence using Zustand.
  * @returns A hook to access the file store.
  */
-const createFileStore = () =>
-  create<FileStore>()(
+const createFileStore = () => {
+  // Fetch initial data
+  const fetchInitialData = async () => {
+    try {
+      const response = await fetch('/api/files');
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error || 'Failed to fetch files');
+      
+      return data.files.map((file: any) => ({
+        fileUri: file.uri,
+        displayName: file.displayName,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch initial files:', error);
+      return [];
+    }
+  };
+
+  return create<FileStore>()(
     persist(
       (set) => ({
-        uploadResults: [],
+        uploadResults: [], // Will be populated after initialization
         isUploading: false,
+        isLoading: true, // Start with loading true
         setUploadResults: (results) => set({ uploadResults: results }),
         addUploadResult: (result) =>
           set((state) => ({
@@ -57,6 +78,26 @@ const createFileStore = () =>
               (result) => result.fileUri !== fileUri,
             ),
           })),
+        fetchFiles: async () => {
+          set({ isLoading: true });
+          try {
+            const response = await fetch('/api/files');
+            const data = await response.json();
+            
+            if (!response.ok) throw new Error(data.error || 'Failed to fetch files');
+            
+            const files = data.files.map((file: any) => ({
+              fileUri: file.uri,
+              displayName: file.displayName,
+            }));
+            
+            set({ uploadResults: files });
+          } catch (error) {
+            console.error('Failed to fetch files:', error);
+          } finally {
+            set({ isLoading: false });
+          }
+        },
       }),
       {
         name: "file-store",
@@ -64,9 +105,19 @@ const createFileStore = () =>
           typeof window !== "undefined" ? localStorage : undefined!,
         ),
         partialize: (state) => ({ uploadResults: state.uploadResults }),
+        onRehydrateStorage: () => (state) => {
+          // After rehydration, fetch fresh data
+          if (state) {
+            fetchInitialData().then(files => {
+              state.setUploadResults(files);
+              state.isLoading = false;
+            });
+          }
+        },
       },
     ),
   );
+};
 
 /**
  * Hook to access the file store.
