@@ -1,0 +1,129 @@
+import { z } from "zod";
+import { SchemaType } from "@google/generative-ai";
+
+/**
+ * Schema for validating individual invoice data.
+ */
+export const invoiceSchema = z.object({
+  serialNumber: z.number(),
+  customerName: z.string(),
+  productName: z.string(),
+  quantity: z.number(),
+  tax: z.number(),
+  totalAmount: z.number(),
+  date: z.string(),
+  invoiceNumber: z.string().optional(),
+  dueDate: z.string().optional(),
+});
+
+/**
+ * Schema for validating individual product data.
+ */
+export const productSchema = z.object({
+  name: z.string(),
+  quantity: z.number(),
+  unitPrice: z.number(),
+  tax: z.number(),
+  priceWithTax: z.number(),
+  discount: z.number().optional(),
+});
+
+/**
+ * Schema for validating individual customer data.
+ */
+export const customerSchema = z.object({
+  customerName: z.string(),
+  phoneNumber: z.string(),
+  totalPurchaseAmount: z.number(),
+});
+
+/**
+ * Schema for validating file item structure.
+ */
+export const fileItemSchema = z.object({
+  fileUri: z.string().url(),
+  mimeType: z.string(),
+});
+
+/**
+ * Schema for validating the overall request body for content generation.
+ */
+export const generateContentSchema = z.object({
+  files: z.array(fileItemSchema),
+  prompt: z.string().min(1),
+});
+
+/**
+ * Combined schema for validating the response content.
+ */
+export const combinedZodSchema = z.object({
+  invoices: z.array(invoiceSchema).optional(),
+  products: z.array(productSchema).optional(),
+  customers: z.array(customerSchema).optional(),
+});
+
+/**
+ * Combined schema describing the expected structured output format for Gemini AI.
+ */
+export const combinedGeminiSchema = {
+  description: "Extracted data for Invoices, Products, and Customers",
+  type: SchemaType.OBJECT,
+  properties: {
+    invoices: {
+      type: SchemaType.ARRAY,
+      description: "Invoice data",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          serialNumber: { type: SchemaType.NUMBER },
+          customerName: { type: SchemaType.STRING },
+          productName: { type: SchemaType.STRING },
+          quantity: { type: SchemaType.NUMBER },
+          tax: { type: SchemaType.NUMBER },
+          totalAmount: { type: SchemaType.NUMBER },
+          date: { type: SchemaType.STRING },
+          invoiceNumber: { type: SchemaType.STRING },
+          dueDate: { type: SchemaType.STRING },
+        },
+        required: [
+          "serialNumber",
+          "customerName",
+          "productName",
+          "quantity",
+          "tax",
+          "totalAmount",
+          "date",
+        ],
+      },
+    },
+    products: {
+      type: SchemaType.ARRAY,
+      description: "Product data",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          name: { type: SchemaType.STRING },
+          quantity: { type: SchemaType.NUMBER },
+          unitPrice: { type: SchemaType.NUMBER },
+          tax: { type: SchemaType.NUMBER },
+          priceWithTax: { type: SchemaType.NUMBER },
+          discount: { type: SchemaType.NUMBER },
+        },
+        required: ["name", "quantity", "unitPrice", "tax", "priceWithTax"],
+      },
+    },
+    customers: {
+      type: SchemaType.ARRAY,
+      description: "Customer data",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          customerName: { type: SchemaType.STRING },
+          phoneNumber: { type: SchemaType.STRING },
+          totalPurchaseAmount: { type: SchemaType.NUMBER },
+        },
+        required: ["customerName", "phoneNumber", "totalPurchaseAmount"],
+      },
+    },
+  },
+}; 
