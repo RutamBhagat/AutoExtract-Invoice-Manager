@@ -13,17 +13,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { useFileStore } from "@/stores/file-store";
+import { useUploadStore } from "@/stores/useUploadStore";
 import { useShallow } from "zustand/react/shallow";
 
 /**
  * Component that displays a list of uploaded files with options to delete them.
  */
 export default function FileList() {
-  const { uploadResults, removeUploadResult } = useFileStore(
+  const { files, removeFile } = useUploadStore(
     useShallow((state) => ({
-      uploadResults: state.uploadResults,
-      removeUploadResult: state.removeUploadResult,
+      files: state.files,
+      removeFile: state.removeFile,
     })),
   );
 
@@ -44,7 +44,7 @@ export default function FileList() {
 
       if (!response.ok) throw new Error("Failed to delete file");
 
-      removeUploadResult(fileUri);
+      removeFile(fileUri);
       toast.success("File deleted successfully", {
         id: deleteToastId,
         description: `The file ${fileUri} has been deleted.`,
@@ -89,18 +89,18 @@ export default function FileList() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           Uploaded Files
-          <Badge variant="secondary">{uploadResults.length} files</Badge>
+          <Badge variant="secondary">{files.length} files</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-          {uploadResults.length === 0 ? (
+          {files.length === 0 ? (
             <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
               No files uploaded yet
             </div>
           ) : (
             <ul className="space-y-4">
-              {uploadResults.map((file) => (
+              {files.map((file) => (
                 <li
                   key={file.fileUri}
                   className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"

@@ -17,7 +17,7 @@ import { type FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useFileStore } from "@/stores/file-store";
+import { useUploadStore } from "@/stores/useUploadStore";
 import { useShallow } from "zustand/react/shallow";
 import { fileUploadSchema } from "@/lib/validations/file";
 import { supportedTypes } from "@/lib/types/supported-files";
@@ -28,16 +28,14 @@ import { supportedTypes } from "@/lib/types/supported-files";
  */
 export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
+  const [isUploading, setUploading] = useState(false);
 
-  const { isUploading, setUploading, addUploadResult, uploadResults } =
-    useFileStore(
-      useShallow((state) => ({
-        isUploading: state.isUploading,
-        setUploading: state.setUploading,
-        addUploadResult: state.addUploadResult,
-        uploadResults: state.uploadResults,
-      })),
-    );
+  const { files: storedFiles, addFile } = useUploadStore(
+    useShallow((state) => ({ 
+      files: state.files, 
+      addFile: state.addFile 
+    }))
+  );
 
   /**
    * Callback function for handling dropped files.
@@ -115,9 +113,11 @@ export default function FileUploadDemo() {
           const errorData = (await response.json()) as { error?: string };
           throw new Error(errorData.error ?? `Failed to upload ${file.name}`);
         }
-
         const result = (await response.json()) as UploadResponse;
-        addUploadResult(result);
+        addFile({
+          ...result,
+          mimeType: file.type // Add missing mimeType property
+        });
         toast.success(`${file.name} uploaded!`);
       }
       setFiles([]);

@@ -5,7 +5,6 @@ import { customerSchema, invoiceSchema, productSchema } from '../lib/validations
 import { toast } from 'sonner'
 import { EXTRACTION_PROMPT } from '../lib/constants/extraction-prompt'
 
-// Define types based on Zod schemas
 type Invoice = z.infer<typeof invoiceSchema>
 type Product = z.infer<typeof productSchema>
 type Customer = z.infer<typeof customerSchema>
@@ -16,16 +15,16 @@ interface ProcessedFile {
   error?: string;
 }
 
+/**
+ * Store interface for managing invoices, products, customers and file processing
+ * Handles CRUD operations and maintains relationships between entities
+ */
 interface Store {
-  // Data arrays
   invoices: Invoice[]
   products: Product[]
   customers: Customer[]
-  
-  // Processed files tracking
   processedFiles: ProcessedFile[]
   
-  // Actions for data management
   addInvoice: (invoice: Invoice) => void
   addProduct: (product: Product) => void
   addCustomer: (customer: Customer) => void
@@ -38,17 +37,15 @@ interface Store {
   updateCustomer: (customerId: string, updates: Partial<Customer>) => void
   updateInvoice: (invoiceId: string, updates: Partial<Invoice>) => void
   
-  // Bulk update actions
   setInvoices: (invoices: Invoice[]) => void
   setProducts: (products: Product[]) => void
   setCustomers: (customers: Customer[]) => void
   
-  // File processing actions
   processFile: (fileUri: string, mimeType: string) => Promise<void>
   removeProcessedFile: (fileUri: string) => void
 }
 
-export const useStore = create<Store>()(
+export const useDataStore = create<Store>()(
   persist(
     (set, get) => ({
       invoices: [],
@@ -56,7 +53,6 @@ export const useStore = create<Store>()(
       customers: [],
       processedFiles: [],
 
-      // Add items
       addInvoice: (invoice) => set((state) => ({ 
         invoices: [...state.invoices, invoice] 
       })),
@@ -69,7 +65,6 @@ export const useStore = create<Store>()(
         customers: [...state.customers, customer] 
       })),
       
-      // Remove items with cascading cleanup
       removeInvoice: (invoiceId) => set((state) => ({
         invoices: state.invoices.filter(invoice => invoice.invoiceId !== invoiceId)
       })),
@@ -82,7 +77,9 @@ export const useStore = create<Store>()(
         customers: state.customers.filter(customer => customer.customerId !== customerId)
       })),
       
-      // Update items with cascading changes
+      /**
+       * Updates a product and cascades changes to related invoices
+       */
       updateProduct: (productId, updates) => 
         set((state) => {
           const updatedProducts = state.products.map(product =>
@@ -106,6 +103,9 @@ export const useStore = create<Store>()(
           }
         }),
 
+      /**
+       * Updates a customer and cascades changes to related invoices
+       */
       updateCustomer: (customerId, updates) =>
         set((state) => {
           const updatedCustomers = state.customers.map(customer =>
@@ -134,16 +134,17 @@ export const useStore = create<Store>()(
           )
         })),
         
-      // Bulk update actions
       setInvoices: (invoices) => set({ invoices }),
       setProducts: (products) => set({ products }),
       setCustomers: (customers) => set({ customers }),
 
-      // File processing
+      /**
+       * Processes a file by sending it to the API and updating the store with extracted data
+       * Shows toast notifications for success/failure states
+       */
       processFile: async (fileUri: string, mimeType: string) => {
         const state = get()
         
-        // Check if file was already processed
         if (state.processedFiles.some(f => f.fileUri === fileUri)) {
           return
         }
@@ -168,7 +169,6 @@ export const useStore = create<Store>()(
 
           const { result } = await response.json()
 
-          // Update state with new data
           set((state) => ({
             invoices: [...state.invoices, ...(result.invoices ?? [])],
             products: [...state.products, ...(result.products ?? [])],
@@ -197,17 +197,17 @@ export const useStore = create<Store>()(
         }
       },
 
+      /**
+       * Removes a processed file and all associated data
+       * Currently implements a simple cleanup by clearing all data
+       * TODO: Implement more precise tracking of which data came from which file
+       */
       removeProcessedFile: (fileUri) => set((state) => {
-        // Remove the processed file record
         const processedFile = state.processedFiles.find(f => f.fileUri === fileUri)
         if (!processedFile) return state
 
-        // Remove all data associated with this file
-        // Note: This is a simplified approach - in a real app you might want to track
-        // which data came from which file more precisely
         return {
           processedFiles: state.processedFiles.filter(f => f.fileUri !== fileUri),
-          // Clear all data when removing files - you might want a more sophisticated approach
           invoices: [],
           products: [],
           customers: []
@@ -216,7 +216,6 @@ export const useStore = create<Store>()(
     }),
     {
       name: 'data-store',
-      // Only persist the data and processed files
       partialize: (state) => ({
         invoices: state.invoices,
         products: state.products,
