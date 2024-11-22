@@ -1,26 +1,71 @@
-import { GoogleGenerativeAI, Part, SchemaType } from "@google/generative-ai";
+import {
+  GoogleGenerativeAI,
+  SchemaType,
+  type Part,
+} from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { env } from "@/env";
 
-// Zod schema for a single file object
+/**
+ * Schema definition for file items with URI and MIME type
+ */
 const fileItemSchema = z.object({
   fileUri: z.string().url(),
   mimeType: z.string(),
 });
 
-// Zod schema for the request body
+/**
+ * Schema definition for content generation request body
+ */
 const generateContentSchema = z.object({
   files: z.array(fileItemSchema),
   prompt: z.string().min(1),
 });
 
-// Initialize Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
+/**
+ * Invoice schema definition for structured output validation
+ */
+const invoiceSchema = {
+  description: "List of invoice data",
+  type: SchemaType.ARRAY,
+  items: {
+    type: SchemaType.OBJECT,
+    properties: {
+      serialNumber: { type: SchemaType.NUMBER },
+      customerName: { type: SchemaType.STRING },
+      productName: { type: SchemaType.STRING },
+      quantity: { type: SchemaType.NUMBER },
+      tax: { type: SchemaType.NUMBER },
+      totalAmount: { type: SchemaType.NUMBER },
+      date: { type: SchemaType.STRING },
+      invoiceNumber: { type: SchemaType.STRING },
+      dueDate: { type: SchemaType.STRING },
+    },
+    required: [
+      "serialNumber",
+      "customerName",
+      "productName",
+      "quantity",
+      "tax",
+      "totalAmount",
+      "date",
+    ],
+  },
+};
+
+/**
+ * Handles POST requests to generate content using Google's Generative AI
+ * @param request The incoming Next.js request object
+ * @returns NextResponse with either the generated content or error message
+ */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body: unknown = await request.json();
     const result = generateContentSchema.safeParse(body);
+
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.errors[0]?.message },
@@ -29,39 +74,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const { files, prompt } = result.data;
-
-    // Schema for structured output (Invoices)
-    const invoiceSchema = {
-      description: "List of invoice data",
-      type: SchemaType.ARRAY,
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          serialNumber: { type: SchemaType.NUMBER },
-          customerName: { type: SchemaType.STRING },
-          productName: { type: SchemaType.STRING },
-          quantity: { type: SchemaType.NUMBER },
-          tax: { type: SchemaType.NUMBER },
-          totalAmount: { type: SchemaType.NUMBER },
-          date: { type: SchemaType.STRING },
-          invoiceNumber: { type: SchemaType.STRING }, // Optional
-          dueDate: { type: SchemaType.STRING }, // Optional
-        },
-        required: [
-          "serialNumber",
-          "customerName",
-          "productName",
-          "quantity",
-          "tax",
-          "totalAmount",
-          "date",
-        ],
-      },
-    };
-
-    // Get the Gemini model with the appropriate generation config
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash", // Or "gemini-1.5-pro"
+      model: env.MODEL_NAME,
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: invoiceSchema,
@@ -72,21 +86,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       fileData: { mimeType: file.mimeType, fileUri: file.fileUri },
     }));
 
-    // Call generateContent *without* responseMimeType in the options
     const generateContentResult = await model.generateContent([
       { text: prompt },
       ...fileParts,
-    ]); // No options here for responseMimeType or schema
+    ]);
 
-    const responseText = generateContentResult.response.text(); // Get text from stream
+    const responseText = generateContentResult.response.text();
 
-    // Parse the string to JSON
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const responseJson = JSON.parse(responseText);
-
-      // Now you have responseJson, a structured JSON object, validate it
-      // with your Zod schema for Invoices before returning.
       const validationResult = z
         .array(
           z.object({
@@ -97,8 +106,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             tax: z.number(),
             totalAmount: z.number(),
             date: z.string(),
-            invoiceNumber: z.string().optional(), // Optional fields
-            dueDate: z.string().optional(), // Optional fields
+            invoiceNumber: z.string().optional(),
+            dueDate: z.string().optional(),
           }),
         )
         .safeParse(responseJson);
