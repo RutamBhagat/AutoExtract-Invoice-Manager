@@ -5,8 +5,11 @@ import { SchemaType } from "@google/generative-ai";
  * Schema for validating individual invoice data.
  */
 export const invoiceSchema = z.object({
+  invoiceId: z.string(),
   serialNumber: z.number(),
+  customerId: z.string(),
   customerName: z.string(),
+  productId: z.string(),
   productName: z.string(),
   quantity: z.number(),
   tax: z.number(),
@@ -20,7 +23,8 @@ export const invoiceSchema = z.object({
  * Schema for validating individual product data.
  */
 export const productSchema = z.object({
-  name: z.string(),
+  productId: z.string(),
+  productName: z.string(),
   quantity: z.number(),
   unitPrice: z.number(),
   tax: z.number(),
@@ -32,6 +36,7 @@ export const productSchema = z.object({
  * Schema for validating individual customer data.
  */
 export const customerSchema = z.object({
+  customerId: z.string(),
   customerName: z.string(),
   phoneNumber: z.string(),
   totalPurchaseAmount: z.number(),
@@ -75,8 +80,11 @@ export const combinedGeminiSchema = {
       items: {
         type: SchemaType.OBJECT,
         properties: {
+          invoiceId: { type: SchemaType.STRING },
           serialNumber: { type: SchemaType.NUMBER },
+          customerId: { type: SchemaType.STRING },
           customerName: { type: SchemaType.STRING },
+          productId: { type: SchemaType.STRING },
           productName: { type: SchemaType.STRING },
           quantity: { type: SchemaType.NUMBER },
           tax: { type: SchemaType.NUMBER },
@@ -86,8 +94,11 @@ export const combinedGeminiSchema = {
           dueDate: { type: SchemaType.STRING },
         },
         required: [
+          "invoiceId",
           "serialNumber",
+          "customerId",
           "customerName",
+          "productId",
           "productName",
           "quantity",
           "tax",
@@ -102,14 +113,15 @@ export const combinedGeminiSchema = {
       items: {
         type: SchemaType.OBJECT,
         properties: {
-          name: { type: SchemaType.STRING },
+          productId: { type: SchemaType.STRING },
+          productName: { type: SchemaType.STRING },
           quantity: { type: SchemaType.NUMBER },
           unitPrice: { type: SchemaType.NUMBER },
           tax: { type: SchemaType.NUMBER },
           priceWithTax: { type: SchemaType.NUMBER },
           discount: { type: SchemaType.NUMBER },
         },
-        required: ["name", "quantity", "unitPrice", "tax", "priceWithTax"],
+        required: ["productId", "productName", "quantity", "unitPrice", "tax", "priceWithTax"],
       },
     },
     customers: {
@@ -118,11 +130,12 @@ export const combinedGeminiSchema = {
       items: {
         type: SchemaType.OBJECT,
         properties: {
+          customerId: { type: SchemaType.STRING },
           customerName: { type: SchemaType.STRING },
           phoneNumber: { type: SchemaType.STRING },
           totalPurchaseAmount: { type: SchemaType.NUMBER },
         },
-        required: ["customerName", "phoneNumber", "totalPurchaseAmount"],
+        required: ["customerId", "customerName", "phoneNumber", "totalPurchaseAmount"],
       },
     },
   },
