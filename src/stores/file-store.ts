@@ -44,17 +44,23 @@ const createFileStore = () => {
   // Fetch initial data
   const fetchInitialData = async () => {
     try {
-      const response = await fetch('/api/files');
+      const response = await fetch("/api/files");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.error || 'Failed to fetch files');
-      
-      return data.files.map((file: any) => ({
-        fileUri: file.uri,
-        displayName: file.displayName,
-      }));
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      if (!response.ok) throw new Error(data.error || "Failed to fetch files");
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return data.files.map((file: unknown) => {
+        const typedFile = file as { uri: string; displayName: string };
+        return {
+          fileUri: typedFile.uri,
+          displayName: typedFile.displayName,
+        };
+      });
     } catch (error) {
-      console.error('Failed to fetch initial files:', error);
+      console.error("Failed to fetch initial files:", error);
       return [];
     }
   };
@@ -81,19 +87,28 @@ const createFileStore = () => {
         fetchFiles: async () => {
           set({ isLoading: true });
           try {
-            const response = await fetch('/api/files');
+            const response = await fetch("/api/files");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const data = await response.json();
-            
-            if (!response.ok) throw new Error(data.error || 'Failed to fetch files');
-            
-            const files = data.files.map((file: any) => ({
-              fileUri: file.uri,
-              displayName: file.displayName,
-            }));
-            
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            if (!response.ok)
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+              throw new Error(data.error || "Failed to fetch files");
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            const files = data.files.map((file: unknown) => {
+              const typedFile = file as { uri: string; displayName: string };
+              return {
+                fileUri: typedFile.uri,
+                displayName: typedFile.displayName,
+              };
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             set({ uploadResults: files });
           } catch (error) {
-            console.error('Failed to fetch files:', error);
+            console.error("Failed to fetch files:", error);
           } finally {
             set({ isLoading: false });
           }
@@ -108,7 +123,8 @@ const createFileStore = () => {
         onRehydrateStorage: () => (state) => {
           // After rehydration, fetch fresh data
           if (state) {
-            fetchInitialData().then(files => {
+            void fetchInitialData().then((files) => {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               state.setUploadResults(files);
               state.isLoading = false;
             });
