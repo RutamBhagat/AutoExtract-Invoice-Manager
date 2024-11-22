@@ -23,6 +23,18 @@ export const fileDeleteSchema = z.object({
 });
 
 /**
+ * Schema for validating file uploads in the API route.
+ * Ensures the file metadata is valid.
+ */
+export const fileUploadApiSchema = z.object({
+  file: z.object({
+    name: z.string(),
+    type: z.string(),
+    size: z.number().max(2 * 1024 * 1024 * 1024, "File size must be less than 2GB"),
+  }),
+});
+
+/**
  * Type for the input of file uploads, inferred from fileUploadSchema.
  */
 export type FileUploadInput = z.infer<typeof fileUploadSchema>;

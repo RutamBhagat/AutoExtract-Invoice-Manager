@@ -2,8 +2,7 @@ import { GoogleAIFileManager } from "@google/generative-ai/server";
 import { type NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
-import { fileUploadSchema } from "@/lib/validations/file";
-import { supportedTypes } from "@/lib/types/supported-files";
+import { fileUploadApiSchema } from "@/lib/validations/file";
 import { env } from "@/env";
 
 /**
@@ -28,11 +27,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
-    if (!Object.keys(supportedTypes).includes(file.type)) {
-      return NextResponse.json({ error: "Unsupported file type" }, { status: 400 });
-    }
-
-    const validateResult = fileUploadSchema.safeParse({
+    const validateResult = fileUploadApiSchema.safeParse({
       file: {
         name: file.name,
         type: file.type,
@@ -43,7 +38,8 @@ export async function POST(request: NextRequest) {
     if (!validateResult.success) {
       return NextResponse.json(
         {
-          error: validateResult.error.errors[0]?.message ?? "Invalid file format",
+          error:
+            validateResult.error.errors[0]?.message ?? "Invalid file format",
         },
         { status: 400 },
       );
