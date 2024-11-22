@@ -1,64 +1,87 @@
 import { GoogleAIFileManager } from "@google/generative-ai/server";
 import { type NextRequest, NextResponse } from "next/server";
-import { fileDeleteSchema, fileUploadSchema } from "@/lib/validations/file";
+import formidable, { File } from "formidable";
+import { promises as fs } from "fs";
+import path from "path";
+import { IncomingMessage } from "http";
+import { fileDeleteSchema } from "@/lib/validations/file";
 import { z } from "zod";
 
-/**
- * Configuration for the API route.
- * Specifies that the body should not be parsed automatically.
- */
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
-/**
- * Initializes a new GoogleAIFileManager with the API key from environment variables.
- */
 const fileManager = new GoogleAIFileManager(process.env.GOOGLE_API_KEY!);
 
-/**
- * Handles POST requests to upload a file.
- * Validates the file, converts it to base64, and uploads it using GoogleAIFileManager.
- *
- * @param request - The incoming NextRequest object containing the file to upload.
- * @returns A NextResponse with the file URI and display name if successful, or an error message.
- */
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export default async function POST(req: NextRequest) {
+  if (req.method !== "POST") {
+    return NextResponse.json(
+      { message: "Method not allowed" },
+      { status: 405 },
+    );
+  }
+
+  const form = formidable({ multiples: true });
+  let fields: formidable.Fields;
+  let files: formidable.Files;
+
   try {
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
+    // Parse the incoming form data
+    [fields, files] = await new Promise((resolve, reject) => {
+      form.parse(
+        req.body as unknown as IncomingMessage,
+        (err, fields, files) => {
+          if (err) reject(err);
+          resolve([fields, files]);
+        },
+      );
+    });
 
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
+    console.log("files:", files);
+    const imageFile = Array.isArray(files.image) ? files.image[0] : files.image;
+    console.log("imageFile:", imageFile);
 
-    const result = fileUploadSchema.safeParse({ file });
-    if (!result.success) {
+    if (!imageFile || !imageFile.filepath) {
       return NextResponse.json(
-        { error: result.error.errors[0]?.message },
+        { message: "No image file uploaded" },
         { status: 400 },
       );
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const mimeType = file.type;
-    const base64String = buffer.toString("base64");
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
 
-    const uploadResponse = await fileManager.uploadFile(base64String, {
-      mimeType,
-      displayName: file.name,
+    // Create the upload directory if it doesn't exist
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const newFileName = `${uniqueSuffix}-${imageFile.originalFilename}`;
+    const newFilePath = path.join(uploadDir, newFileName);
+
+    // Move the uploaded file to the target directory
+    await fs.rename(imageFile.filepath, newFilePath);
+
+    console.log("Uploaded image:", newFilePath);
+
+    // Upload to Google AI
+    const uploadResponse = await fileManager.uploadFile(newFilePath, {
+      mimeType: imageFile.mimetype || "application/octet-stream",
+      displayName: imageFile.originalFilename || "unknown",
     });
 
+    // Delete the file after upload
+    await fs.unlink(newFilePath);
+
     return NextResponse.json({
+      message: "Image uploaded successfully",
       fileUri: uploadResponse.file.uri,
       displayName: uploadResponse.file.displayName,
     });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { message: "Failed to upload image" },
       { status: 500 },
     );
   }
@@ -112,7 +135,7 @@ export async function GET(): Promise<NextResponse> {
   try {
     const listFilesResponse = await fileManager.listFiles();
 
-    const files = listFilesResponse.files.map(file => ({
+    const files = listFilesResponse.files.map((file) => ({
       name: file.name,
       uri: file.uri,
       displayName: file.displayName,
