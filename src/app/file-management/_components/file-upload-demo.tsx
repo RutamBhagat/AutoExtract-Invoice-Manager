@@ -106,7 +106,7 @@ export default function FileUploadDemo() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch("/api/files", {
+        const response = await fetch("/api/files/post-files", {
           method: "POST",
           body: formData,
         });

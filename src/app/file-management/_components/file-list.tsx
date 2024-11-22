@@ -34,7 +34,7 @@ export default function FileList() {
   const handleDelete = async (fileUri: string) => {
     const deleteToastId = toast.loading("Deleting file...");
     try {
-      const response = await fetch("/api/files", {
+      const response = await fetch("/api/files/delete-files", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -42,7 +42,7 @@ const createFileStore = () => {
    */
   const fetchInitialData = async () => {
     try {
-      const response = await fetch("/api/files");
+      const response = await fetch("/api/files/get-files");
       const data = (await response.json()) as {
         error: string;
         files: { uri: string; displayName: string }[];
@@ -89,7 +89,7 @@ const createFileStore = () => {
         fetchFiles: async () => {
           set({ isLoading: true });
           try {
-            const response = await fetch("/api/files");
+            const response = await fetch("/api/files/get-files");
             const data = (await response.json()) as {
               error: string;
               files: { uri: string; displayName: string }[];
