@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useFileStore } from "@/stores/file-store";
 import { useShallow } from "zustand/react/shallow";
 import { fileUploadSchema } from "@/lib/validations/file";
+import { supportedTypes } from "@/lib/types/supported-files";
 
 /**
  * Component for uploading files via drag-and-drop or browser selection.
@@ -59,14 +60,7 @@ export default function FileUploadDemo() {
    */
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      "application/pdf": [".pdf"],
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
-        ".xlsx",
-      ],
-      "application/vnd.ms-excel": [".xls"],
-      "image/*": [".png", ".jpg", ".jpeg", ".gif", ".webp"],
-    },
+    accept: supportedTypes,
     multiple: true,
   });
 

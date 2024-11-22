@@ -4,11 +4,13 @@ import formidable from "formidable";
 import { promises as fs } from "fs";
 import path from "path";
 import { IncomingMessage } from "http";
-import { fileDeleteSchema } from "@/lib/validations/file";
+import { fileDeleteSchema, fileUploadSchema } from "@/lib/validations/file";
 import { z } from "zod";
+import { supportedTypes } from "@/lib/types/supported-files";
 
 /**
- * Handles file uploads, saves them temporarily, and uploads to Google AI
+ * Configuration for the API endpoint.
+ * Disables the built-in body parser to handle file uploads with formidable.
  */
 export const config = {
   api: {
@@ -19,8 +21,24 @@ export const config = {
 const fileManager = new GoogleAIFileManager(process.env.GOOGLE_API_KEY!);
 const uploadDir = path.join(process.cwd(), "public", "uploads");
 
-export default async function POST(request: NextRequest) {
-  const form = formidable({ multiples: true });
+/**
+ * Handles file upload requests.
+ *
+ * This function parses the incoming multipart form data, validates the uploaded file,
+ * saves it to a temporary directory, uploads it to Google AI File Manager,
+ * and responds with the upload metadata.
+ *
+ * @param {NextRequest} request - The incoming HTTP request.
+ * @returns {Promise<NextResponse>} - The response containing upload status and metadata.
+ */
+export async function POST(request: NextRequest) {
+  const form = formidable({
+    multiples: true,
+    maxFileSize: 10 * 1024 * 1024, // Maximum file size: 10MB
+    filter: ({ mimetype }) => {
+      return mimetype ? Object.keys(supportedTypes).includes(mimetype) : false;
+    },
+  });
 
   try {
     const [fields, files] = await new Promise<
@@ -35,40 +53,56 @@ export default async function POST(request: NextRequest) {
       );
     });
 
-    const imageFile = Array.isArray(files.image) ? files.image[0] : files.image;
+    const uploadedFile = Array.isArray(files.file) ? files.file[0] : files.file;
 
-    if (!imageFile?.filepath) {
+    if (!uploadedFile?.filepath) {
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+    }
+
+    const validateResult = fileUploadSchema.safeParse({
+      file: {
+        name: uploadedFile.originalFilename || "",
+        type: uploadedFile.mimetype || "",
+        size: uploadedFile.size || 0,
+      },
+    });
+
+    if (!validateResult.success) {
       return NextResponse.json(
-        { message: "No image file uploaded" },
+        {
+          error:
+            validateResult.error.errors[0]?.message ?? "Invalid file format",
+        },
         { status: 400 },
       );
     }
 
     await fs.mkdir(uploadDir, { recursive: true });
 
-    const newFileName = `${Date.now()}-${imageFile.originalFilename}`;
+    const newFileName = `${Date.now()}-${uploadedFile.originalFilename}`;
     const newFilePath = path.join(uploadDir, newFileName);
 
-    await fs.rename(imageFile.filepath, newFilePath);
+    await fs.rename(uploadedFile.filepath, newFilePath);
 
     const uploadResponse = await fileManager.uploadFile(newFilePath, {
-      mimeType: imageFile.mimetype || "application/octet-stream",
-      displayName: imageFile.originalFilename || "unknown",
+      mimeType: uploadedFile.mimetype || "application/octet-stream",
+      displayName: uploadedFile.originalFilename || "unknown",
     });
 
     await fs.unlink(newFilePath);
 
     return NextResponse.json({
-      message: "Image uploaded successfully",
+      message: "File uploaded successfully",
       fileUri: uploadResponse.file.uri,
       displayName: uploadResponse.file.displayName,
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      { message: "Failed to upload image" },
-      { status: 500 },
-    );
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to upload file";
+
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
