@@ -194,18 +194,6 @@ export default function FileUploadDemo() {
             : `Upload ${files.length > 0 ? `(${files.length} files)` : ""}`}
         </Button>
       </CardFooter>
-      {uploadResults.length > 0 && (
-        <div className="border-t p-4">
-          <h3 className="mb-2 text-sm font-medium">Uploaded Files:</h3>
-          <div className="space-y-2">
-            {uploadResults.map((result, index) => (
-              <div key={index} className="text-sm">
-                {result.displayName} - {result.fileUri}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </Card>
   );
 }
