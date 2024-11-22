@@ -4,16 +4,17 @@ import { env } from "@/env";
 import { fileDeleteSchema } from "@/lib/validations/file";
 import { z } from "zod";
 
-const fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
 
 /**
  * Handles DELETE requests to delete a file.
  * Validates the request body and deletes the file using GoogleAIFileManager.
- *
- * @param request - The incoming Request object containing the file URI to delete.
- * @returns A NextResponse indicating success or an error message.
- */
+*
+* @param request - The incoming Request object containing the file URI to delete.
+* @returns A NextResponse indicating success or an error message.
+*/
 export async function DELETE(request: Request): Promise<NextResponse> {
+  const fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
+  
   try {
     const body: unknown = await request.json();
 

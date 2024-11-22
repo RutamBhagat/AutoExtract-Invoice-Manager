@@ -4,8 +4,7 @@ import formidable from "formidable";
 import { promises as fs } from "fs";
 import path from "path";
 import { IncomingMessage } from "http";
-import { fileDeleteSchema, fileUploadSchema } from "@/lib/validations/file";
-import { z } from "zod";
+import { fileUploadSchema } from "@/lib/validations/file";
 import { supportedTypes } from "@/lib/types/supported-files";
 import { env } from "@/env";
 
@@ -19,20 +18,21 @@ export const config = {
   },
 };
 
-const fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
-const uploadDir = path.join(process.cwd(), "public", "uploads");
 
 /**
  * Handles file upload requests.
- *
- * This function parses the incoming multipart form data, validates the uploaded file,
- * saves it to a temporary directory, uploads it to Google AI File Manager,
- * and responds with the upload metadata.
- *
- * @param {NextRequest} request - The incoming HTTP request.
- * @returns {Promise<NextResponse>} - The response containing upload status and metadata.
- */
+*
+* This function parses the incoming multipart form data, validates the uploaded file,
+* saves it to a temporary directory, uploads it to Google AI File Manager,
+* and responds with the upload metadata.
+*
+* @param {NextRequest} request - The incoming HTTP request.
+* @returns {Promise<NextResponse>} - The response containing upload status and metadata.
+*/
 export async function POST(request: NextRequest) {
+  const fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
+  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  
   const form = formidable({
     multiples: true,
     maxFileSize: 10 * 1024 * 1024, // Maximum file size: 10MB
