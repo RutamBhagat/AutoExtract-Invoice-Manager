@@ -8,6 +8,7 @@ import { create } from "zustand";
 interface UploadResponse {
   fileUri: string;
   displayName: string;
+  mimeType: string;
 }
 
 /**
@@ -45,7 +46,7 @@ const createFileStore = () => {
       const response = await fetch("/api/files/get-files");
       const data = (await response.json()) as {
         error: string;
-        files: { uri: string; displayName: string }[];
+        files: { uri: string; displayName: string; mimeType: string }[];
       };
 
       if (!response.ok) {
@@ -55,6 +56,7 @@ const createFileStore = () => {
       return data.files.map((file) => ({
         fileUri: file.uri,
         displayName: file.displayName,
+        mimeType: file.mimeType,
       }));
     } catch (error) {
       console.error("Failed to fetch initial files:", error);
@@ -92,7 +94,7 @@ const createFileStore = () => {
             const response = await fetch("/api/files/get-files");
             const data = (await response.json()) as {
               error: string;
-              files: { uri: string; displayName: string }[];
+              files: { uri: string; displayName: string; mimeType: string }[];
             };
 
             if (!response.ok) {
@@ -102,6 +104,7 @@ const createFileStore = () => {
             const files = data.files.map((file) => ({
               fileUri: file.uri,
               displayName: file.displayName,
+              mimeType: file.mimeType,
             }));
 
             set({ uploadResults: files });

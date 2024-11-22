@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
       message: "File uploaded successfully",
       fileUri: uploadResponse.file.uri,
       displayName: uploadResponse.file.displayName,
+      mimeType: file.type,
     });
   } catch (error) {
     console.error("Upload error:", error);
