@@ -3,7 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { create } from "zustand";
 
 /**
- * Interface representing the response from a file upload.
+ * Represents a single uploaded file's details.
  */
 interface UploadResponse {
   fileUri: string;
@@ -11,7 +11,7 @@ interface UploadResponse {
 }
 
 /**
- * Interface representing the state of the file store.
+ * Defines the state for file management, including upload results and loading states.
  */
 interface FileState {
   uploadResults: UploadResponse[];
@@ -20,7 +20,7 @@ interface FileState {
 }
 
 /**
- * Interface representing the actions available in the file store.
+ * Provides actions for managing file uploads and interactions.
  */
 interface FileActions {
   setUploadResults: (results: UploadResponse[]) => void;
@@ -31,34 +31,31 @@ interface FileActions {
   fetchFiles: () => Promise<void>;
 }
 
-/**
- * Type representing the combined state and actions of the file store.
- */
 type FileStore = FileState & FileActions;
 
-/**
- * Creates the file store with persistence using Zustand.
- * @returns A hook to access the file store.
- */
 const createFileStore = () => {
-  // Fetch initial data
+  /**
+   * Fetches the initial list of files from the server.
+   * This function maps the fetched file data to the `UploadResponse` format.
+   *
+   * @returns {Promise<UploadResponse[]>} A promise resolving to the list of files.
+   */
   const fetchInitialData = async () => {
     try {
       const response = await fetch("/api/files");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const data = await response.json();
+      const data = (await response.json()) as {
+        error: string;
+        files: { uri: string; displayName: string }[];
+      };
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-      if (!response.ok) throw new Error(data.error || "Failed to fetch files");
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch files");
+      }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      return data.files.map((file: unknown) => {
-        const typedFile = file as { uri: string; displayName: string };
-        return {
-          fileUri: typedFile.uri,
-          displayName: typedFile.displayName,
-        };
-      });
+      return data.files.map((file) => ({
+        fileUri: file.uri,
+        displayName: file.displayName,
+      }));
     } catch (error) {
       console.error("Failed to fetch initial files:", error);
       return [];
@@ -68,9 +65,9 @@ const createFileStore = () => {
   return create<FileStore>()(
     persist(
       (set) => ({
-        uploadResults: [], // Will be populated after initialization
+        uploadResults: [],
         isUploading: false,
-        isLoading: true, // Start with loading true
+        isLoading: true,
         setUploadResults: (results) => set({ uploadResults: results }),
         addUploadResult: (result) =>
           set((state) => ({
@@ -84,28 +81,29 @@ const createFileStore = () => {
               (result) => result.fileUri !== fileUri,
             ),
           })),
+        /**
+         * Fetches the list of files from the server and updates the store state.
+         * This function updates `uploadResults` with the fetched files and
+         * toggles the `isLoading` flag accordingly.
+         */
         fetchFiles: async () => {
           set({ isLoading: true });
           try {
             const response = await fetch("/api/files");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const data = await response.json();
+            const data = (await response.json()) as {
+              error: string;
+              files: { uri: string; displayName: string }[];
+            };
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-            if (!response.ok)
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+            if (!response.ok) {
               throw new Error(data.error || "Failed to fetch files");
+            }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            const files = data.files.map((file: unknown) => {
-              const typedFile = file as { uri: string; displayName: string };
-              return {
-                fileUri: typedFile.uri,
-                displayName: typedFile.displayName,
-              };
-            });
+            const files = data.files.map((file) => ({
+              fileUri: file.uri,
+              displayName: file.displayName,
+            }));
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             set({ uploadResults: files });
           } catch (error) {
             console.error("Failed to fetch files:", error);
@@ -119,12 +117,23 @@ const createFileStore = () => {
         storage: createJSONStorage(() =>
           typeof window !== "undefined" ? localStorage : undefined!,
         ),
+        /**
+         * Limits the persisted state to the `uploadResults` field.
+         * This ensures only relevant data is saved to localStorage.
+         *
+         * @param {FileStore} state - The current state of the file store.
+         * @returns {Partial<FileStore>} An object containing the fields to persist.
+         */
         partialize: (state) => ({ uploadResults: state.uploadResults }),
+        /**
+         * Callback triggered when the store state is rehydrated from storage.
+         * Fetches the latest file data and updates the state with the results.
+         *
+         * @returns {Function} A callback that accepts the rehydrated state.
+         */
         onRehydrateStorage: () => (state) => {
-          // After rehydration, fetch fresh data
           if (state) {
             void fetchInitialData().then((files) => {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
               state.setUploadResults(files);
               state.isLoading = false;
             });
@@ -135,7 +144,4 @@ const createFileStore = () => {
   );
 };
 
-/**
- * Hook to access the file store.
- */
 export const useFileStore = createFileStore();
