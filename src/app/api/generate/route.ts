@@ -7,17 +7,105 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { env } from "@/env";
 
-/**
- * Schema definition for file items with URI and MIME type
- */
+// Zod schemas for individual data types
+const invoiceSchema = z.object({
+  serialNumber: z.number(),
+  customerName: z.string(),
+  productName: z.string(),
+  quantity: z.number(),
+  tax: z.number(),
+  totalAmount: z.number(),
+  date: z.string(),
+  invoiceNumber: z.string().optional(),
+  dueDate: z.string().optional(),
+});
+
+const productSchema = z.object({
+  name: z.string(),
+  quantity: z.number(),
+  unitPrice: z.number(),
+  tax: z.number(),
+  priceWithTax: z.number(),
+  discount: z.number().optional(),
+});
+
+const customerSchema = z.object({
+  customerName: z.string(),
+  phoneNumber: z.string(),
+  totalPurchaseAmount: z.number(),
+  // Add other optional customer fields here
+});
+
+// Schema for the overall structured output
+const combinedSchema = {
+  description: "Extracted data for Invoices, Products, and Customers",
+  type: SchemaType.OBJECT,
+  properties: {
+    invoices: {
+      type: SchemaType.ARRAY,
+      description: "Invoice data",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          serialNumber: { type: SchemaType.NUMBER },
+          customerName: { type: SchemaType.STRING },
+          productName: { type: SchemaType.STRING },
+          quantity: { type: SchemaType.NUMBER },
+          tax: { type: SchemaType.NUMBER },
+          totalAmount: { type: SchemaType.NUMBER },
+          date: { type: SchemaType.STRING },
+          invoiceNumber: { type: SchemaType.STRING },
+          dueDate: { type: SchemaType.STRING },
+        },
+        required: [
+          "serialNumber",
+          "customerName",
+          "productName",
+          "quantity",
+          "tax",
+          "totalAmount",
+          "date",
+        ],
+      },
+    },
+    products: {
+      type: SchemaType.ARRAY,
+      description: "Product data",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          name: { type: SchemaType.STRING },
+          quantity: { type: SchemaType.NUMBER },
+          unitPrice: { type: SchemaType.NUMBER },
+          tax: { type: SchemaType.NUMBER },
+          priceWithTax: { type: SchemaType.NUMBER },
+          discount: { type: SchemaType.NUMBER },
+        },
+        required: ["name", "quantity", "unitPrice", "tax", "priceWithTax"],
+      },
+    },
+    customers: {
+      type: SchemaType.ARRAY,
+      description: "Customer data",
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          customerName: { type: SchemaType.STRING },
+          phoneNumber: { type: SchemaType.STRING },
+          totalPurchaseAmount: { type: SchemaType.NUMBER },
+          // Add other optional customer fields here
+        },
+        required: ["customerName", "phoneNumber", "totalPurchaseAmount"],
+      },
+    },
+  },
+};
+
 const fileItemSchema = z.object({
   fileUri: z.string().url(),
   mimeType: z.string(),
 });
 
-/**
- * Schema definition for content generation request body
- */
 const generateContentSchema = z.object({
   files: z.array(fileItemSchema),
   prompt: z.string().min(1),
@@ -25,47 +113,10 @@ const generateContentSchema = z.object({
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 
-/**
- * Invoice schema definition for structured output validation
- */
-const invoiceSchema = {
-  description: "List of invoice data",
-  type: SchemaType.ARRAY,
-  items: {
-    type: SchemaType.OBJECT,
-    properties: {
-      serialNumber: { type: SchemaType.NUMBER },
-      customerName: { type: SchemaType.STRING },
-      productName: { type: SchemaType.STRING },
-      quantity: { type: SchemaType.NUMBER },
-      tax: { type: SchemaType.NUMBER },
-      totalAmount: { type: SchemaType.NUMBER },
-      date: { type: SchemaType.STRING },
-      invoiceNumber: { type: SchemaType.STRING },
-      dueDate: { type: SchemaType.STRING },
-    },
-    required: [
-      "serialNumber",
-      "customerName",
-      "productName",
-      "quantity",
-      "tax",
-      "totalAmount",
-      "date",
-    ],
-  },
-};
-
-/**
- * Handles POST requests to generate content using Google's Generative AI
- * @param request The incoming Next.js request object
- * @returns NextResponse with either the generated content or error message
- */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body: unknown = await request.json();
     const result = generateContentSchema.safeParse(body);
-
     if (!result.success) {
       return NextResponse.json(
         { error: result.error.errors[0]?.message },
@@ -74,11 +125,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const { files, prompt } = result.data;
+
     const model = genAI.getGenerativeModel({
       model: env.MODEL_NAME,
       generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: invoiceSchema,
+        responseSchema: combinedSchema,
       },
     });
 
@@ -90,29 +142,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { text: prompt },
       ...fileParts,
     ]);
-
     const responseText = generateContentResult.response.text();
-
     try {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const responseJson = JSON.parse(responseText);
-      const validationResult = z
-        .array(
-          z.object({
-            serialNumber: z.number(),
-            customerName: z.string(),
-            productName: z.string(),
-            quantity: z.number(),
-            tax: z.number(),
-            totalAmount: z.number(),
-            date: z.string(),
-            invoiceNumber: z.string().optional(),
-            dueDate: z.string().optional(),
-          }),
-        )
-        .safeParse(responseJson);
 
+      const combinedZodSchema = z.object({
+        invoices: z.array(invoiceSchema).optional(),
+        products: z.array(productSchema).optional(),
+        customers: z.array(customerSchema).optional(),
+      });
+
+      const validationResult = combinedZodSchema.safeParse(responseJson);
       if (!validationResult.success) {
+        console.log(validationResult.error);
         return NextResponse.json(
           { error: validationResult.error },
           { status: 400 },
