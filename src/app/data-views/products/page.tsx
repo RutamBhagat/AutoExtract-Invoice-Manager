@@ -9,7 +9,11 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={products} />
+      <DataTable 
+        columns={columns} 
+        data={products} 
+        filterColumn="productName"
+      />
     </div>
   )
 }

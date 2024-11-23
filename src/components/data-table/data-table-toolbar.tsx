@@ -6,19 +6,21 @@ import { Table } from "@tanstack/react-table";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  filterColumn?: string;
 }
 
 export function DataTableToolbar<TData>({
   table,
+  filterColumn = "productName",
 }: DataTableToolbarProps<TData>) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
         <Input
           placeholder="Filter..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
+            table.getColumn(filterColumn)?.setFilterValue(event.target.value)
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
