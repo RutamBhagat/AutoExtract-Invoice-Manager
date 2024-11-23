@@ -13,8 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { useUploadStore } from "@/stores/useUploadStore";
+import { useDataStore } from "@/stores/useDataStore";
 import { useShallow } from "zustand/react/shallow";
+import { useUploadStore } from "@/stores/useUploadStore";
 
 /**
  * Component that displays a list of uploaded files with options to delete them.
@@ -24,6 +25,13 @@ export default function FileList() {
     useShallow((state) => ({
       files: state.files,
       removeFile: state.removeFile,
+    })),
+  );
+
+  const { processedFiles, processFile } = useDataStore(
+    useShallow((state) => ({
+      processedFiles: state.processedFiles,
+      processFile: state.processFile,
     })),
   );
 
@@ -68,6 +76,15 @@ export default function FileList() {
   };
 
   /**
+   * Handles the processing of a file.
+   * @param fileUri The URI of the file to process.
+   * @param mimeType The MIME type of the file.
+   */
+  const handleGenerate = async (fileUri: string, mimeType: string) => {
+    await processFile(fileUri, mimeType);
+  };
+
+  /**
    * Returns the appropriate icon for a given file URI based on its extension.
    * @param fileUri The URI of the file.
    * @returns The icon component corresponding to the file type.
@@ -100,32 +117,55 @@ export default function FileList() {
             </div>
           ) : (
             <ul className="space-y-4">
-              {files.map((file) => (
-                <li
-                  key={file.fileUri}
-                  className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
-                >
-                  <div className="flex items-center gap-3">
-                    {getFileIcon(file.fileUri)}
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {file.displayName}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {file.fileUri}
-                      </span>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(file.fileUri)}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              {files.map((file) => {
+                // Check if the file has already been processed
+                const isProcessed = processedFiles.some(
+                  (f) => f.fileUri === file.fileUri && f.status === "success",
+                );
+
+                return (
+                  <li
+                    key={file.fileUri}
+                    className="flex items-center justify-between rounded-lg border p-3 hover:bg-accent"
                   >
-                    <Trash2Icon className="h-4 w-4" />
-                  </Button>
-                </li>
-              ))}
+                    <div className="flex items-center gap-3">
+                      {getFileIcon(file.fileUri)}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">
+                          {file.displayName}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {file.fileUri}
+                        </span>
+                      </div>
+                      {/* Add Badge indicating processed status */}
+                      <Badge
+                        variant={isProcessed ? "secondary" : "destructive"}
+                      >
+                        {isProcessed ? "Processed" : "Unprocessed"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() =>
+                          handleGenerate(file.fileUri, file.mimeType)
+                        }
+                        disabled={isProcessed}
+                      >
+                        Generate
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(file.fileUri)}
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2Icon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </ScrollArea>

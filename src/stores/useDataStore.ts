@@ -183,7 +183,18 @@ export const useDataStore = create<Store>()(
       processFile: async (fileUri: string, mimeType: string) => {
         const state = get();
 
-        if (state.processedFiles.some((f) => f.fileUri === fileUri)) {
+        // Prevent processing if file is already processed
+        if (
+          state.processedFiles.some(
+            (f) => f.fileUri === fileUri && f.status === "success",
+          )
+        ) {
+          return;
+        }
+
+        // Only process PDF files for now
+        if (mimeType !== "application/pdf") {
+          toast.error("Only PDF files can be processed at this time.");
           return;
         }
 
