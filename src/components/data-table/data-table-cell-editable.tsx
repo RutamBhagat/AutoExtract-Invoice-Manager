@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 type UpdateDataFn<T> = (rowIndex: number, columnId: string, value: T) => void;
 
@@ -33,14 +34,25 @@ export function EditableCell<T extends string | number>({
     setValue(initialValue);
   }, [initialValue]);
 
+  const validateValue = (value: string): T | null => {
+    if (type === "number" || type === "currency") {
+      const num = Number(value);
+      if (isNaN(num) || num < 0) {
+        toast.error("Please enter a valid positive number");
+        return null;
+      }
+      return num as T;
+    }
+    return value as T;
+  };
+
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue =
-      type === "number" || type === "currency"
-        ? (Number(e.target.value) as T)
-        : (e.target.value as T);
-    setValue(newValue);
-    if (updateData) {
-      updateData(row, column, newValue);
+    const validatedValue = validateValue(e.target.value);
+    if (validatedValue !== null) {
+      setValue(validatedValue);
+      if (updateData) {
+        updateData(row, column, validatedValue);
+      }
     }
   };
 
@@ -50,7 +62,7 @@ export function EditableCell<T extends string | number>({
   const containerClasses = cn("h-full cursor-pointer", className);
   const contentClasses = cn(type !== "text" ? "text-right" : "text-left");
   const sharedClasses = cn(
-    "m-0 h-full rounded-none border-0 shadow-none focus-visible:ring-0",
+    "m-0 h-full rounded-none font-medium border-0 shadow-none focus-visible:ring-0",
     contentClasses,
     containerClasses,
   );
