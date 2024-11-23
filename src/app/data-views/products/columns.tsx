@@ -78,6 +78,7 @@ export const getColumns = ({
       return (
         <EditableCell
           value={amount}
+          formattedValue={formatted}
           row={row.index}
           column="unitPrice"
           updateData={(table.options.meta as TableType<Product>).updateData}
@@ -105,6 +106,7 @@ export const getColumns = ({
       return (
         <EditableCell
           value={amount}
+          formattedValue={formatted}
           row={row.index}
           column="tax"
           updateData={(table.options.meta as TableType<Product>).updateData}
