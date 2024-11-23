@@ -1,10 +1,5 @@
-"use client"
+"use client";
 
-import { ColumnDef } from "@tanstack/react-table"
-import { Product } from "@/lib/validations/pdf-generate"
-import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
-import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Pencil, Trash } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,75 +7,121 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useDataStore } from "@/stores/useDataStore"
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { EditableCell } from "@/components/data-table/data-table-cell-editable";
+import { Product } from "@/lib/validations/pdf-generate";
+import { useDataStore } from "@/stores/useDataStore";
+import { TableType } from "@/types/table"
 
 interface ProductsColumnProps {
-  setEditingProduct: (product: Product) => void
+  setEditingProduct: (product: Product) => void;
 }
 
-export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDef<Product>[] => [
+export const getColumns = ({
+  setEditingProduct,
+}: ProductsColumnProps): ColumnDef<Product>[] => [
   {
     accessorKey: "productName",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" className="text-left" />
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
+    cell: ({ row, getValue, table }) => (
+      <EditableCell
+        value={getValue() as string}
+        row={row.index}
+        column="productName"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="text"
+      />
     ),
   },
   {
     accessorKey: "quantity",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Quantity" />
+      <DataTableColumnHeader
+        column={column}
+        title="Quantity"
+        className="text-right"
+      />
     ),
-    cell: ({ row }) => {
-      const quantity = row.getValue("quantity") as number
-      return <div className="text-right font-medium">{quantity}</div>
-    },
+    cell: ({ row, getValue, table }) => (
+      <EditableCell
+        value={getValue() as number}
+        row={row.index}
+        column="quantity"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="number"
+      />
+    ),
   },
   {
     accessorKey: "unitPrice",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Unit Price" className="text-right" />
+      <DataTableColumnHeader
+        column={column}
+        title="Unit Price"
+        className="text-right"
+      />
     ),
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("unitPrice"))
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-      }).format(amount)
-      return <div className="text-right font-medium">{formatted}</div>
-    },
+    cell: ({ row, getValue, table }) => (
+      <EditableCell
+        value={getValue() as number}
+        row={row.index}
+        column="unitPrice"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="currency"
+      />
+    ),
   },
   {
     accessorKey: "tax",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Tax" className="text-right" />
+      <DataTableColumnHeader
+        column={column}
+        title="Tax"
+        className="text-right"
+      />
     ),
-    cell: ({ row }) => {
-      const tax = row.getValue("tax") as number
-      return <div className="text-right font-medium">{tax}%</div>
-    },
+    cell: ({ row, getValue, table }) => (
+      <EditableCell
+        value={getValue() as number}
+        row={row.index}
+        column="tax"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="number"
+      />
+    ),
   },
   {
     id: "priceWithTax",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Price with Tax" className="text-right" />
+      <DataTableColumnHeader
+        column={column}
+        title="Price with Tax"
+        className="text-right"
+      />
     ),
     cell: ({ row }) => {
-      const unitPrice = parseFloat(row.getValue("unitPrice"))
-      const tax = row.getValue("tax") as number
-      const priceWithTax = unitPrice * (1 + tax / 100)
+      const unitPrice = parseFloat(row.getValue("unitPrice"));
+      const tax = row.getValue("tax") as number;
+      const priceWithTax = unitPrice * (1 + tax / 100);
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(priceWithTax)
-      return <div className="text-right font-medium">{formatted}</div>
+      }).format(priceWithTax);
+      return <div className="text-right font-medium">{formatted}</div>;
     },
   },
   {
     id: "actions",
     cell: ({ row }) => {
-      const product = row.original
-      const removeProduct = useDataStore((state) => state.removeProduct)
+      const product = row.original;
+      const removeProduct = useDataStore((state) => state.removeProduct);
 
       return (
         <DropdownMenu>
@@ -92,16 +133,14 @@ export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDe
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => setEditingProduct(product)}
-            >
+            <DropdownMenuItem onClick={() => setEditingProduct(product)}>
               <Pencil className="mr-2 h-4 w-4" />
               Edit product
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => {
-                removeProduct(product.productId)
+                removeProduct(product.productId);
               }}
               className="text-red-600"
             >
@@ -110,7 +149,7 @@ export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDe
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
-] 
+];

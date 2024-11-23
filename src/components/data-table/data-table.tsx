@@ -12,6 +12,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  RowData,
 } from "@tanstack/react-table"
 
 import {
@@ -25,14 +26,16 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableToolbar } from "./data-table-toolbar"
+import { useDataStore } from "@/stores/useDataStore"
+import { TableType } from "@/types/table"
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends RowData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   filterColumn?: string
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends RowData, TValue>({
   columns,
   data,
   filterColumn,
@@ -59,6 +62,19 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
+    meta: {
+      updateData: (rowIndex: number, columnId: string, value: unknown) => {
+        const row = data[rowIndex] as any
+        const updatedData = {
+          ...row,
+          [columnId]: value,
+        }
+        
+        if ('productId' in row) {
+          useDataStore.getState().updateProduct(row.productId, updatedData)
+        }
+      },
+    } satisfies TableType<TData>,
   })
 
   return (
