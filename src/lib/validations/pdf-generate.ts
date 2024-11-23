@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { SchemaType } from "@google/generative-ai";
+import { z } from "zod";
 
 /**
  * Schema for validating individual invoice data.
@@ -19,6 +19,8 @@ export const invoiceSchema = z.object({
   dueDate: z.string().optional(),
 });
 
+export type Invoice = z.infer<typeof invoiceSchema>;
+
 /**
  * Schema for validating individual product data.
  */
@@ -32,6 +34,8 @@ export const productSchema = z.object({
   discount: z.number().optional(),
 });
 
+export type Product = z.infer<typeof productSchema>;
+
 /**
  * Schema for validating individual customer data.
  */
@@ -39,8 +43,9 @@ export const customerSchema = z.object({
   customerId: z.string(),
   customerName: z.string(),
   phoneNumber: z.string(),
-  totalPurchaseAmount: z.number(),
 });
+
+export type Customer = z.infer<typeof customerSchema>;
 
 /**
  * Schema for validating file item structure.
@@ -121,7 +126,14 @@ export const combinedGeminiSchema = {
           priceWithTax: { type: SchemaType.NUMBER },
           discount: { type: SchemaType.NUMBER },
         },
-        required: ["productId", "productName", "quantity", "unitPrice", "tax", "priceWithTax"],
+        required: [
+          "productId",
+          "productName",
+          "quantity",
+          "unitPrice",
+          "tax",
+          "priceWithTax",
+        ],
       },
     },
     customers: {
@@ -135,8 +147,13 @@ export const combinedGeminiSchema = {
           phoneNumber: { type: SchemaType.STRING },
           totalPurchaseAmount: { type: SchemaType.NUMBER },
         },
-        required: ["customerId", "customerName", "phoneNumber", "totalPurchaseAmount"],
+        required: [
+          "customerId",
+          "customerName",
+          "phoneNumber",
+          "totalPurchaseAmount",
+        ],
       },
     },
   },
-}; 
+};
