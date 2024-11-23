@@ -51,36 +51,39 @@ export function EditableCell<T extends string | number>({
     return val;
   };
 
-  const commonContainerClasses = cn(
-    "cursor-pointer w-full h-full", // Make container full width and height
+  // Base container classes without padding
+  const containerClasses = cn(
+    "h-full cursor-pointer",
     className
   );
 
-  const inputClasses = cn(
-    type !== "text" ? "text-right" : "text-left",
-    "w-full h-full" // Make input full width and height
+  // Text alignment based on type
+  const contentClasses = cn(
+    type !== "text" ? "text-right" : "text-left"
   );
 
-  const displayValueClasses = cn(
-      commonContainerClasses,
-      "flex items-center px-2",
-      type !== "text" ? "justify-end" : "justify-start"
-  )
-  return isEditing ? (
-    <Input
-      value={value as string | number}
-      onChange={onChange}
-      onBlur={onBlur}
-      type={type === "currency" ? "number" : type}
-      className={inputClasses}
-      autoFocus
-    />
-  ) : (
-    <div
-      className={displayValueClasses}
-      onClick={() => setIsEditing(true)}
-    >
-      {formatValue(value)}
+  return (
+    <div className={containerClasses}>
+      {isEditing ? (
+        <Input
+          value={value as string | number}
+          onChange={onChange}
+          onBlur={onBlur}
+          type={type === "currency" ? "number" : type}
+          className={cn(
+            "h-full m-0 border-0 rounded-none shadow-none focus-visible:ring-0",
+            contentClasses
+          )}
+          autoFocus
+        />
+      ) : (
+        <div
+          className={cn("h-full flex items-center", contentClasses)}
+          onClick={() => setIsEditing(true)}
+        >
+          {formatValue(value)}
+        </div>
+      )}
     </div>
   );
 }

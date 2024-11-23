@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
@@ -31,14 +30,15 @@ export const getColumns = ({
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as string}
-        row={row.index}
-        column="productName"
-        updateData={(table.options.meta as TableType<Product>).updateData}
-        type="text"
-        className="w-[200px]"
-      />
+      <div className="w-[200px]">
+        <EditableCell
+          value={getValue() as string}
+          row={row.index}
+          column="productName"
+          updateData={(table.options.meta as TableType<Product>).updateData}
+          type="text"
+        />
+      </div>
     ),
   },
   {
@@ -51,14 +51,15 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as number}
-        row={row.index}
-        column="quantity"
-        updateData={(table.options.meta as TableType<Product>).updateData}
-        type="number"
-        className="w-[100px]"
-      />
+      <div className="w-[100px]">
+        <EditableCell
+          value={getValue() as number}
+          row={row.index}
+          column="quantity"
+          updateData={(table.options.meta as TableType<Product>).updateData}
+          type="number"
+        />
+      </div>
     ),
   },
   {
@@ -71,14 +72,15 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as number}
-        row={row.index}
-        column="unitPrice"
-        updateData={(table.options.meta as TableType<Product>).updateData}
-        type="currency"
-        className="w-[120px]"
-      />
+      <div className="w-[120px]">
+        <EditableCell
+          value={getValue() as number}
+          row={row.index}
+          column="unitPrice"
+          updateData={(table.options.meta as TableType<Product>).updateData}
+          type="currency"
+        />
+      </div>
     ),
   },
   {
@@ -91,14 +93,15 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as number}
-        row={row.index}
-        column="tax"
-        updateData={(table.options.meta as TableType<Product>).updateData}
-        type="number"
-        className="w-[80px]"
-      />
+      <div className="w-[80px]">
+        <EditableCell
+          value={getValue() as number}
+          row={row.index}
+          column="tax"
+          updateData={(table.options.meta as TableType<Product>).updateData}
+          type="number"
+        />
+      </div>
     ),
   },
   {
@@ -119,7 +122,7 @@ export const getColumns = ({
         currency: "USD",
       }).format(priceWithTax);
       return (
-        <div className="w-[120px] ml-auto text-right font-medium">
+        <div className="w-[120px] text-right">
           {formatted}
         </div>
       );
