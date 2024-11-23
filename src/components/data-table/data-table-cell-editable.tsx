@@ -9,6 +9,7 @@ type UpdateDataFn<T> = (rowIndex: number, columnId: string, value: T) => void;
 
 interface EditableCellProps<T> {
   value: T;
+  formattedValue?: string;
   row: number;
   column: string;
   updateData?: UpdateDataFn<T>;

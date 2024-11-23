@@ -64,57 +64,73 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
-        title="Unit Price"
+        title="Unit Price (USD)"
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as number}
-        row={row.index}
-        column="unitPrice"
-        updateData={(table.options.meta as TableType<Product>).updateData}
-        type="currency"
-      />
-    ),
+    cell: ({ row, getValue, table }) => {
+      const amount = parseFloat(row.getValue("unitPrice"));
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+
+      return (
+        <EditableCell
+          value={amount}
+          row={row.index}
+          column="unitPrice"
+          updateData={(table.options.meta as TableType<Product>).updateData}
+          type="currency"
+        />
+      );
+    },
   },
   {
     accessorKey: "tax",
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
-        title="Tax"
+        title="Tax (USD)"
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as number}
-        row={row.index}
-        column="tax"
-        updateData={(table.options.meta as TableType<Product>).updateData}
-        type="number"
-      />
-    ),
+    cell: ({ row, getValue, table }) => {
+      const amount = parseFloat(row.getValue("tax"));
+      const formatted = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(amount);
+
+      return (
+        <EditableCell
+          value={amount}
+          row={row.index}
+          column="tax"
+          updateData={(table.options.meta as TableType<Product>).updateData}
+          type="currency"
+        />
+      );
+    },
   },
   {
     id: "priceWithTax",
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
-        title="Price with Tax"
+        title="Price with Tax (USD)"
         className="text-right"
       />
     ),
     cell: ({ row }) => {
       const unitPrice = parseFloat(row.getValue("unitPrice"));
-      const tax = row.getValue("tax") as number;
-      const priceWithTax = unitPrice * (1 + tax / 100);
+      const tax = parseFloat(row.getValue("tax"));
+      const priceWithTax = unitPrice + tax;
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
       }).format(priceWithTax);
-      return <div className="text-right">{formatted}</div>;
+      return <div className="text-right font-medium">{formatted}</div>;
     },
   },
   {
