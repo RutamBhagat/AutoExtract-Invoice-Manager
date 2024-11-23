@@ -1,22 +1,21 @@
-import { HydrateClient, api } from "@/trpc/server";
+"use client";
 
-import { auth } from "@/server/auth";
+import { DataTable } from "@/components/data-table/data-table";
+import { getColumns } from "./columns";
+import { useDataStore } from "@/stores/useDataStore";
+import { useMemo } from "react";
 
-export default async function Home() {
-  const session = await auth();
-
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
+export default function CustomersPage() {
+  const customers = useDataStore((state) => state.customers);
+  const columns = useMemo(() => getColumns(), []);
 
   return (
-    <HydrateClient>
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-      </div>
-      <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-    </HydrateClient>
+    <div className="container mx-auto py-10">
+      <DataTable
+        columns={columns}
+        data={customers}
+        filterColumn="customerName"
+      />
+    </div>
   );
 }
