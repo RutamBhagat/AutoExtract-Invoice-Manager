@@ -1,73 +1,45 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+"use client";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { JsonDisplay } from "@/components/json-display";
 import { useDataStore } from "@/stores/useDataStore";
 import { useUploadStore } from "@/stores/useUploadStore";
 
-export function StoreDebugger() {
+export default function StoreDebugger() {
   const store = useDataStore();
   const uploadStore = useUploadStore();
 
   return (
-    <Tabs defaultValue="files" className="w-[800px]">
+    <Tabs defaultValue="files" className="mx-auto w-full max-w-7xl">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="files">Files</TabsTrigger>
         <TabsTrigger value="data">Data</TabsTrigger>
       </TabsList>
 
       <TabsContent value="files">
-        <Card>
-          <CardHeader>
-            <CardTitle>File Management</CardTitle>
-            <CardDescription>
-              View and manage your uploaded files here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="max-h-[60vh] overflow-auto text-sm">
-              {JSON.stringify(
-                {
-                  files: uploadStore.files,
-                  isUploading: uploadStore.isUploading,
-                  isLoading: uploadStore.isLoading,
-                },
-                null,
-                2,
-              )}
-            </pre>
-          </CardContent>
-        </Card>
+        <JsonDisplay
+          title="File Management"
+          description="View and manage your uploaded files here."
+          data={{
+            files: uploadStore.files,
+            isUploading: uploadStore.isUploading,
+            isLoading: uploadStore.isLoading,
+          }}
+        />
       </TabsContent>
 
       <TabsContent value="data">
-        <Card>
-          <CardHeader>
-            <CardTitle>Store Data</CardTitle>
-            <CardDescription>
-              Debug view of the current store state.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="max-h-[60vh] overflow-auto text-sm">
-              {JSON.stringify(
-                {
-                  invoices: store.invoices,
-                  products: store.products,
-                  customers: store.customers,
-                  processedFiles: store.processedFiles,
-                },
-                null,
-                2,
-              )}
-            </pre>
-          </CardContent>
-        </Card>
+        <JsonDisplay
+          title="Store Data"
+          description="Debug view of the current store state."
+          data={{
+            invoices: store.invoices,
+            products: store.products,
+            customers: store.customers,
+            processedFiles: store.processedFiles,
+          }}
+        />
       </TabsContent>
     </Tabs>
   );
