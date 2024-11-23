@@ -16,7 +16,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Product } from "@/lib/validations/pdf-generate";
 import { useDataStore } from "@/stores/useDataStore";
-import { TableType } from "@/types/table"
+import { TableType } from "@/types/table";
 
 interface ProductsColumnProps {
   setEditingProduct: (product: Product) => void;
@@ -24,7 +24,7 @@ interface ProductsColumnProps {
 
 export const getColumns = ({
   setEditingProduct,
-}: ProductsColumnProps): ColumnDef<Product>[] => [
+}: ProductsColumnProps): ColumnDef<Product, string | number>[] => [
   {
     accessorKey: "productName",
     header: ({ column }) => (
@@ -37,6 +37,7 @@ export const getColumns = ({
         column="productName"
         updateData={(table.options.meta as TableType<Product>).updateData}
         type="text"
+        className="w-[200px]"
       />
     ),
   },
@@ -56,6 +57,7 @@ export const getColumns = ({
         column="quantity"
         updateData={(table.options.meta as TableType<Product>).updateData}
         type="number"
+        className="w-[100px]"
       />
     ),
   },
@@ -75,6 +77,7 @@ export const getColumns = ({
         column="unitPrice"
         updateData={(table.options.meta as TableType<Product>).updateData}
         type="currency"
+        className="w-[120px]"
       />
     ),
   },
@@ -94,6 +97,7 @@ export const getColumns = ({
         column="tax"
         updateData={(table.options.meta as TableType<Product>).updateData}
         type="number"
+        className="w-[80px]"
       />
     ),
   },
@@ -114,7 +118,11 @@ export const getColumns = ({
         style: "currency",
         currency: "USD",
       }).format(priceWithTax);
-      return <div className="text-right font-medium">{formatted}</div>;
+      return (
+        <div className="w-[120px] ml-auto text-right font-medium">
+          {formatted}
+        </div>
+      );
     },
   },
   {
