@@ -1,70 +1,86 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import React, { useEffect, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
-interface EditableCellProps {
-  value: string | number
-  row: number
-  column: string
-  updateData?: (rowIndex: number, columnId: string, value: any) => void
-  type?: "text" | "number" | "currency"
+type UpdateDataFn<T> = (rowIndex: number, columnId: string, value: T) => void;
+
+interface EditableCellProps<T> {
+  value: T;
+  row: number;
+  column: string;
+  updateData?: UpdateDataFn<T>;
+  type?: "text" | "number" | "currency";
+  className?: string;
 }
 
-export function EditableCell({
+export function EditableCell<T extends string | number>({
   value: initialValue,
   row: rowIndex,
   column: columnId,
   updateData,
   type = "text",
-}: EditableCellProps) {
-  const [value, setValue] = useState(initialValue)
-  const [isEditing, setIsEditing] = useState(false)
+  className,
+}: EditableCellProps<T>) {
+  const [value, setValue] = useState<T>(initialValue);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
+    setValue(initialValue);
+  }, [initialValue]);
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = type === "number" ? Number(e.target.value) : e.target.value
-    setValue(newValue)
-  }
+    const newValue =
+      type === "number" ? (Number(e.target.value) as T) : (e.target.value as T);
+    setValue(newValue);
+  };
 
   const onBlur = () => {
-    setIsEditing(false)
-    updateData?.(rowIndex, columnId, value)
-  }
+    setIsEditing(false);
+    updateData?.(rowIndex, columnId, value);
+  };
 
   const formatValue = (val: string | number) => {
     if (type === "currency") {
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-      }).format(Number(val))
+      }).format(Number(val));
     }
-    return val
-  }
+    return val;
+  };
 
+  const commonContainerClasses = cn(
+    "cursor-pointer w-full h-full", // Make container full width and height
+    className
+  );
+
+  const inputClasses = cn(
+    type !== "text" ? "text-right" : "text-left",
+    "w-full h-full" // Make input full width and height
+  );
+
+  const displayValueClasses = cn(
+      commonContainerClasses,
+      "flex items-center px-2",
+      type !== "text" ? "justify-end" : "justify-start"
+  )
   return isEditing ? (
     <Input
-      value={value}
+      value={value as string | number}
       onChange={onChange}
       onBlur={onBlur}
       type={type === "currency" ? "number" : type}
-      step={type === "currency" ? "0.01" : undefined}
-      className="h-8 w-full"
+      className={inputClasses}
       autoFocus
     />
   ) : (
     <div
-      className={cn(
-        "h-8 cursor-pointer px-2 py-1",
-        type !== "text" && "text-right"
-      )}
+      className={displayValueClasses}
       onClick={() => setIsEditing(true)}
     >
       {formatValue(value)}
     </div>
-  )
-} 
+  );
+}
