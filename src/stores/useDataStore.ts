@@ -18,6 +18,10 @@ interface ProcessedFile {
   fileUri: string;
   status: "success" | "error";
   error?: string;
+  // Add tracking of created entities
+  createdInvoiceIds?: string[];
+  createdProductIds?: string[];
+  createdCustomerIds?: string[];
 }
 
 /**
@@ -48,6 +52,9 @@ interface Store {
 
   processFile: (fileUri: string, mimeType: string) => Promise<void>;
   removeProcessedFile: (fileUri: string) => void;
+
+  // Add new method
+  deleteFileAndData: (fileUri: string) => void;
 }
 
 export const useDataStore = create<Store>()(
@@ -218,13 +225,28 @@ export const useDataStore = create<Store>()(
 
           const { result } = await response.json();
 
+          // Track which entities were created from this file
+          const createdInvoiceIds =
+            result.invoices?.map((i: { invoiceId: any }) => i.invoiceId) ?? [];
+          const createdProductIds =
+            result.products?.map((p: { productId: any }) => p.productId) ?? [];
+          const createdCustomerIds =
+            result.customers?.map((c: { customerId: any }) => c.customerId) ??
+            [];
+
           set((state) => ({
             invoices: [...state.invoices, ...(result.invoices ?? [])],
             products: [...state.products, ...(result.products ?? [])],
             customers: [...state.customers, ...(result.customers ?? [])],
             processedFiles: [
               ...state.processedFiles,
-              { fileUri, status: "success" },
+              {
+                fileUri,
+                status: "success",
+                createdInvoiceIds,
+                createdProductIds,
+                createdCustomerIds,
+              },
             ],
           }));
 
@@ -272,6 +294,30 @@ export const useDataStore = create<Store>()(
             invoices: [],
             products: [],
             customers: [],
+          };
+        }),
+
+      deleteFileAndData: (fileUri: string) =>
+        set((state) => {
+          const processedFile = state.processedFiles.find(
+            (f) => f.fileUri === fileUri,
+          );
+          if (!processedFile) return state;
+
+          return {
+            processedFiles: state.processedFiles.filter(
+              (f) => f.fileUri !== fileUri,
+            ),
+            // Remove all entities created by this file
+            invoices: state.invoices.filter(
+              (i) => !processedFile.createdInvoiceIds?.includes(i.invoiceId),
+            ),
+            products: state.products.filter(
+              (p) => !processedFile.createdProductIds?.includes(p.productId),
+            ),
+            customers: state.customers.filter(
+              (c) => !processedFile.createdCustomerIds?.includes(c.customerId),
+            ),
           };
         }),
     }),

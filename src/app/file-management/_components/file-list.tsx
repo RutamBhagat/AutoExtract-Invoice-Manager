@@ -41,10 +41,11 @@ export default function FileList() {
     })),
   );
 
-  const { processedFiles, processFile } = useDataStore(
+  const { processedFiles, processFile, deleteFileAndData } = useDataStore(
     useShallow((state) => ({
       processedFiles: state.processedFiles,
       processFile: state.processFile,
+      deleteFileAndData: state.deleteFileAndData,
     })),
   );
 
@@ -69,6 +70,35 @@ export default function FileList() {
     } catch (error: unknown) {
       console.error("Failed to delete file", error);
       toast.error("Failed to delete file", {
+        id: deleteToastId,
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred.",
+      });
+    }
+  };
+
+  const handleDeleteWithData = async (fileUri: string) => {
+    const deleteToastId = toast.loading("Deleting file and associated data...");
+    try {
+      const response = await fetch("/api/files/delete-files", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fileUri }),
+      });
+
+      if (!response.ok) throw new Error("Failed to delete file");
+
+      removeFile(fileUri);
+      deleteFileAndData(fileUri);
+
+      toast.success("File and data deleted successfully", {
+        id: deleteToastId,
+      });
+    } catch (error: unknown) {
+      console.error("Failed to delete file and data", error);
+      toast.error("Failed to delete file and data", {
         id: deleteToastId,
         description:
           error instanceof Error ? error.message : "An unknown error occurred.",
@@ -196,7 +226,14 @@ export default function FileList() {
                               onClick={() => handleDelete(file.fileUri)}
                             >
                               <Trash2Icon className="h-4 w-4" />
-                              <span>Delete</span>
+                              <span>Delete File</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="gap-2 text-red-600 focus:text-red-600"
+                              onClick={() => handleDeleteWithData(file.fileUri)}
+                            >
+                              <Trash2Icon className="h-4 w-4" />
+                              <span>Delete File & Data</span>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
