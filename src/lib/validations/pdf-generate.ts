@@ -43,6 +43,7 @@ export const customerSchema = z.object({
   customerId: z.string(),
   customerName: z.string(),
   phoneNumber: z.string(),
+  totalPurchaseAmount: z.number(),
 });
 
 export type Customer = z.infer<typeof customerSchema>;
