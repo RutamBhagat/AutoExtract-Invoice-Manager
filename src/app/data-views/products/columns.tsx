@@ -3,6 +3,17 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Product } from "@/lib/validations/pdf-generate"
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header"
+import { Button } from "@/components/ui/button"
+import { MoreHorizontal, Pencil, Trash } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useDataStore } from "@/stores/useDataStore"
 
 export const columns: ColumnDef<Product>[] = [
   {
@@ -59,6 +70,46 @@ export const columns: ColumnDef<Product>[] = [
         currency: "USD",
       }).format(priceWithTax)
       return <div className="text-right font-medium">{formatted}</div>
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const product = row.original
+      const removeProduct = useDataStore((state) => state.removeProduct)
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => {
+                // We'll implement this next
+                // openEditDialog(product)
+              }}
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit product
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => {
+                removeProduct(product.productId)
+              }}
+              className="text-red-600"
+            >
+              <Trash className="mr-2 h-4 w-4" />
+              Delete product
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
     },
   },
 ] 
