@@ -26,6 +26,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useDataStore } from "@/stores/useDataStore";
 import { useShallow } from "zustand/react/shallow";
@@ -63,14 +65,6 @@ export default function FileList() {
       toast.success("File deleted successfully", {
         id: deleteToastId,
         description: `The file ${fileUri} has been deleted.`,
-        action: {
-          label: "Undo",
-          onClick: () => {
-            toast("Undo not implemented yet", {
-              description: "This feature is not yet available.",
-            });
-          },
-        },
       });
     } catch (error: unknown) {
       console.error("Failed to delete file", error);
@@ -115,16 +109,22 @@ export default function FileList() {
       <CardContent className="p-6">
         <ScrollArea className="w-full rounded-md">
           {files.length === 0 ? (
-            <div className="flex h-96 flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed p-8">
-              <FileIcon className="h-12 w-12 text-slate-300" />
-              <div className="text-center">
-                <p className="text-lg font-medium">No files uploaded</p>
-                <p className="text-sm text-slate-500">
-                  Upload files to get started
-                </p>
-              </div>
+            // Skeleton Placeholder for No Files
+            <div className="flex flex-col gap-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Card key={index} className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg bg-slate-100" />
+                    <div className="min-w-0 flex-1">
+                      <Skeleton className="mb-2 h-4 w-3/4 bg-slate-100" />
+                      <Skeleton className="h-3 w-1/2 bg-slate-200" />
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
           ) : (
+            // Files List
             <div className="grid gap-4 md:grid-cols-2">
               {files.map((file) => {
                 const isProcessed = processedFiles.some(
@@ -139,7 +139,7 @@ export default function FileList() {
                     }`}
                   >
                     <CardContent className="p-4">
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
                           {getFileIcon(file.fileUri)}
                         </div>
@@ -152,9 +152,16 @@ export default function FileList() {
                                   <p className="truncate font-medium">
                                     {file.displayName}
                                   </p>
-                                  <p className="mt-0.5 text-xs text-slate-500">
+                                  <Badge
+                                    className={cn(
+                                      isProcessed
+                                        ? "bg-green-700"
+                                        : "bg-red-700",
+                                      "mt-1",
+                                    )}
+                                  >
                                     {isProcessed ? "Processed" : "Unprocessed"}
-                                  </p>
+                                  </Badge>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent>
