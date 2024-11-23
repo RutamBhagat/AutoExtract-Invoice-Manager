@@ -228,13 +228,17 @@ export default function FileList() {
                               <Trash2Icon className="h-4 w-4" />
                               <span>Delete File</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="gap-2 text-red-600 focus:text-red-600"
-                              onClick={() => handleDeleteWithData(file.fileUri)}
-                            >
-                              <Trash2Icon className="h-4 w-4" />
-                              <span>Delete File & Data</span>
-                            </DropdownMenuItem>
+                            {isProcessed && (
+                              <DropdownMenuItem
+                                className="gap-2 text-red-600 focus:text-red-600"
+                                onClick={() =>
+                                  handleDeleteWithData(file.fileUri)
+                                }
+                              >
+                                <Trash2Icon className="h-4 w-4" />
+                                <span>Delete File & Data</span>
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
