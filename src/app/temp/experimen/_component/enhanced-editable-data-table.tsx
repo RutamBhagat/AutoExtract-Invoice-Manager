@@ -14,6 +14,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ColumnDef,
+  Row,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -55,8 +56,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner"; // New import
 import { useForm } from "react-hook-form";
-import { useToast } from "@/components/ui/use-toast";
 
 const statuses = [
   { value: "pending", label: "Pending" },
@@ -66,7 +67,14 @@ const statuses = [
 ];
 
 const EnhancedEditableDataTable = () => {
-  const [data, setData] = useState([
+  interface RowData {
+    id: string;
+    amount: number | null;
+    status: string;
+    email: string;
+  }
+
+  const [data, setData] = useState<RowData[]>([
     {
       id: "m5gr84i9",
       amount: 316,
@@ -87,17 +95,16 @@ const EnhancedEditableDataTable = () => {
     },
     {
       id: "9y2x1z8w",
-      amount: 89,
       status: "failed",
       email: "alice@example.com",
+      amount: null,
     },
   ]);
 
   const [loading, setLoading] = useState(false);
-  const [editingRow, setEditingRow] = useState(null);
+  const [editingRow, setEditingRow] = useState<RowData | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [deletingRow, setDeletingRow] = useState(null);
-  const { toast } = useToast();
 
   const form = useForm({
     defaultValues: {
@@ -111,7 +118,7 @@ const EnhancedEditableDataTable = () => {
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<any> }) => {
         const status = row.getValue("status");
         return loading ? (
           <Skeleton className="h-6 w-20" />
@@ -127,7 +134,7 @@ const EnhancedEditableDataTable = () => {
                     : "bg-gray-100 text-gray-800"
             }`}
           >
-            {status || "Not set"}
+            {String(status) || "Not set"}
           </div>
         );
       },
@@ -135,7 +142,7 @@ const EnhancedEditableDataTable = () => {
     {
       accessorKey: "email",
       header: "Email",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<any> }) => {
         return loading ? (
           <Skeleton className="h-6 w-[250px]" />
         ) : (
@@ -146,7 +153,7 @@ const EnhancedEditableDataTable = () => {
     {
       accessorKey: "amount",
       header: "Amount",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<any> }) => {
         const amount = row.getValue("amount");
         if (loading) {
           return <Skeleton className="h-6 w-[100px]" />;
@@ -159,14 +166,14 @@ const EnhancedEditableDataTable = () => {
             {new Intl.NumberFormat("en-US", {
               style: "currency",
               currency: "USD",
-            }).format(amount)}
+            }).format(Number(amount))}
           </div>
         );
       },
     },
     {
       id: "actions",
-      cell: ({ row }) => {
+      cell: ({ row }: { row: Row<any> }) => {
         return loading ? (
           <Skeleton className="h-10 w-20" />
         ) : (
@@ -221,7 +228,7 @@ const EnhancedEditableDataTable = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const handleEdit = (row) => {
+  const handleEdit = (row: any) => {
     setEditingRow(row);
     form.reset({
       email: row.email || "",
@@ -231,25 +238,25 @@ const EnhancedEditableDataTable = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id: string) => {
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
       setData(data.filter((item) => item.id !== id));
       setLoading(false);
-      toast({
-        title: "Record deleted",
+      toast("Record deleted", {
         description: "The record has been successfully deleted.",
       });
     }, 1000);
   };
 
-  const onSubmit = async (formData) => {
+  const onSubmit = async (formData: { amount: string }) => {
     setLoading(true);
     // Simulate API call
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
+      if (!editingRow) return;
       setData(
         data.map((item) =>
           item.id === editingRow.id
@@ -262,18 +269,15 @@ const EnhancedEditableDataTable = () => {
         ),
       );
 
-      toast({
-        title: "Changes saved",
+      toast("Changes saved", {
         description: "Your changes have been successfully saved.",
       });
 
       setIsDialogOpen(false);
       setEditingRow(null);
     } catch (error) {
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Something went wrong. Please try again.",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
