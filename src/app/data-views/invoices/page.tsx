@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable } from "@/components/data-table/data-table";
-import { getColumns } from "./columns";
+import { getColumns } from "./_components/columns";
 import { useDataStore } from "@/stores/useDataStore";
 import { useMemo } from "react";
 

@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 
 import { DataTable } from "@/components/data-table/data-table";
-import { EditProductDialog } from "./edit-product-dialog";
+import { EditProductDialog } from "./_components/edit-product-dialog";
 import { Product } from "@/lib/validations/pdf-generate";
-import { getColumns } from "./columns";
+import { getColumns } from "./_components/columns";
 import { useDataStore } from "@/stores/useDataStore";
 
 export default function ProductsPage() {
