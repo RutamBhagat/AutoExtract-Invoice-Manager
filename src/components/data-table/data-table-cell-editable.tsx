@@ -18,9 +18,6 @@ interface EditableCellProps<T> {
 
 export function EditableCell<T extends string | number>({
   value: initialValue,
-  row: rowIndex,
-  column: columnId,
-  updateData,
   type = "text",
   className,
 }: EditableCellProps<T>) {
@@ -36,10 +33,6 @@ export function EditableCell<T extends string | number>({
     setValue(newValue);
   };
 
-  const onBlur = () => {
-    updateData?.(rowIndex, columnId, value);
-  };
-
   // Base container classes without padding
   const containerClasses = cn("h-full cursor-pointer", className);
 
@@ -47,18 +40,16 @@ export function EditableCell<T extends string | number>({
   const contentClasses = cn(type !== "text" ? "text-right" : "text-left");
 
   return (
-    <div className={containerClasses}>
-      <Input
-        value={value as string | number}
-        onChange={onChange}
-        onBlur={onBlur}
-        type={type === "currency" ? "number" : type}
-        className={cn(
-          "m-0 h-full rounded-none border-0 shadow-none focus-visible:ring-0",
-          contentClasses,
-        )}
-        autoFocus
-      />
-    </div>
+    <Input
+      value={value as string | number}
+      onChange={onChange}
+      type={type === "currency" ? "number" : type}
+      className={cn(
+        "m-0 h-full rounded-none border-0 shadow-none focus-visible:ring-0",
+        contentClasses,
+        containerClasses,
+      )}
+      autoFocus
+    />
   );
 }
