@@ -15,7 +15,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useDataStore } from "@/stores/useDataStore"
 
-export const columns: ColumnDef<Product>[] = [
+interface ProductsColumnProps {
+  setEditingProduct: (product: Product) => void
+}
+
+export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDef<Product>[] => [
   {
     accessorKey: "productName",
     header: ({ column }) => (
@@ -89,10 +93,7 @@ export const columns: ColumnDef<Product>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => {
-                // We'll implement this next
-                // openEditDialog(product)
-              }}
+              onClick={() => setEditingProduct(product)}
             >
               <Pencil className="mr-2 h-4 w-4" />
               Edit product
