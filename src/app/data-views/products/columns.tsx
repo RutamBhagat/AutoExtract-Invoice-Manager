@@ -23,7 +23,7 @@ export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDe
   {
     accessorKey: "productName",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+      <DataTableColumnHeader column={column} title="Name" className="text-left" />
     ),
   },
   {
@@ -39,7 +39,7 @@ export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDe
   {
     accessorKey: "unitPrice",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Unit Price" />
+      <DataTableColumnHeader column={column} title="Unit Price" className="text-right" />
     ),
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("unitPrice"))
@@ -53,7 +53,7 @@ export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDe
   {
     accessorKey: "tax",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Tax" />
+      <DataTableColumnHeader column={column} title="Tax" className="text-right" />
     ),
     cell: ({ row }) => {
       const tax = row.getValue("tax") as number
@@ -63,7 +63,7 @@ export const getColumns = ({ setEditingProduct }: ProductsColumnProps): ColumnDe
   {
     id: "priceWithTax",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Price with Tax" />
+      <DataTableColumnHeader column={column} title="Price with Tax" className="text-right" />
     ),
     cell: ({ row }) => {
       const unitPrice = parseFloat(row.getValue("unitPrice"))
