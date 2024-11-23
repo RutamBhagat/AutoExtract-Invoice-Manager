@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
   RowData,
-} from "@tanstack/react-table"
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -22,17 +22,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 
-import { DataTablePagination } from "./data-table-pagination"
-import { DataTableToolbar } from "./data-table-toolbar"
-import { useDataStore } from "@/stores/useDataStore"
-import { TableType } from "@/types/table"
+import { DataTablePagination } from "./data-table-pagination";
+import { DataTableToolbar } from "./data-table-toolbar";
+import { useDataStore } from "@/stores/useDataStore";
+import { TableType } from "@/types/table";
 
 interface DataTableProps<TData extends RowData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-  filterColumn?: string
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  filterColumn?: string;
 }
 
 export function DataTable<TData extends RowData, TValue>({
@@ -40,10 +40,13 @@ export function DataTable<TData extends RowData, TValue>({
   data,
   filterColumn,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
     data,
@@ -64,18 +67,18 @@ export function DataTable<TData extends RowData, TValue>({
     },
     meta: {
       updateData: (rowIndex: number, columnId: string, value: unknown) => {
-        const row = data[rowIndex] as any
+        const row = data[rowIndex] as any;
         const updatedData = {
           ...row,
           [columnId]: value,
-        }
-        
-        if ('productId' in row) {
-          useDataStore.getState().updateProduct(row.productId, updatedData)
+        };
+
+        if ("productId" in row) {
+          useDataStore.getState().updateProduct(row.productId, updatedData);
         }
       },
     } satisfies TableType<TData>,
-  })
+  });
 
   return (
     <div className="space-y-4">
@@ -86,15 +89,12 @@ export function DataTable<TData extends RowData, TValue>({
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead 
-                    key={header.id}
-                    className="border-x px-4 py-2"
-                  >
+                  <TableHead key={header.id} className="border-x px-4 py-2">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -109,13 +109,10 @@ export function DataTable<TData extends RowData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell 
-                      key={cell.id}
-                      className="border-x px-4 py-2"
-                    >
+                    <TableCell key={cell.id} className="border-x">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -136,5 +133,5 @@ export function DataTable<TData extends RowData, TValue>({
       </div>
       <DataTablePagination table={table} />
     </div>
-  )
-} 
+  );
+}

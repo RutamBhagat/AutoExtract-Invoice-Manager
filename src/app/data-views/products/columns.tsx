@@ -9,13 +9,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Product } from "@/lib/validations/pdf-generate";
-import { useDataStore } from "@/stores/useDataStore";
 import { TableType } from "@/types/table";
+import { useDataStore } from "@/stores/useDataStore";
 
 interface ProductsColumnProps {
   setEditingProduct: (product: Product) => void;
@@ -30,15 +31,13 @@ export const getColumns = ({
       <DataTableColumnHeader column={column} title="Name" />
     ),
     cell: ({ row, getValue, table }) => (
-      <div className="w-[200px]">
-        <EditableCell
-          value={getValue() as string}
-          row={row.index}
-          column="productName"
-          updateData={(table.options.meta as TableType<Product>).updateData}
-          type="text"
-        />
-      </div>
+      <EditableCell
+        value={getValue() as string}
+        row={row.index}
+        column="productName"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="text"
+      />
     ),
   },
   {
@@ -51,15 +50,13 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => (
-      <div className="w-[100px]">
-        <EditableCell
-          value={getValue() as number}
-          row={row.index}
-          column="quantity"
-          updateData={(table.options.meta as TableType<Product>).updateData}
-          type="number"
-        />
-      </div>
+      <EditableCell
+        value={getValue() as number}
+        row={row.index}
+        column="quantity"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="number"
+      />
     ),
   },
   {
@@ -72,15 +69,13 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => (
-      <div className="w-[120px]">
-        <EditableCell
-          value={getValue() as number}
-          row={row.index}
-          column="unitPrice"
-          updateData={(table.options.meta as TableType<Product>).updateData}
-          type="currency"
-        />
-      </div>
+      <EditableCell
+        value={getValue() as number}
+        row={row.index}
+        column="unitPrice"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="currency"
+      />
     ),
   },
   {
@@ -93,15 +88,13 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => (
-      <div className="w-[80px]">
-        <EditableCell
-          value={getValue() as number}
-          row={row.index}
-          column="tax"
-          updateData={(table.options.meta as TableType<Product>).updateData}
-          type="number"
-        />
-      </div>
+      <EditableCell
+        value={getValue() as number}
+        row={row.index}
+        column="tax"
+        updateData={(table.options.meta as TableType<Product>).updateData}
+        type="number"
+      />
     ),
   },
   {
@@ -121,11 +114,7 @@ export const getColumns = ({
         style: "currency",
         currency: "USD",
       }).format(priceWithTax);
-      return (
-        <div className="w-[120px] text-right">
-          {formatted}
-        </div>
-      );
+      return <div className="text-right">{formatted}</div>;
     },
   },
   {
