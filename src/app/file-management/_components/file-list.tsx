@@ -54,13 +54,24 @@ export default function FileList() {
         body: JSON.stringify({ fileUri }),
       });
 
-      if (!response.ok) throw new Error("Failed to delete file");
+      const data = await response.json();
 
-      removeFile(fileUri);
-      toast.success("File deleted successfully", {
-        id: deleteToastId,
-        description: `The file ${fileUri} has been deleted.`,
-      });
+      // Remove from store if delete was successful OR if file wasn't found
+      if (response.ok || (response.status === 404 && data.fileNotFound)) {
+        removeFile(fileUri);
+        toast.success(
+          response.ok ? "File deleted successfully" : "File removed from list",
+          {
+            id: deleteToastId,
+            description: response.ok
+              ? `The file ${fileUri} has been deleted.`
+              : `The file was not found but has been removed from your list.`,
+          },
+        );
+        return;
+      }
+
+      throw new Error(data.error || "Failed to delete file");
     } catch (error: unknown) {
       console.error("Failed to delete file", error);
       toast.error("Failed to delete file", {
@@ -82,14 +93,28 @@ export default function FileList() {
         body: JSON.stringify({ fileUri }),
       });
 
-      if (!response.ok) throw new Error("Failed to delete file");
+      const data = await response.json();
 
-      removeFile(fileUri);
-      deleteFileAndData(fileUri);
+      // Remove from stores if delete was successful OR if file wasn't found
+      if (response.ok || (response.status === 404 && data.fileNotFound)) {
+        removeFile(fileUri);
+        deleteFileAndData(fileUri);
 
-      toast.success("File and data deleted successfully", {
-        id: deleteToastId,
-      });
+        toast.success(
+          response.ok
+            ? "File and data deleted successfully"
+            : "File and data removed",
+          {
+            id: deleteToastId,
+            description: response.ok
+              ? "The file and its associated data have been deleted."
+              : "The file was not found but has been removed from your list.",
+          },
+        );
+        return;
+      }
+
+      throw new Error(data.error || "Failed to delete file and data");
     } catch (error: unknown) {
       console.error("Failed to delete file and data", error);
       toast.error("Failed to delete file and data", {
