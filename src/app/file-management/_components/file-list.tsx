@@ -44,7 +44,11 @@ export default function FileList() {
   );
 
   const handleDelete = async (fileUri: string) => {
-    const deleteToastId = toast.loading("Deleting file...");
+    const fileName = files.find(f => f.fileUri === fileUri)?.displayName || fileUri;
+    const deleteToastId = toast.loading("Deleting file...", {
+      description: `Removing ${fileName}`
+    });
+
     try {
       const response = await fetch("/api/files/delete-files", {
         method: "DELETE",
@@ -59,15 +63,12 @@ export default function FileList() {
       // Remove from store if delete was successful OR if file wasn't found
       if (response.ok || (response.status === 404 && data.fileNotFound)) {
         removeFile(fileUri);
-        toast.success(
-          response.ok ? "File deleted successfully" : "File removed from list",
-          {
-            id: deleteToastId,
-            description: response.ok
-              ? `The file ${fileUri} has been deleted.`
-              : `The file was not found but has been removed from your list.`,
-          },
-        );
+        toast.success("File removed", {
+          id: deleteToastId,
+          description: response.ok 
+            ? `${fileName} has been deleted successfully`
+            : `${fileName} has been removed from your list`,
+        });
         return;
       }
 
@@ -76,14 +77,19 @@ export default function FileList() {
       console.error("Failed to delete file", error);
       toast.error("Failed to delete file", {
         id: deleteToastId,
-        description:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+        description: error instanceof Error 
+          ? `Error: ${error.message}`
+          : "There was a problem deleting the file. Please try again.",
       });
     }
   };
 
   const handleDeleteWithData = async (fileUri: string) => {
-    const deleteToastId = toast.loading("Deleting file and associated data...");
+    const fileName = files.find(f => f.fileUri === fileUri)?.displayName || fileUri;
+    const deleteToastId = toast.loading("Deleting file and data...", {
+      description: `Removing ${fileName} and all associated data`
+    });
+
     try {
       const response = await fetch("/api/files/delete-files", {
         method: "DELETE",
@@ -100,17 +106,12 @@ export default function FileList() {
         removeFile(fileUri);
         deleteFileAndData(fileUri);
 
-        toast.success(
-          response.ok
-            ? "File and data deleted successfully"
-            : "File and data removed",
-          {
-            id: deleteToastId,
-            description: response.ok
-              ? "The file and its associated data have been deleted."
-              : "The file was not found but has been removed from your list.",
-          },
-        );
+        toast.success("File and data removed", {
+          id: deleteToastId,
+          description: response.ok
+            ? `${fileName} and all associated data have been deleted`
+            : `${fileName} and its data have been removed from your list`,
+        });
         return;
       }
 
@@ -119,14 +120,43 @@ export default function FileList() {
       console.error("Failed to delete file and data", error);
       toast.error("Failed to delete file and data", {
         id: deleteToastId,
-        description:
-          error instanceof Error ? error.message : "An unknown error occurred.",
+        description: error instanceof Error
+          ? `Error: ${error.message}`
+          : "There was a problem deleting the file and its data. Please try again.",
       });
     }
   };
 
   const handleGenerate = async (fileUri: string, mimeType: string) => {
-    await processFile(fileUri, mimeType);
+    const toastId = toast.loading(`Processing file...`, {
+      description: "Extracting data from your document",
+    });
+    
+    try {
+      await processFile(fileUri, mimeType);
+      toast.success("File processed successfully", {
+        id: toastId,
+        description: "All data has been extracted and validated",
+      });
+    } catch (error: unknown) {
+      let errorMessage = "An error occurred while processing the file";
+      let description = "Please try again or contact support if the issue persists";
+
+      if (error instanceof Error) {
+        if (error.message.includes("schema validation")) {
+          errorMessage = "Document validation failed";
+          description = "The document structure doesn't match the expected format";
+        } else if (error.message.includes("parse")) {
+          errorMessage = "Document parsing failed";
+          description = "Unable to extract structured data from the document";
+        }
+      }
+
+      toast.error(errorMessage, {
+        id: toastId,
+        description,
+      });
+    }
   };
 
   const getFileIcon = (fileUri: string) => {

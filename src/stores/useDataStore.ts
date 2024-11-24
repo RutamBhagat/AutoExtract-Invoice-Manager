@@ -18,7 +18,11 @@ type Customer = z.infer<typeof customerSchema>;
 interface ProcessedFile {
   fileUri: string;
   status: "success" | "error";
-  error?: string;
+  error?: {
+    message: string;
+    details?: string;
+    code?: string;
+  };
   // Add tracking of created entities
   createdInvoiceIds?: string[];
   createdProductIds?: string[];
@@ -51,7 +55,17 @@ interface Store {
   setProducts: (products: Product[]) => void;
   setCustomers: (customers: Customer[]) => void;
 
-  processFile: (fileUri: string, mimeType: string) => Promise<void>;
+  processFile: (
+    fileUri: string,
+    mimeType: string,
+  ) => Promise<{
+    success: boolean;
+    error?: {
+      message: string;
+      details?: string;
+      code?: string;
+    };
+  }>;
   removeProcessedFile: (fileUri: string) => void;
 
   // Add new method
@@ -215,13 +229,20 @@ export const useDataStore = create<Store>()(
             (f) => f.fileUri === fileUri && f.status === "success",
           )
         ) {
-          return;
+          return {
+            success: false,
+            error: { message: "File already processed" },
+          };
         }
 
         // Only process PDF files for now
         if (mimeType !== "application/pdf") {
-          toast.error("Only PDF files can be processed at this time.");
-          return;
+          const error = {
+            message: "Invalid file type",
+            details: "Only PDF files can be processed at this time",
+            code: "INVALID_FILE_TYPE",
+          };
+          return { success: false, error };
         }
 
         const toastId = toast.loading("Processing file...");
@@ -238,8 +259,27 @@ export const useDataStore = create<Store>()(
             }),
           });
 
+          const data = await response.json();
+
           if (!response.ok) {
-            throw new Error("Failed to process file");
+            const error = {
+              message: data.error || "Failed to process file",
+              details: data.details || "An unexpected error occurred",
+              code: data.code || "PROCESSING_ERROR",
+            };
+
+            set((state) => ({
+              processedFiles: [
+                ...state.processedFiles,
+                {
+                  fileUri,
+                  status: "error",
+                  error,
+                },
+              ],
+            }));
+
+            return { success: false, error };
           }
 
           const { result } = await response.json();
@@ -292,8 +332,14 @@ export const useDataStore = create<Store>()(
           toast.success("File processed successfully", {
             id: toastId,
           });
+
+          return { success: true };
         } catch (error) {
-          console.error("File processing error:", error);
+          const errorDetails = {
+            message: error instanceof Error ? error.message : "Unknown error",
+            details: "Failed to communicate with the server",
+            code: "NETWORK_ERROR",
+          };
 
           set((state) => ({
             processedFiles: [
@@ -301,7 +347,7 @@ export const useDataStore = create<Store>()(
               {
                 fileUri,
                 status: "error",
-                error: error instanceof Error ? error.message : "Unknown error",
+                error: errorDetails,
               },
             ],
           }));
@@ -311,6 +357,8 @@ export const useDataStore = create<Store>()(
             description:
               error instanceof Error ? error.message : "Unknown error",
           });
+
+          return { success: false, error: errorDetails };
         }
       },
 
