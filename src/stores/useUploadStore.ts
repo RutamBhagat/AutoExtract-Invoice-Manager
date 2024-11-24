@@ -1,4 +1,3 @@
-import { createJSONStorage, persist } from "zustand/middleware";
 import { create } from "zustand";
 
 /**
@@ -54,61 +53,31 @@ const fetchInitialData = async (): Promise<UploadedFile[]> => {
   }
 };
 
-export const useUploadStore = create<UploadStore>()(
-  persist(
-    (set) => ({
-      files: [],
-      isUploading: false,
-      isLoading: true,
+export const useUploadStore = create<UploadStore>()((set) => ({
+  files: [],
+  isUploading: false,
+  isLoading: true,
 
-      setFiles: (files) => set({ files }),
-      
-      addFile: (file) =>
-        set((state) => ({
-          files: [...state.files, file],
-        })),
-      
-      clearFiles: () => set({ files: [] }),
-      
-      setUploading: (isUploading) => set({ isUploading }),
-      
-      removeFile: (fileUri) =>
-        set((state) => ({
-          files: state.files.filter(
-            (file) => file.fileUri !== fileUri,
-          ),
-        })),
-
-      /**
-       * Fetches the list of files from the server and updates the store
-       * Handles loading states and error cases
-       */
-      fetchFiles: async () => {
-        set({ isLoading: true });
-        try {
-          const files = await fetchInitialData();
-          set({ files });
-        } catch (error) {
-          console.error("Failed to fetch files:", error);
-        } finally {
-          set({ isLoading: false });
-        }
-      },
-    }),
-    {
-      name: "upload-store",
-      storage: createJSONStorage(() =>
-        typeof window !== "undefined" ? localStorage : undefined!,
-      ),
-      partialize: (state) => ({ files: state.files }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          void fetchInitialData().then((files) => {
-            state.setFiles(files);
-            state.isLoading = false;
-          });
-        }
-      },
+  setFiles: (files) => set({ files }),
+  addFile: (file) =>
+    set((state) => ({
+      files: [...state.files, file],
+    })),
+  clearFiles: () => set({ files: [] }),
+  setUploading: (isUploading) => set({ isUploading }),
+  removeFile: (fileUri) =>
+    set((state) => ({
+      files: state.files.filter((file) => file.fileUri !== fileUri),
+    })),
+  fetchFiles: async () => {
+    set({ isLoading: true });
+    try {
+      const files = await fetchInitialData();
+      set({ files });
+    } catch (error) {
+      console.error("Failed to fetch files:", error);
+    } finally {
+      set({ isLoading: false });
     }
-  )
-); 
+  },
+}));
