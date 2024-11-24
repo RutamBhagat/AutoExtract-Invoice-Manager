@@ -47,8 +47,10 @@ export default function FileList() {
   );
 
   useEffect(() => {
-    setFiles([]);
-    void fetchFiles();
+    const getdata = async () => {
+      await fetchFiles();
+    };
+    getdata();
   }, [fetchFiles]);
 
   const handleDelete = async (fileUri: string) => {

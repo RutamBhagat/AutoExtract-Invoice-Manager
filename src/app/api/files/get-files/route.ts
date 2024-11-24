@@ -4,20 +4,6 @@ import { consola } from "consola";
 import { env } from "@/env";
 
 /**
- * Custom error class for file listing errors
- */
-class FileListingError extends Error {
-  constructor(
-    message: string,
-    public cause?: unknown,
-    public status?: number,
-  ) {
-    super(message);
-    this.name = "FileListingError";
-  }
-}
-
-/**
  * Creates a standardized error response
  */
 function createErrorResponse(
@@ -62,10 +48,17 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ files: [] });
     }
 
+    const files = listFilesResponse.files.map((file) => ({
+      uri: file.uri,
+      name: file.name,
+      displayName: file.displayName,
+      mimeType: file.mimeType,
+    }));
+
     consola.info(
-      `Successfully retrieved ${listFilesResponse.files.length} files in request ${requestId}`,
+      `Successfully retrieved ${files.length} files in request ${requestId}`,
     );
-    return NextResponse.json({ files: listFilesResponse.files });
+    return NextResponse.json({ files });
   } catch (error: any) {
     // Handle specific API error statuses if available
     if (error?.status === 403 || error?.statusText === "Forbidden") {

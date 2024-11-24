@@ -7,6 +7,7 @@ interface UploadedFile {
   fileUri: string;
   displayName: string;
   mimeType: string;
+  name: string; // Add name field
 }
 
 /**
@@ -35,7 +36,12 @@ const fetchInitialData = async (): Promise<UploadedFile[]> => {
     const response = await fetch("/api/files/get-files");
     const data = (await response.json()) as {
       error: string;
-      files: { uri: string; displayName: string; mimeType: string }[];
+      files: {
+        uri: string;
+        displayName: string;
+        mimeType: string;
+        name: string;
+      }[];
     };
 
     if (!response.ok) {
@@ -46,6 +52,7 @@ const fetchInitialData = async (): Promise<UploadedFile[]> => {
       fileUri: file.uri,
       displayName: file.displayName,
       mimeType: file.mimeType,
+      name: file.name,
     }));
   } catch (error) {
     console.error("Failed to fetch initial files:", error);

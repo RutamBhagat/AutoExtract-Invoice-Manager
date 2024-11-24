@@ -81,24 +81,53 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     consola.info(`Attempting to delete file: ${fileUri}`);
 
     try {
-      await fileManager.deleteFile(fileUri);
-      consola.success(`Successfully deleted file: ${fileUri}`);
+      const files = await fileManager.listFiles();
+      const fileToDelete = files.files.find((file) => file.uri === fileUri);
 
-      return NextResponse.json({
-        success: true,
-        message: "File deleted successfully",
-        fileUri,
-      });
-    } catch (error: any) {
-      // Check if error is a 404
-      if (error?.status === 404 || error?.statusText === "Not Found") {
+      if (!fileToDelete) {
         consola.warn(`File not found: ${fileUri}`);
         return createErrorResponse("File not found", 404, true);
       }
 
-      throw new FileDeletionError(
-        "Failed to delete file from Google AI service",
-        error,
+      try {
+        await fileManager.deleteFile(fileToDelete.name); // Use name instead of URI
+        consola.success(`Successfully deleted file: ${fileUri}`);
+
+        return NextResponse.json({
+          success: true,
+          message: "File deleted successfully",
+          fileUri,
+        });
+      } catch (error: any) {
+        // Check if error is a 404
+        if (error?.status === 404 || error?.statusText === "Not Found") {
+          consola.warn(`File not found: ${fileUri}`);
+          return createErrorResponse("File not found", 404, true);
+        }
+
+        throw new FileDeletionError(
+          "Failed to delete file from Google AI service",
+          error,
+        );
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const validationError = error.errors[0]?.message || "Validation failed";
+        consola.warn(`Validation error in request ${requestId}:`, error);
+        return createErrorResponse(validationError, 400);
+      }
+
+      if (error instanceof FileDeletionError) {
+        consola.error(`File deletion error in request ${requestId}:`, {
+          message: error.message,
+          cause: error.cause,
+        });
+        return createErrorResponse(error.message, error.status || 500);
+      }
+
+      consola.error(`Unexpected error in request ${requestId}:`, error);
+      return createErrorResponse(
+        "An unexpected error occurred while processing your request",
       );
     }
   } catch (error) {
