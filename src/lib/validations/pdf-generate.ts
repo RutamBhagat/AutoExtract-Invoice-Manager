@@ -1,11 +1,14 @@
 import { SchemaType } from "@google/generative-ai";
+import { validateId } from "../ids/ids";
 import { z } from "zod";
 
 /**
  * Schema for validating individual invoice data.
  */
 export const invoiceSchema = z.object({
-  invoiceId: z.string(),
+  invoiceId: z.string().refine(validateId, {
+    message: "Invalid invoice ID format",
+  }),
   serialNumber: z.number().nullable(),
   customerId: z.string(),
   customerName: z.string(),
@@ -26,7 +29,9 @@ export type Invoice = z.infer<typeof invoiceSchema>;
  * Schema for validating individual product data.
  */
 export const productSchema = z.object({
-  productId: z.string(),
+  productId: z.string().refine(validateId, {
+    message: "Invalid product ID format",
+  }),
   productName: z.string(),
   quantity: z.number().nullable(),
   unitPrice: z.number().nullable(),
@@ -42,7 +47,9 @@ export type Product = z.infer<typeof productSchema>;
  * Schema for validating individual customer data.
  */
 export const customerSchema = z.object({
-  customerId: z.string(),
+  customerId: z.string().refine(validateId, {
+    message: "Invalid customer ID format",
+  }),
   customerName: z.string(),
   phoneNumber: z.string().nullable(),
   totalPurchaseAmount: z.number().nullable(),

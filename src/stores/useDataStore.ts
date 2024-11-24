@@ -6,6 +6,7 @@ import {
 
 import { EXTRACTION_PROMPT } from "../lib/constants/extraction-prompt";
 import { create } from "zustand";
+import { generateId } from "@/lib/ids/ids";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -67,17 +68,35 @@ export const useDataStore = create<Store>()(
 
       addInvoice: (invoice) =>
         set((state) => ({
-          invoices: [...state.invoices, invoice],
+          invoices: [
+            ...state.invoices,
+            {
+              ...invoice,
+              invoiceId: invoice.invoiceId || generateId("invoice"),
+            },
+          ],
         })),
 
       addProduct: (product) =>
         set((state) => ({
-          products: [...state.products, product],
+          products: [
+            ...state.products,
+            {
+              ...product,
+              productId: product.productId || generateId("product"),
+            },
+          ],
         })),
 
       addCustomer: (customer) =>
         set((state) => ({
-          customers: [...state.customers, customer],
+          customers: [
+            ...state.customers,
+            {
+              ...customer,
+              customerId: customer.customerId || generateId("customer"),
+            },
+          ],
         })),
 
       removeInvoice: (invoiceId) =>
@@ -114,8 +133,8 @@ export const useDataStore = create<Store>()(
                   // Calculate priceWithTax whenever relevant fields change
                   priceWithTax:
                     updates.unitPrice !== undefined || updates.tax !== undefined
-                      ? (updates.unitPrice ?? product.unitPrice) +
-                        (updates.tax ?? product.tax)
+                      ? (updates.unitPrice ?? product?.unitPrice ?? 0) +
+                        (updates.tax ?? product.tax ?? 0)
                       : product.priceWithTax,
                 }
               : product,
@@ -131,8 +150,8 @@ export const useDataStore = create<Store>()(
                   tax: updates.tax ?? invoice.tax,
                   // Update total amount if price changes
                   totalAmount: updates.unitPrice
-                    ? updates.unitPrice * invoice.quantity +
-                      (updates.tax ?? invoice.tax)
+                    ? updates.unitPrice * (invoice.quantity ?? 0) +
+                      (updates.tax ?? invoice.tax ?? 0)
                     : invoice.totalAmount,
                 }
               : invoice,
@@ -234,10 +253,30 @@ export const useDataStore = create<Store>()(
             result.customers?.map((c: { customerId: any }) => c.customerId) ??
             [];
 
+          // Ensure all entities have valid IDs before saving
+          const processedResult = {
+            invoices:
+              result.invoices?.map((invoice: { invoiceId: any }) => ({
+                ...invoice,
+                invoiceId: invoice.invoiceId || generateId("invoice"),
+              })) ?? [],
+            products:
+              result.products?.map((product: { productId: any }) => ({
+                ...product,
+                productId: product.productId || generateId("product"),
+              })) ?? [],
+            customers:
+              result.customers?.map((customer: { customerId: any }) => ({
+                ...customer,
+                customerId: customer.customerId || generateId("customer"),
+              })) ?? [],
+          };
+
+          // Update state with processed results
           set((state) => ({
-            invoices: [...state.invoices, ...(result.invoices ?? [])],
-            products: [...state.products, ...(result.products ?? [])],
-            customers: [...state.customers, ...(result.customers ?? [])],
+            invoices: [...state.invoices, ...processedResult.invoices],
+            products: [...state.products, ...processedResult.products],
+            customers: [...state.customers, ...processedResult.customers],
             processedFiles: [
               ...state.processedFiles,
               {
