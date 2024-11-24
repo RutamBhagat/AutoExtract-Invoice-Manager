@@ -149,7 +149,7 @@ export const getColumns = (): ColumnDef<Invoice, string | number>[] => [
       />
     ),
     cell: ({ row }) => (
-      <div className="text-right">
+      <div className="text-right font-medium">
         {new Date(row.getValue("date")).toLocaleDateString()}
       </div>
     ),
