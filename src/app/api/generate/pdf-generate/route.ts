@@ -65,7 +65,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { files, prompt } = validation.data;
 
-    // Prepare the generative AI model
     const model = genAI.getGenerativeModel({
       model: env.MODEL_NAME,
       generationConfig: {
@@ -79,38 +78,43 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }));
 
     try {
-      // Generate content
+      // Generate content with explicit JSON formatting instruction
       const generateContentResult = await model.generateContent([
-        { text: prompt },
+        {
+          text: prompt,
+        },
         ...fileParts,
       ]);
 
-      const responseText = await generateContentResult.response.text();
+      // Get response as structured data
+      const response = generateContentResult.response.text();
+      consola.debug(`Raw Gemini response for ${requestId}:`, response);
 
       try {
-        // Parse and validate the response JSON
-        const responseJson = JSON.parse(responseText);
+        // Attempt to parse and validate JSON
+        const responseJson = JSON.parse(response.trim());
         const validationResult = combinedZodSchema.safeParse(responseJson);
 
         if (!validationResult.success) {
           consola.warn(
-            `Validation failed for Gemini response in request ${requestId}:`,
+            `Schema validation failed for ${requestId}:`,
             validationResult.error,
           );
           return createErrorResponse(
-            "Invalid structured content format from Gemini",
+            "Response did not match expected schema",
             400,
           );
         }
 
-        consola.success(
-          `Content generated successfully for request ${requestId}`,
-        );
+        consola.success(`Content generated successfully for ${requestId}`);
         return NextResponse.json({ result: validationResult.data });
       } catch (jsonError) {
-        consola.error(`JSON parsing error in request ${requestId}:`, jsonError);
+        consola.error(`JSON parsing failed for ${requestId}:`, {
+          error: jsonError,
+          response,
+        });
         throw new ContentGenerationError(
-          "Invalid JSON response from Gemini",
+          "Failed to parse Gemini response as JSON",
           jsonError,
         );
       }

@@ -37,4 +37,5 @@ Example output format:
 }
 
 Process the document and maintain all relationships even with incomplete data.
+IMPORTANT: You must respond with valid JSON only, following the exact schema provided. Do not include any explanatory text or markdown formatting.
 `;
