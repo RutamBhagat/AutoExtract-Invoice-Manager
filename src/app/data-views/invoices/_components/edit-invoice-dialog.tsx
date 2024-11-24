@@ -66,7 +66,7 @@ export function EditInvoiceDialog({
                 <FormItem>
                   <FormLabel>Serial Number</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} value={field.value ?? 0} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,7 +108,10 @@ export function EditInvoiceDialog({
                     <Input
                       type="number"
                       {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value ?? ""}
+                      onChange={(e) =>
+                        field.onChange(Number(e.target.value) || 0)
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -126,6 +129,7 @@ export function EditInvoiceDialog({
                       type="number"
                       step="0.01"
                       {...field}
+                      value={field.value ?? 0}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
@@ -144,6 +148,7 @@ export function EditInvoiceDialog({
                       type="number"
                       step="0.01"
                       {...field}
+                      value={field.value ?? 0}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>

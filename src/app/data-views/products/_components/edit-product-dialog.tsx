@@ -1,18 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Product, productSchema } from "@/lib/validations/pdf-generate"
-import { useDataStore } from "@/stores/useDataStore"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -20,14 +14,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { toast } from "sonner"
+} from "@/components/ui/form";
+import { Product, productSchema } from "@/lib/validations/pdf-generate";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { useDataStore } from "@/stores/useDataStore";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface EditProductDialogProps {
-  product: Product
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  product: Product;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function EditProductDialog({
@@ -35,22 +35,22 @@ export function EditProductDialog({
   open,
   onOpenChange,
 }: EditProductDialogProps) {
-  const updateProduct = useDataStore((state) => state.updateProduct)
-  
+  const updateProduct = useDataStore((state) => state.updateProduct);
+
   const form = useForm<Product>({
     resolver: zodResolver(productSchema),
     defaultValues: product,
-  })
+  });
 
   const onSubmit = async (data: Product) => {
     try {
-      updateProduct(product.productId, data)
-      toast.success("Product updated successfully")
-      onOpenChange(false)
+      updateProduct(product.productId, data);
+      toast.success("Product updated successfully");
+      onOpenChange(false);
     } catch (error) {
-      toast.error("Failed to update product")
+      toast.error("Failed to update product");
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -80,10 +80,11 @@ export function EditProductDialog({
                 <FormItem>
                   <FormLabel>Quantity</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
-                      onChange={e => field.onChange(Number(e.target.value))}
+                    <Input
+                      type="number"
+                      {...field}
+                      value={field.value ?? 0}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
                   <FormMessage />
@@ -97,11 +98,12 @@ export function EditProductDialog({
                 <FormItem>
                   <FormLabel>Unit Price</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       step="0.01"
-                      {...field} 
-                      onChange={e => field.onChange(Number(e.target.value))}
+                      {...field}
+                      value={field.value ?? 0}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
                   <FormMessage />
@@ -115,11 +117,12 @@ export function EditProductDialog({
                 <FormItem>
                   <FormLabel>Tax (%)</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       step="0.1"
-                      {...field} 
-                      onChange={e => field.onChange(Number(e.target.value))}
+                      {...field}
+                      value={field.value ?? 0}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
                     />
                   </FormControl>
                   <FormMessage />
@@ -140,5 +143,5 @@ export function EditProductDialog({
         </Form>
       </DialogContent>
     </Dialog>
-  )
-} 
+  );
+}

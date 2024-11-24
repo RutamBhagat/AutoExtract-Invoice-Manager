@@ -66,7 +66,7 @@ export function EditCustomerDialog({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -79,7 +79,7 @@ export function EditCustomerDialog({
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} value={field.value ?? ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -97,6 +97,7 @@ export function EditCustomerDialog({
                       step="0.01"
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value ?? ""}
                     />
                   </FormControl>
                   <FormMessage />
