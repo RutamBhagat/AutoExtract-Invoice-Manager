@@ -1,6 +1,5 @@
 .
 ├── .env.example
-├── .eslintrc.cjs
 ├── .github
 │   ├── challenge.md
 │   ├── chat-engineering-requirements-diagram.md
@@ -19,6 +18,7 @@
 ├── README.md
 ├── bun.lockb
 ├── components.json
+├── eslint.json
 ├── next.config.js
 ├── package.json
 ├── postcss.config.js
@@ -26,37 +26,110 @@
 ├── prisma
 │   └── schema.prisma
 ├── public
-│   └── favicon.ico
+│   ├── favicon.ico
+│   └── uploads
 ├── src
 │   ├── app
-│   │   ├── _components
+│   │   ├── \_components
 │   │   │   └── post.tsx
 │   │   ├── api
 │   │   │   ├── auth
 │   │   │   │   └── [...nextauth]
-│   │   │   │       └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── files
+│   │   │   │   ├── delete-files
+│   │   │   │   │   └── route.ts
+│   │   │   │   ├── get-files
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── post-files
+│   │   │   │   └── route.ts
+│   │   │   ├── generate
+│   │   │   │   └── pdf-generate
+│   │   │   │   └── route.ts
 │   │   │   └── trpc
-│   │   │       └── [trpc]
-│   │   │           └── route.ts
-│   │   ├── home
+│   │   │   └── [trpc]
+│   │   │   └── route.ts
+│   │   ├── data-views
+│   │   │   ├── customers
+│   │   │   │   ├── \_components
+│   │   │   │   │   ├── columns.tsx
+│   │   │   │   │   └── edit-customer-dialog.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── invoices
+│   │   │   │   ├── \_components
+│   │   │   │   │   ├── columns.tsx
+│   │   │   │   │   └── edit-invoice-dialog.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── products
+│   │   │   ├── \_components
+│   │   │   │   ├── columns.tsx
+│   │   │   │   └── edit-product-dialog.tsx
+│   │   │   └── page.tsx
+│   │   ├── file-management
+│   │   │   ├── \_components
+│   │   │   │   ├── file-list.tsx
+│   │   │   │   └── file-upload-demo.tsx
+│   │   │   ├── file-upload
+│   │   │   │   └── page.tsx
 │   │   │   └── page.tsx
 │   │   ├── layout.tsx
 │   │   ├── page.tsx
 │   │   └── temp
-│   │       └── page.tsx
+│   │   ├── page.tsx
+│   │   └── zustand
+│   │   └── page.tsx
 │   ├── components
+│   │   ├── dashboard
+│   │   │   ├── app-sidebar.tsx
+│   │   │   ├── dashboard-breadcrumbs.tsx
+│   │   │   ├── dashboard-sidebar-menu-section.tsx
+│   │   │   └── dashboard.tsx
+│   │   ├── data-table
+│   │   │   ├── data-table-cell-editable.tsx
+│   │   │   ├── data-table-column-header.tsx
+│   │   │   ├── data-table-pagination.tsx
+│   │   │   ├── data-table-toolbar.tsx
+│   │   │   ├── data-table-view-option.tsx
+│   │   │   └── data-table.tsx
 │   │   ├── demo
 │   │   │   └── sonner-demo.tsx
+│   │   ├── json-display.tsx
 │   │   ├── providers.tsx
-│   │   ├── ui
-│   │   │   ├── button.tsx
-│   │   │   └── sonner.tsx
-│   │   └── zustand-providers.tsx
+│   │   └── ui
+│   │   ├── alert-dialog.tsx
+│   │   ├── badge.tsx
+│   │   ├── breadcrumb.tsx
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── collapsible.tsx
+│   │   ├── dialog.tsx
+│   │   ├── dropdown-menu.tsx
+│   │   ├── form.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   ├── scroll-area.tsx
+│   │   ├── select.tsx
+│   │   ├── separator.tsx
+│   │   ├── sheet.tsx
+│   │   ├── sidebar.tsx
+│   │   ├── skeleton.tsx
+│   │   ├── sonner.tsx
+│   │   ├── table.tsx
+│   │   ├── tabs.tsx
+│   │   └── tooltip.tsx
 │   ├── env.js
+│   ├── hooks
+│   │   └── use-mobile.tsx
 │   ├── lib
-│   │   └── utils.ts
-│   ├── providers
-│   │   └── counter-store-provider.tsx
+│   │   ├── constants
+│   │   │   └── extraction-prompt.ts
+│   │   ├── types
+│   │   │   └── supported-files.ts
+│   │   ├── utils.ts
+│   │   └── validations
+│   │   ├── file.ts
+│   │   └── pdf-generate.ts
 │   ├── server
 │   │   ├── api
 │   │   │   ├── root.ts
@@ -68,15 +141,18 @@
 │   │   │   └── index.ts
 │   │   └── db.ts
 │   ├── stores
-│   │   └── counter-store.ts
+│   │   ├── useDataStore.ts
+│   │   └── useUploadStore.ts
 │   ├── styles
 │   │   └── globals.css
-│   └── trpc
-│       ├── query-client.ts
-│       ├── react.tsx
-│       └── server.ts
+│   ├── trpc
+│   │   ├── query-client.ts
+│   │   ├── react.tsx
+│   │   └── server.ts
+│   └── types
+│   └── table.ts
 ├── start-database.sh
 ├── tailwind.config.ts
 └── tsconfig.json
 
-27 directories, 53 files
+50 directories, 106 files

@@ -6,17 +6,18 @@ import { z } from "zod";
  */
 export const invoiceSchema = z.object({
   invoiceId: z.string(),
-  serialNumber: z.number(),
+  serialNumber: z.number().nullable(),
   customerId: z.string(),
   customerName: z.string(),
   productId: z.string(),
   productName: z.string(),
-  quantity: z.number(),
-  tax: z.number(),
-  totalAmount: z.number(),
-  date: z.string(),
+  quantity: z.number().nullable(),
+  tax: z.number().nullable(),
+  totalAmount: z.number().nullable(),
+  date: z.string().nullable(),
   invoiceNumber: z.string().optional(),
   dueDate: z.string().optional(),
+  missingFields: z.array(z.string()).optional(),
 });
 
 export type Invoice = z.infer<typeof invoiceSchema>;
@@ -27,11 +28,12 @@ export type Invoice = z.infer<typeof invoiceSchema>;
 export const productSchema = z.object({
   productId: z.string(),
   productName: z.string(),
-  quantity: z.number(),
-  unitPrice: z.number(),
-  tax: z.number(),
-  priceWithTax: z.number(),
-  discount: z.number().optional(),
+  quantity: z.number().nullable(),
+  unitPrice: z.number().nullable(),
+  tax: z.number().nullable(),
+  priceWithTax: z.number().nullable(),
+  discount: z.number().nullable(),
+  missingFields: z.array(z.string()).optional(),
 });
 
 export type Product = z.infer<typeof productSchema>;
@@ -42,8 +44,9 @@ export type Product = z.infer<typeof productSchema>;
 export const customerSchema = z.object({
   customerId: z.string(),
   customerName: z.string(),
-  phoneNumber: z.string(),
-  totalPurchaseAmount: z.number(),
+  phoneNumber: z.string().nullable(),
+  totalPurchaseAmount: z.number().nullable(),
+  missingFields: z.array(z.string()).optional(),
 });
 
 export type Customer = z.infer<typeof customerSchema>;
@@ -98,19 +101,13 @@ export const combinedGeminiSchema = {
           date: { type: SchemaType.STRING },
           invoiceNumber: { type: SchemaType.STRING },
           dueDate: { type: SchemaType.STRING },
+          missingFields: {
+            type: SchemaType.ARRAY,
+            items: { type: SchemaType.STRING },
+            description: "List of missing required fields",
+          },
         },
-        required: [
-          "invoiceId",
-          "serialNumber",
-          "customerId",
-          "customerName",
-          "productId",
-          "productName",
-          "quantity",
-          "tax",
-          "totalAmount",
-          "date",
-        ],
+        required: ["invoiceId"],
       },
     },
     products: {
@@ -126,15 +123,13 @@ export const combinedGeminiSchema = {
           tax: { type: SchemaType.NUMBER },
           priceWithTax: { type: SchemaType.NUMBER },
           discount: { type: SchemaType.NUMBER },
+          missingFields: {
+            type: SchemaType.ARRAY,
+            items: { type: SchemaType.STRING },
+            description: "List of missing required fields",
+          },
         },
-        required: [
-          "productId",
-          "productName",
-          "quantity",
-          "unitPrice",
-          "tax",
-          "priceWithTax",
-        ],
+        required: ["productId"],
       },
     },
     customers: {
@@ -147,13 +142,13 @@ export const combinedGeminiSchema = {
           customerName: { type: SchemaType.STRING },
           phoneNumber: { type: SchemaType.STRING },
           totalPurchaseAmount: { type: SchemaType.NUMBER },
+          missingFields: {
+            type: SchemaType.ARRAY,
+            items: { type: SchemaType.STRING },
+            description: "List of missing required fields",
+          },
         },
-        required: [
-          "customerId",
-          "customerName",
-          "phoneNumber",
-          "totalPurchaseAmount",
-        ],
+        required: ["customerId"],
       },
     },
   },

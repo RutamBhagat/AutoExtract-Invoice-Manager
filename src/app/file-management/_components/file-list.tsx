@@ -2,17 +2,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   FileIcon,
   FileSpreadsheetIcon,
   FileTextIcon,
   ImageIcon,
-  MoreVertical,
   RefreshCwIcon,
   Trash2Icon,
   XCircleIcon,
