@@ -31,10 +31,10 @@ export default function FileUploadDemo() {
   const [isUploading, setUploading] = useState(false);
 
   const { files: storedFiles, addFile } = useUploadStore(
-    useShallow((state) => ({ 
-      files: state.files, 
-      addFile: state.addFile 
-    }))
+    useShallow((state) => ({
+      files: state.files,
+      addFile: state.addFile,
+    })),
   );
 
   /**
@@ -116,7 +116,8 @@ export default function FileUploadDemo() {
         const result = (await response.json()) as UploadResponse;
         addFile({
           ...result,
-          mimeType: file.type // Add missing mimeType property
+          mimeType: file.type,
+          name: "",
         });
         toast.success(`${file.name} uploaded!`);
       }
