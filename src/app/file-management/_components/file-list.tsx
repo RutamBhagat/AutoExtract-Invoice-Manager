@@ -15,6 +15,7 @@ import {
   MoreVertical,
   RefreshCwIcon,
   Trash2Icon,
+  XCircleIcon,
 } from "lucide-react";
 import {
   Tooltip,
@@ -155,7 +156,7 @@ export default function FileList() {
             </div>
           ) : (
             // Files List
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="flex flex-col gap-4">
               {files.map((file) => {
                 const isProcessed = processedFiles.some(
                   (f) => f.fileUri === file.fileUri && f.status === "success",
@@ -204,43 +205,59 @@ export default function FileList() {
                           </TooltipProvider>
                         </div>
 
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem
-                              className="gap-2"
-                              onClick={() =>
-                                handleGenerate(file.fileUri, file.mimeType)
-                              }
-                              disabled={isProcessed}
-                            >
-                              <RefreshCwIcon className="h-4 w-4" />
-                              <span>Generate</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              className="gap-2 text-red-600 focus:text-red-600"
-                              onClick={() => handleDelete(file.fileUri)}
-                            >
-                              <Trash2Icon className="h-4 w-4" />
-                              <span>Delete File</span>
-                            </DropdownMenuItem>
+                        <div className="flex items-center gap-2">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() =>
+                                    handleGenerate(file.fileUri, file.mimeType)
+                                  }
+                                  disabled={isProcessed}
+                                >
+                                  <RefreshCwIcon className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Generate</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600"
+                                  onClick={() => handleDelete(file.fileUri)}
+                                >
+                                  <XCircleIcon className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete File</p>
+                              </TooltipContent>
+                            </Tooltip>
                             {isProcessed && (
-                              <DropdownMenuItem
-                                className="gap-2 text-red-600 focus:text-red-600"
-                                onClick={() =>
-                                  handleDeleteWithData(file.fileUri)
-                                }
-                              >
-                                <Trash2Icon className="h-4 w-4" />
-                                <span>Delete File & Data</span>
-                              </DropdownMenuItem>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0 text-red-600"
+                                    onClick={() =>
+                                      handleDeleteWithData(file.fileUri)
+                                    }
+                                  >
+                                    <Trash2Icon className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Delete File & Data</p>
+                                </TooltipContent>
+                              </Tooltip>
                             )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          </TooltipProvider>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
