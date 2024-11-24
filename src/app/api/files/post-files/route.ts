@@ -9,7 +9,7 @@ import { env } from "@/env";
  * Handles file upload requests.
  *
  * This function processes the incoming FormData, validates the uploaded file,
- * saves it to a temporary directory, uploads it to Google AI File Manager,
+ * saves it to the /tmp directory (Vercel-compatible), uploads it to Google AI File Manager,
  * and responds with the upload metadata.
  *
  * @param {NextRequest} request - The incoming HTTP request.
@@ -17,7 +17,8 @@ import { env } from "@/env";
  */
 export async function POST(request: NextRequest) {
   const fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  // Use /tmp directory for Vercel compatibility
+  const uploadDir = "/tmp";
 
   try {
     const formData = await request.formData();
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Ensure tmp directory exists
     await fs.mkdir(uploadDir, { recursive: true });
 
     const newFileName = `${Date.now()}-${file.name}`;
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
       displayName: file.name,
     });
 
+    // Clean up the temporary file
     await fs.unlink(newFilePath);
 
     return NextResponse.json({
