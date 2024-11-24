@@ -279,10 +279,16 @@ export const useDataStore = create<Store>()(
               ],
             }));
 
+            toast.error("Failed to process file", {
+              id: toastId,
+              description: error.message,
+            });
+
             return { success: false, error };
           }
 
-          const { result } = await response.json();
+          // Use the data we already parsed instead of parsing response again
+          const { result } = data;
 
           // Track which entities were created from this file
           const createdInvoiceIds =

@@ -87,33 +87,28 @@ export const combinedZodSchema = z.object({
  * Combined schema describing the expected structured output format for Gemini AI.
  */
 export const combinedGeminiSchema = {
-  description: "Extracted data for Invoices, Products, and Customers",
   type: SchemaType.OBJECT,
   properties: {
     invoices: {
       type: SchemaType.ARRAY,
-      description: "Invoice data",
       items: {
         type: SchemaType.OBJECT,
         properties: {
-          // Only ID fields are required, everything else is optional
           invoiceId: { type: SchemaType.STRING },
-          serialNumber: { type: SchemaType.NUMBER, optional: true },
-          customerId: { type: SchemaType.STRING, optional: true },
-          customerName: { type: SchemaType.STRING, optional: true },
-          productId: { type: SchemaType.STRING, optional: true },
-          productName: { type: SchemaType.STRING, optional: true },
-          quantity: { type: SchemaType.NUMBER, optional: true },
-          tax: { type: SchemaType.NUMBER, optional: true },
-          totalAmount: { type: SchemaType.NUMBER, optional: true },
-          date: { type: SchemaType.STRING, optional: true },
-          invoiceNumber: { type: SchemaType.STRING, optional: true },
-          dueDate: { type: SchemaType.STRING, optional: true },
+          serialNumber: { type: SchemaType.NUMBER },
+          customerId: { type: SchemaType.STRING },
+          customerName: { type: SchemaType.STRING },
+          productId: { type: SchemaType.STRING },
+          productName: { type: SchemaType.STRING },
+          quantity: { type: SchemaType.NUMBER },
+          tax: { type: SchemaType.NUMBER },
+          totalAmount: { type: SchemaType.NUMBER },
+          date: { type: SchemaType.STRING },
+          invoiceNumber: { type: SchemaType.STRING },
+          dueDate: { type: SchemaType.STRING },
           missingFields: {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
-            description: "List of missing required fields",
-            optional: true,
           },
         },
         required: ["invoiceId"],
@@ -121,22 +116,19 @@ export const combinedGeminiSchema = {
     },
     products: {
       type: SchemaType.ARRAY,
-      description: "Product data",
       items: {
         type: SchemaType.OBJECT,
         properties: {
           productId: { type: SchemaType.STRING },
-          productName: { type: SchemaType.STRING, optional: true },
-          quantity: { type: SchemaType.NUMBER, optional: true },
-          unitPrice: { type: SchemaType.NUMBER, optional: true },
-          tax: { type: SchemaType.NUMBER, optional: true },
-          priceWithTax: { type: SchemaType.NUMBER, optional: true },
-          discount: { type: SchemaType.NUMBER, optional: true },
+          productName: { type: SchemaType.STRING },
+          quantity: { type: SchemaType.NUMBER },
+          unitPrice: { type: SchemaType.NUMBER },
+          tax: { type: SchemaType.NUMBER },
+          priceWithTax: { type: SchemaType.NUMBER },
+          discount: { type: SchemaType.NUMBER },
           missingFields: {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
-            description: "List of missing required fields",
-            optional: true,
           },
         },
         required: ["productId"],
@@ -144,19 +136,16 @@ export const combinedGeminiSchema = {
     },
     customers: {
       type: SchemaType.ARRAY,
-      description: "Customer data",
       items: {
         type: SchemaType.OBJECT,
         properties: {
           customerId: { type: SchemaType.STRING },
-          customerName: { type: SchemaType.STRING, optional: true },
-          phoneNumber: { type: SchemaType.STRING, optional: true },
-          totalPurchaseAmount: { type: SchemaType.NUMBER, optional: true },
+          customerName: { type: SchemaType.STRING },
+          phoneNumber: { type: SchemaType.STRING },
+          totalPurchaseAmount: { type: SchemaType.NUMBER },
           missingFields: {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
-            description: "List of missing required fields",
-            optional: true,
           },
         },
         required: ["customerId"],
