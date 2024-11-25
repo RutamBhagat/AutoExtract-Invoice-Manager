@@ -362,28 +362,46 @@ export const createDataStore = (initState: Partial<DataStore> = {}) => {
               customers: [],
             };
           }),
-
         deleteFileAndData: (fileUri: string) =>
           set((state) => {
             const processedFile = state.processedFiles.find(
               (f) => f.fileUri === fileUri,
             );
+
             if (!processedFile) return state;
+
+            console.log("Before deletion:");
+            console.log("Invoices:", state.invoices.length);
+            console.log("Products:", state.products.length);
+            console.log("Customers:", state.customers.length);
+
+            const filteredInvoices = state.invoices.filter(
+              (i) =>
+                !processedFile.createdInvoiceIds?.some((baseId) =>
+                  i.invoiceId.startsWith(baseId + "-"),
+                ),
+            );
+
+            const filteredProducts = state.products.filter(
+              (p) => !processedFile.createdProductIds?.includes(p.productId),
+            );
+
+            const filteredCustomers = state.customers.filter(
+              (c) => !processedFile.createdCustomerIds?.includes(c.customerId),
+            );
+
+            console.log("After deletion:");
+            console.log("Invoices:", filteredInvoices.length);
+            console.log("Products:", filteredProducts.length);
+            console.log("Customers:", filteredCustomers.length);
 
             return {
               processedFiles: state.processedFiles.filter(
                 (f) => f.fileUri !== fileUri,
               ),
-              invoices: state.invoices.filter(
-                (i) => !processedFile.createdInvoiceIds?.includes(i.invoiceId),
-              ),
-              products: state.products.filter(
-                (p) => !processedFile.createdProductIds?.includes(p.productId),
-              ),
-              customers: state.customers.filter(
-                (c) =>
-                  !processedFile.createdCustomerIds?.includes(c.customerId),
-              ),
+              invoices: filteredInvoices,
+              products: filteredProducts,
+              customers: filteredCustomers,
             };
           }),
       }),
