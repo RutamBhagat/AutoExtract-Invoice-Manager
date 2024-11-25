@@ -109,11 +109,11 @@ export const combinedGeminiSchema = {
           date: { type: SchemaType.STRING },
           invoiceNumber: { type: SchemaType.STRING },
           dueDate: { type: SchemaType.STRING },
+          currency: { type: SchemaType.STRING },
           missingFields: {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
           },
-          currency: { type: SchemaType.STRING },
         },
         required: [
           "invoiceId",
@@ -139,11 +139,11 @@ export const combinedGeminiSchema = {
           tax: { type: SchemaType.NUMBER },
           priceWithTax: { type: SchemaType.NUMBER },
           discount: { type: SchemaType.NUMBER },
+          currency: { type: SchemaType.STRING },
           missingFields: {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
           },
-          currency: { type: SchemaType.STRING },
         },
         required: [
           "productId",
@@ -164,6 +164,7 @@ export const combinedGeminiSchema = {
           customerName: { type: SchemaType.STRING },
           phoneNumber: { type: SchemaType.STRING },
           totalPurchaseAmount: { type: SchemaType.NUMBER },
+          currency: { type: SchemaType.STRING },
           missingFields: {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
