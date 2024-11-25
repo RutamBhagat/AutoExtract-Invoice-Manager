@@ -1,4 +1,5 @@
 import { createStore } from "zustand/vanilla";
+import { persist } from "zustand/middleware";
 
 export interface UploadedFile {
   fileUri: string;
@@ -21,31 +22,43 @@ export interface UploadStore {
 }
 
 export const createUploadStore = (initState: Partial<UploadStore> = {}) => {
-  return createStore<UploadStore>((set) => ({
-    files: [],
-    isUploading: false,
-    isLoading: true,
-    setFiles: (files) => set({ files }),
-    addFile: (file) => set((state) => ({ files: [...state.files, file] })),
-    clearFiles: () => set({ files: [] }),
-    setUploading: (isUploading) => set({ isUploading }),
-    removeFile: (fileUri) =>
-      set((state) => ({
-        files: state.files.filter((file) => file.fileUri !== fileUri),
-      })),
-    fetchFiles: async () => {
-      set({ isLoading: true });
-      try {
-        const files = await fetchInitialData();
-        set({ files });
-      } catch (error) {
-        console.error("Failed to fetch files:", error);
-      } finally {
-        set({ isLoading: false });
-      }
-    },
-    ...initState,
-  }));
+  return createStore<UploadStore>()(
+    persist(
+      (set) => ({
+        files: [],
+        isUploading: false,
+        isLoading: true,
+        setFiles: (files) => set({ files }),
+        addFile: (file) => set((state) => ({ files: [...state.files, file] })),
+        clearFiles: () => set({ files: [] }),
+        setUploading: (isUploading) => set({ isUploading }),
+        removeFile: (fileUri) =>
+          set((state) => ({
+            files: state.files.filter((file) => file.fileUri !== fileUri),
+          })),
+        fetchFiles: async () => {
+          set({ isLoading: true });
+          try {
+            const files = await fetchInitialData();
+            set({ files });
+          } catch (error) {
+            console.error("Failed to fetch files:", error);
+          } finally {
+            set({ isLoading: false });
+          }
+        },
+        ...initState,
+      }),
+      {
+        name: "upload-store",
+        partialize: (state) => ({
+          files: state.files,
+          isUploading: state.isUploading,
+          isLoading: state.isLoading,
+        }),
+      },
+    ),
+  );
 };
 
 const fetchInitialData = async (): Promise<UploadedFile[]> => {
