@@ -44,7 +44,11 @@ export const getColumns = ({
   {
     accessorKey: "phoneNumber",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Phone Number" />
+      <DataTableColumnHeader
+        column={column}
+        title="Phone Number"
+        className="text-right" // Ensure header aligns right
+      />
     ),
     cell: ({ row, getValue }) => {
       const columnId = "phoneNumber";
@@ -61,6 +65,7 @@ export const getColumns = ({
             }
           }}
           type="text"
+          className="text-right" // Add this to align text to the right
           isMissing={isMissing}
         />
       );
