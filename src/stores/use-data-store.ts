@@ -216,19 +216,10 @@ export const createDataStore = (initState: Partial<DataStore> = {}) => {
             };
           }
 
-          if (mimeType !== "application/pdf") {
-            const error = {
-              message: "Invalid file type",
-              details: "Only PDF files can be processed at this time",
-              code: "INVALID_FILE_TYPE",
-            };
-            return { success: false, error };
-          }
-
           const toastId = toast.loading("Processing file...");
 
           try {
-            const response = await fetch("/api/generate/pdf-generate", {
+            const response = await fetch("/api/generate", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
