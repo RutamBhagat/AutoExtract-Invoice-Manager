@@ -24,15 +24,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useDataStoreContext } from "@/providers/data-store-provider";
+import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { useState } from "react";
 import { useUploadStoreContext } from "@/providers/upload-store-provider";
 
 export default function FileList() {
-  const { files, removeFile } = useUploadStoreContext(
+  const { files, removeFile, fetchFiles } = useUploadStoreContext(
     useShallow((state) => ({
       files: state.files,
       removeFile: state.removeFile,
+      fetchFiles: state.fetchFiles,
     })),
   );
   const { processedFiles, processFile, deleteFileAndData } =
@@ -44,7 +45,9 @@ export default function FileList() {
       })),
     );
 
-  const [filesFetched, setFilesFetched] = useState(false);
+  useEffect(() => {
+    fetchFiles();
+  }, []);
 
   const handleDelete = async (fileUri: string) => {
     const fileName =

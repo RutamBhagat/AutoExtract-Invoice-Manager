@@ -1,6 +1,12 @@
 "use client";
 
-import { type ReactNode, createContext, useRef, useContext } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useRef,
+  useContext,
+  useEffect,
+} from "react";
 import { useStore } from "zustand";
 
 import { createUploadStore, type UploadStore } from "@/stores/use-upload-store";
@@ -20,8 +26,6 @@ export const UploadStoreProvider = ({ children }: UploadStoreProviderProps) => {
   if (!storeRef.current) {
     storeRef.current = createUploadStore();
   }
-
-  storeRef.current?.getState().fetchFiles();
 
   return (
     <UploadStoreContext.Provider value={storeRef.current}>
