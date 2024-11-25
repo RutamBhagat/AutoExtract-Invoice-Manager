@@ -89,7 +89,7 @@ export default function FileUploadDemo() {
    */
   const uploadFiles = async () => {
     setUploading(true);
-    toast.loading("Uploading files...", { id: "upload-toast" });
+    const toastId = toast.loading("Uploading files...");
 
     try {
       for (const file of files) {
@@ -118,14 +118,14 @@ export default function FileUploadDemo() {
           mimeType: file.type,
           name: "",
         });
-        toast.success(`${file.name} uploaded!`);
+        toast.success(`${file.name} uploaded!`, { id: toastId });
       }
       setFiles([]);
-      toast.success("All files uploaded!", { id: "upload-toast" });
+      toast.success("All files uploaded!", { id: toastId });
     } catch (error) {
       console.error("Upload failed:", error);
       toast.error(error instanceof Error ? error.message : "Upload failed", {
-        id: "upload-toast",
+        id: toastId,
       });
     } finally {
       setUploading(false);
