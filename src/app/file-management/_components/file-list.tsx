@@ -191,112 +191,127 @@ export default function FileList() {
           ) : (
             // Files List
             <div className="flex flex-col gap-4">
-              {files.map((file) => {
-                const isProcessed = processedFiles.some(
-                  (f) => f.fileUri === file.fileUri && f.status === "success",
-                );
+              {files
+                .sort((a, b) => {
+                  const aIsProcessed = processedFiles.some(
+                    (f) => f.fileUri === a.fileUri && f.status === "success",
+                  );
+                  const bIsProcessed = processedFiles.some(
+                    (f) => f.fileUri === b.fileUri && f.status === "success",
+                  );
+                  return Number(aIsProcessed) - Number(bIsProcessed);
+                })
+                .map((file) => {
+                  const isProcessed = processedFiles.some(
+                    (f) => f.fileUri === file.fileUri && f.status === "success",
+                  );
 
-                return (
-                  <Card
-                    key={file.fileUri}
-                    className={`group relative border transition-all duration-300 hover:shadow-md ${
-                      isProcessed ? "bg-slate-50" : "bg-white"
-                    }`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
-                          {getFileIcon(file.fileUri)}
-                        </div>
+                  return (
+                    <Card
+                      key={file.fileUri}
+                      className={`group relative border transition-all duration-300 hover:shadow-md ${
+                        isProcessed ? "bg-slate-50" : "bg-white"
+                      }`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100">
+                            {getFileIcon(file.fileUri)}
+                          </div>
 
-                        <div className="min-w-0 flex-1">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger className="text-left">
-                                <div className="max-w-full">
-                                  <p className="truncate font-medium">
-                                    {file.displayName}
+                          <div className="min-w-0 flex-1">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger className="text-left">
+                                  <div className="max-w-full">
+                                    <p className="truncate font-medium">
+                                      {file.displayName}
+                                    </p>
+                                    <Badge
+                                      className={cn(
+                                        isProcessed
+                                          ? "bg-green-700"
+                                          : "bg-red-700",
+                                        "mt-1",
+                                      )}
+                                    >
+                                      {isProcessed
+                                        ? "Processed"
+                                        : "Unprocessed"}
+                                    </Badge>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{file.displayName}</p>
+                                  <p className="text-xs text-slate-500">
+                                    {file.fileUri}
                                   </p>
-                                  <Badge
-                                    className={cn(
-                                      isProcessed
-                                        ? "bg-green-700"
-                                        : "bg-red-700",
-                                      "mt-1",
-                                    )}
-                                  >
-                                    {isProcessed ? "Processed" : "Unprocessed"}
-                                  </Badge>
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{file.displayName}</p>
-                                <p className="text-xs text-slate-500">
-                                  {file.fileUri}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
 
-                        <div className="flex items-center gap-2">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() =>
-                                    handleGenerate(file.fileUri, file.mimeType)
-                                  }
-                                  disabled={isProcessed}
-                                >
-                                  <RefreshCwIcon className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Generate</p>
-                              </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="h-8 w-8 p-0 text-red-600"
-                                  onClick={() => handleDelete(file.fileUri)}
-                                >
-                                  <XCircleIcon className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Delete File</p>
-                              </TooltipContent>
-                            </Tooltip>
-                            {isProcessed && (
+                          <div className="flex items-center gap-2">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() =>
+                                      handleGenerate(
+                                        file.fileUri,
+                                        file.mimeType,
+                                      )
+                                    }
+                                    disabled={isProcessed}
+                                  >
+                                    <RefreshCwIcon className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Generate</p>
+                                </TooltipContent>
+                              </Tooltip>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     className="h-8 w-8 p-0 text-red-600"
-                                    onClick={() =>
-                                      handleDeleteWithData(file.fileUri)
-                                    }
+                                    onClick={() => handleDelete(file.fileUri)}
                                   >
-                                    <Trash2Icon className="h-4 w-4" />
+                                    <XCircleIcon className="h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>Delete File & Data</p>
+                                  <p>Delete File</p>
                                 </TooltipContent>
                               </Tooltip>
-                            )}
-                          </TooltipProvider>
+                              {isProcessed && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0 text-red-600"
+                                      onClick={() =>
+                                        handleDeleteWithData(file.fileUri)
+                                      }
+                                    >
+                                      <Trash2Icon className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Delete File & Data</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </TooltipProvider>
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
             </div>
           )}
         </ScrollArea>
