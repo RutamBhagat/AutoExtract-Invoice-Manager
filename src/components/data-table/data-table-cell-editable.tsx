@@ -120,7 +120,7 @@ export function EditableCell<T extends string | number>({
         <Tooltip>
           <TooltipTrigger asChild>
             <div
-              className="flex items-center"
+              className="flex h-full min-h-6 w-full items-center justify-center"
               onClick={() => setIsEditing(true)}
             >
               <InfoIcon className="ml-2 h-4 w-4 align-middle text-red-500" />

@@ -2,7 +2,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { JsonDisplay } from "@/components/json-display"; // Import this
 import dynamic from "next/dynamic";
 import { useDataStoreContext } from "@/providers/data-store-provider";
 import { useShallow } from "zustand/react/shallow";

@@ -45,6 +45,7 @@ export const getColumns = (): ColumnDef<Customer, string | number>[] => [
         column="phoneNumber"
         updateData={(table.options.meta as TableType<Customer>).updateData}
         type="text"
+        className="text-right"
       />
     ),
   },
