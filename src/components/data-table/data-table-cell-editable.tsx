@@ -49,13 +49,12 @@ export function EditableCell<T extends string | number>({
   const [value, setValue] = useState<T>(initialValue);
   const [isEditing, setIsEditing] = useState(false);
   const [isMissing, setIsMissing] = useState<boolean>(initialIsMissing);
-  const wrapperRef = useRef<HTMLDivElement>(null); // Ref for the cell wrapper
+  const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // Update state when props change
   useEffect(() => {
     setValue(initialValue);
-    setIsMissing(isEmpty(initialValue, type));
-  }, [initialValue, type]);
+    setIsMissing(initialIsMissing && isEmpty(initialValue, type)); // Fix: Check initialIsMissing here too
+  }, [initialValue, type, initialIsMissing]); // Add initialIsMissing to dependency array
 
   const validateValue = (input: string): T | null => {
     if (type === "number" || type === "currency") {
@@ -75,7 +74,7 @@ export function EditableCell<T extends string | number>({
 
     if (validatedValue !== null) {
       setValue(validatedValue);
-      setIsMissing(initialIsMissing && isEmpty(validatedValue, type));
+      setIsMissing(isEmpty(validatedValue, type)); // Correct isEmpty usage
       if (updateData) {
         updateData(row, column, validatedValue);
       }
@@ -91,10 +90,9 @@ export function EditableCell<T extends string | number>({
 
   const onBlur = () => {
     setIsEditing(false);
-    setIsMissing(initialIsMissing && isEmpty(value, type));
+    setIsMissing(isEmpty(value, type)); // Correct isEmpty usage
   };
 
-  // Handle click outside to stop editing
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -120,7 +118,7 @@ export function EditableCell<T extends string | number>({
         <Tooltip>
           <TooltipTrigger asChild>
             <div
-              className="flex h-full min-h-6 w-full items-center justify-center"
+              className="flex h-full min-h-6 w-full cursor-pointer items-center justify-center" // Add cursor pointer
               onClick={() => setIsEditing(true)}
             >
               <InfoIcon className="ml-2 h-4 w-4 align-middle text-red-500" />
@@ -131,14 +129,13 @@ export function EditableCell<T extends string | number>({
           </TooltipContent>
         </Tooltip>
       ) : isEditing ? (
-        // Editable Input Field
         <Input
-          value={value}
+          type={type === "currency" ? "number" : type}
+          step={type === "currency" ? "0.01" : undefined}
+          value={value as string} // Cast value to string to avoid type errors.
           onChange={onChange}
           onBlur={onBlur}
           onFocus={onFocus}
-          type={type === "currency" ? "number" : type}
-          step={type === "currency" ? "0.01" : undefined}
           className={cn(
             "m-0 h-full w-full appearance-none rounded-none border-0 bg-transparent font-medium shadow-none focus-visible:ring-0",
             type !== "text" ? "text-right" : "text-left",
@@ -147,9 +144,8 @@ export function EditableCell<T extends string | number>({
           autoFocus
         />
       ) : (
-        // Read-Only Input Field
         <Input
-          value={formattedValue ?? value}
+          value={formattedValue ?? (value as string)} // Cast value to string
           onFocus={onFocus}
           type="text"
           readOnly

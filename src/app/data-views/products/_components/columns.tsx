@@ -1,29 +1,21 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Product } from "@/lib/validations/pdf-generate";
 import { TableType } from "@/types/table";
-import { useDataStoreContext } from "@/providers/data-store-provider";
+import { Trash } from "lucide-react";
 
 interface ProductsColumnProps {
-  setEditingProduct: (product: Product) => void;
+  updateProduct: (productId: string, updates: Partial<Product>) => void;
+  removeProduct: (productId: string) => void;
 }
 
 export const getColumns = ({
-  setEditingProduct,
+  updateProduct,
+  removeProduct,
 }: ProductsColumnProps): ColumnDef<Product, string | number>[] => [
   {
     accessorKey: "productName",
@@ -35,7 +27,12 @@ export const getColumns = ({
         value={getValue() as string}
         row={row.index}
         column="productName"
-        updateData={(table.options.meta as TableType<Product>).updateData}
+        updateData={(rowIndex, columnId, value) => {
+          const productId = row.original.productId;
+          if (productId) {
+            updateProduct(productId, { [columnId]: value });
+          }
+        }}
         type="text"
       />
     ),
@@ -54,7 +51,12 @@ export const getColumns = ({
         value={getValue() as number}
         row={row.index}
         column="quantity"
-        updateData={(table.options.meta as TableType<Product>).updateData}
+        updateData={(rowIndex, columnId, value) => {
+          const productId = row.original.productId;
+          if (productId) {
+            updateProduct(productId, { [columnId]: value });
+          }
+        }}
         type="number"
       />
     ),
@@ -83,7 +85,12 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column="unitPrice"
-          updateData={(table.options.meta as TableType<Product>).updateData}
+          updateData={(rowIndex, columnId, value) => {
+            const productId = row.original.productId;
+            if (productId) {
+              updateProduct(productId, { [columnId]: value });
+            }
+          }}
           type="currency"
           isMissing={isMissing}
         />
@@ -114,7 +121,12 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column="tax"
-          updateData={(table.options.meta as TableType<Product>).updateData}
+          updateData={(rowIndex, columnId, value) => {
+            const productId = row.original.productId;
+            if (productId) {
+              updateProduct(productId, { [columnId]: value });
+            }
+          }}
           type="currency"
           isMissing={isMissing}
         />
@@ -152,34 +164,20 @@ export const getColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const product = row.original;
-      const removeProduct = useDataStoreContext((state) => state.removeProduct);
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            {/* <DropdownMenuItem onClick={() => setEditingProduct(product)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit product
-            </DropdownMenuItem> */}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => {
-                removeProduct(product.productId);
-              }}
-              className="text-red-600"
-            >
-              <Trash className="mr-2 h-4 w-4" />
-              Delete product
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex h-full w-full items-center justify-center">
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0 hover:bg-red-500 hover:text-white"
+            onClick={() => {
+              removeProduct(product.productId);
+            }}
+          >
+            <span className="sr-only">Delete Product</span>
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
       );
     },
   },
