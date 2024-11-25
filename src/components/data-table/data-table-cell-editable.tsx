@@ -1,7 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
+import { InfoIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -19,6 +25,17 @@ interface EditableCellProps<T> {
   isMissing?: boolean;
 }
 
+const isEmpty = <T extends string | number>(
+  value: T,
+  type: "text" | "number" | "currency",
+): boolean => {
+  if (type === "number" || type === "currency") {
+    return value === null || value === undefined || value === 0;
+  } else {
+    return !value || value === "";
+  }
+};
+
 export function EditableCell<T extends string | number>({
   value: initialValue,
   formattedValue,
@@ -27,70 +44,117 @@ export function EditableCell<T extends string | number>({
   updateData,
   type = "text",
   className,
-  isMissing = false,
+  isMissing: initialIsMissing = false,
 }: EditableCellProps<T>) {
   const [value, setValue] = useState<T>(initialValue);
   const [isEditing, setIsEditing] = useState(false);
+  const [isMissing, setIsMissing] = useState<boolean>(initialIsMissing);
+  const inputRef = useRef<HTMLInputElement | null>(null); // Ref for the input
 
+  // Update state when props change
   useEffect(() => {
     setValue(initialValue);
-  }, [initialValue]);
+    setIsMissing(isEmpty(initialValue, type));
+  }, [initialValue, type]);
 
-  const validateValue = (value: string): T | null => {
+  const validateValue = (input: string): T | null => {
     if (type === "number" || type === "currency") {
-      const num = Number(value);
+      const num = Number(input);
       if (isNaN(num) || num < 0) {
         toast.error("Please enter a valid positive number");
         return null;
       }
       return num as T;
     }
-    return value as T;
+    return input as T;
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const validatedValue = validateValue(e.target.value);
+    const inputValue = e.target.value; // Always a string
+    const validatedValue = validateValue(inputValue);
+
     if (validatedValue !== null) {
       setValue(validatedValue);
+      setIsMissing(initialIsMissing && isEmpty(validatedValue, type));
       if (updateData) {
         updateData(row, column, validatedValue);
       }
     }
   };
 
-  const onFocus = () => setIsEditing(true);
-  const onBlur = () => setIsEditing(false);
+  const onFocus = () => {
+    setIsEditing(true);
+    if (isMissing) {
+      toast.error("This field is missing. Please update it.");
+    }
+  };
 
-  const containerClasses = cn("h-full cursor-pointer", className);
-  const contentClasses = cn(type !== "text" ? "text-right" : "text-left");
-  const sharedClasses = cn(
-    "m-0 h-full rounded-none font-medium border-0 shadow-none focus-visible:ring-0 appearance-none bg-transparent",
-    contentClasses,
-    containerClasses,
-    isMissing && "border-red-500",
-  );
+  const onBlur = () => {
+    setIsEditing(false);
+    setIsMissing(initialIsMissing && isEmpty(value, type));
+  };
 
-  if (isEditing) {
-    return (
-      <Input
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        type={type === "currency" ? "number" : type}
-        step={type === "currency" ? "0.01" : undefined}
-        className={sharedClasses}
-        autoFocus
-      />
-    );
-  }
+  const focusInput = () => {
+    if (inputRef.current) {
+      inputRef.current.focus(); // Ensure focus is set to the input
+      setIsEditing(true); // Explicitly set editing mode
+    }
+  };
 
   return (
-    <Input
-      value={formattedValue ?? value}
-      onFocus={onFocus}
-      type="text"
-      readOnly
-      className={sharedClasses}
-    />
+    <>
+      {isMissing && !isEditing ? (
+        <Tooltip>
+          <TooltipTrigger
+            asChild
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent the click from propagating
+              focusInput(); // Programmatically focus the input
+            }}
+          >
+            <div className="relative flex items-center">
+              <InfoIcon className="ml-2 h-4 w-4 align-middle text-red-500" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Missing Field - Please update</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : isEditing ? (
+        // Editable Input Field
+        <Input
+          ref={inputRef} // Attach ref to the input
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          type={type === "currency" ? "number" : type}
+          step={type === "currency" ? "0.01" : undefined}
+          className={cn(
+            "m-0 h-full w-full appearance-none rounded-none border-0 bg-transparent font-medium shadow-none focus-visible:ring-0",
+            type !== "text" ? "text-right" : "text-left",
+            className,
+          )}
+        />
+      ) : (
+        // Read-Only Input Field
+        <Input
+          ref={inputRef} // Attach ref to the input
+          value={formattedValue ?? value}
+          onFocus={() => {
+            setIsEditing(true); // Track that the user clicked to edit
+            if (isMissing) {
+              toast.error("This field is missing. Please update it.");
+            }
+          }}
+          type="text"
+          readOnly
+          className={cn(
+            "m-0 h-full w-full appearance-none rounded-none border-0 bg-transparent font-medium shadow-none focus-visible:ring-0",
+            type !== "text" ? "text-right" : "text-left",
+            className,
+          )}
+        />
+      )}
+    </>
   );
 }
