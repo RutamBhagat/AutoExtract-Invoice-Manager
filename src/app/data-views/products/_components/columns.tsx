@@ -16,7 +16,6 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Product } from "@/lib/validations/pdf-generate";
 import { TableType } from "@/types/table";
-import { parse } from "path";
 import { useDataStoreContext } from "@/providers/data-store-provider";
 
 interface ProductsColumnProps {
