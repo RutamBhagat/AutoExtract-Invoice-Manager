@@ -138,36 +138,10 @@ export default function FileList() {
   };
 
   const handleGenerate = async (fileUri: string, mimeType: string) => {
-    const toastId = toast.loading(`Processing file...`, {
-      description: "Extracting data from your document",
-    });
-
     try {
       await processFile(fileUri, mimeType);
-      toast.success("File processed successfully", {
-        id: toastId,
-        description: "All data has been extracted and validated",
-      });
     } catch (error: unknown) {
-      let errorMessage = "An error occurred while processing the file";
-      let description =
-        "Please try again or contact support if the issue persists";
-
-      if (error instanceof Error) {
-        if (error.message.includes("schema validation")) {
-          errorMessage = "Document validation failed";
-          description =
-            "The document structure doesn't match the expected format";
-        } else if (error.message.includes("parse")) {
-          errorMessage = "Document parsing failed";
-          description = "Unable to extract structured data from the document";
-        }
-      }
-
-      toast.error(errorMessage, {
-        id: toastId,
-        description,
-      });
+      console.log("error", error);
     }
   };
 
