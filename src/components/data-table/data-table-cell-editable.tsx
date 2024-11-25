@@ -49,7 +49,7 @@ export function EditableCell<T extends string | number>({
   const [value, setValue] = useState<T>(initialValue);
   const [isEditing, setIsEditing] = useState(false);
   const [isMissing, setIsMissing] = useState<boolean>(initialIsMissing);
-  const inputRef = useRef<HTMLInputElement | null>(null); // Ref for the input
+  const wrapperRef = useRef<HTMLDivElement>(null); // Ref for the cell wrapper
 
   // Update state when props change
   useEffect(() => {
@@ -70,7 +70,7 @@ export function EditableCell<T extends string | number>({
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value; // Always a string
+    const inputValue = e.target.value;
     const validatedValue = validateValue(inputValue);
 
     if (validatedValue !== null) {
@@ -94,25 +94,35 @@ export function EditableCell<T extends string | number>({
     setIsMissing(initialIsMissing && isEmpty(value, type));
   };
 
-  const focusInput = () => {
-    if (inputRef.current) {
-      inputRef.current.focus(); // Ensure focus is set to the input
-      setIsEditing(true); // Explicitly set editing mode
+  // Handle click outside to stop editing
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setIsEditing(false);
+      }
+    };
+
+    if (isEditing) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-  };
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isEditing]);
 
   return (
-    <>
+    <div ref={wrapperRef} className="relative">
       {isMissing && !isEditing ? (
         <Tooltip>
-          <TooltipTrigger
-            asChild
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent the click from propagating
-              focusInput(); // Programmatically focus the input
-            }}
-          >
-            <div className="relative flex items-center">
+          <TooltipTrigger asChild>
+            <div
+              className="flex items-center"
+              onClick={() => setIsEditing(true)}
+            >
               <InfoIcon className="ml-2 h-4 w-4 align-middle text-red-500" />
             </div>
           </TooltipTrigger>
@@ -123,10 +133,10 @@ export function EditableCell<T extends string | number>({
       ) : isEditing ? (
         // Editable Input Field
         <Input
-          ref={inputRef} // Attach ref to the input
           value={value}
           onChange={onChange}
           onBlur={onBlur}
+          onFocus={onFocus}
           type={type === "currency" ? "number" : type}
           step={type === "currency" ? "0.01" : undefined}
           className={cn(
@@ -134,18 +144,13 @@ export function EditableCell<T extends string | number>({
             type !== "text" ? "text-right" : "text-left",
             className,
           )}
+          autoFocus
         />
       ) : (
         // Read-Only Input Field
         <Input
-          ref={inputRef} // Attach ref to the input
           value={formattedValue ?? value}
-          onFocus={() => {
-            setIsEditing(true); // Track that the user clicked to edit
-            if (isMissing) {
-              toast.error("This field is missing. Please update it.");
-            }
-          }}
+          onFocus={onFocus}
           type="text"
           readOnly
           className={cn(
@@ -155,6 +160,6 @@ export function EditableCell<T extends string | number>({
           )}
         />
       )}
-    </>
+    </div>
   );
 }
