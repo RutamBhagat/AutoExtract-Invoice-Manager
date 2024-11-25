@@ -16,6 +16,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Product } from "@/lib/validations/pdf-generate";
 import { TableType } from "@/types/table";
+import { parse } from "path";
 import { useDataStoreContext } from "@/providers/data-store-provider";
 
 interface ProductsColumnProps {
@@ -134,13 +135,18 @@ export const getColumns = ({
       const unitPrice = parseFloat(row.getValue("unitPrice"));
       const tax = parseFloat(row.getValue("tax"));
       const quantity = parseFloat(row.getValue("quantity"));
+      const priceWithTaxFromGemini = parseFloat(row.getValue("priceWithTax"));
       const priceWithTax = quantity * unitPrice + tax;
       const currency = row.original.currency || "USD";
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
       }).format(priceWithTax);
-      return <div className="text-right font-medium">{formatted}</div>;
+      return (
+        <div className="text-right font-medium">
+          {priceWithTaxFromGemini ? priceWithTaxFromGemini : formatted}
+        </div>
+      );
     },
   },
   {
