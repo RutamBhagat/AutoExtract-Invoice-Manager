@@ -16,7 +16,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Product } from "@/lib/validations/pdf-generate";
 import { TableType } from "@/types/table";
-import { useDataStore } from "@/stores/use-data-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
 
 interface ProductsColumnProps {
   setEditingProduct: (product: Product) => void;
@@ -146,7 +146,7 @@ export const getColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const product = row.original;
-      const removeProduct = useDataStore((state) => state.removeProduct);
+      const removeProduct = useDataStoreContext((state) => state.removeProduct);
 
       return (
         <DropdownMenu>

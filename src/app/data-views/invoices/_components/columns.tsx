@@ -16,7 +16,7 @@ import { DataTableColumnHeader } from "@/components/data-table/data-table-column
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Invoice } from "@/lib/validations/pdf-generate";
 import { TableType } from "@/types/table";
-import { useDataStore } from "@/stores/use-data-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
 
 export const getColumns = (): ColumnDef<Invoice, string | number>[] => [
   {
@@ -162,7 +162,7 @@ export const getColumns = (): ColumnDef<Invoice, string | number>[] => [
     id: "actions",
     cell: ({ row }) => {
       const invoice = row.original;
-      const removeInvoice = useDataStore((state) => state.removeInvoice);
+      const removeInvoice = useDataStoreContext((state) => state.removeInvoice);
 
       return (
         <DropdownMenu>

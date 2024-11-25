@@ -1,20 +1,13 @@
-import { create } from "zustand";
+import { createStore } from "zustand/vanilla";
 
-/**
- * Represents a single uploaded file's metadata
- */
-interface UploadedFile {
+export interface UploadedFile {
   fileUri: string;
   displayName: string;
   mimeType: string;
-  name: string; // Add name field
+  name: string;
 }
 
-/**
- * Store interface for managing file uploads and their states
- * Handles file upload tracking and loading states
- */
-interface UploadStore {
+export interface UploadStore {
   files: UploadedFile[];
   isUploading: boolean;
   isLoading: boolean;
@@ -27,10 +20,34 @@ interface UploadStore {
   fetchFiles: () => Promise<void>;
 }
 
-/**
- * Fetches the initial list of files from the server
- * Maps the fetched file data to the UploadedFile format
- */
+export const createUploadStore = (initState: Partial<UploadStore> = {}) => {
+  return createStore<UploadStore>((set) => ({
+    files: [],
+    isUploading: false,
+    isLoading: true,
+    setFiles: (files) => set({ files }),
+    addFile: (file) => set((state) => ({ files: [...state.files, file] })),
+    clearFiles: () => set({ files: [] }),
+    setUploading: (isUploading) => set({ isUploading }),
+    removeFile: (fileUri) =>
+      set((state) => ({
+        files: state.files.filter((file) => file.fileUri !== fileUri),
+      })),
+    fetchFiles: async () => {
+      set({ isLoading: true });
+      try {
+        const files = await fetchInitialData();
+        set({ files });
+      } catch (error) {
+        console.error("Failed to fetch files:", error);
+      } finally {
+        set({ isLoading: false });
+      }
+    },
+    ...initState,
+  }));
+};
+
 const fetchInitialData = async (): Promise<UploadedFile[]> => {
   try {
     const response = await fetch("/api/files/get-files");
@@ -59,32 +76,3 @@ const fetchInitialData = async (): Promise<UploadedFile[]> => {
     return [];
   }
 };
-
-export const useUploadStore = create<UploadStore>()((set) => ({
-  files: [],
-  isUploading: false,
-  isLoading: true,
-
-  setFiles: (files) => set({ files }),
-  addFile: (file) =>
-    set((state) => ({
-      files: [...state.files, file],
-    })),
-  clearFiles: () => set({ files: [] }),
-  setUploading: (isUploading) => set({ isUploading }),
-  removeFile: (fileUri) =>
-    set((state) => ({
-      files: state.files.filter((file) => file.fileUri !== fileUri),
-    })),
-  fetchFiles: async () => {
-    set({ isLoading: true });
-    try {
-      const files = await fetchInitialData();
-      set({ files });
-    } catch (error) {
-      console.error("Failed to fetch files:", error);
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-}));

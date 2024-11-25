@@ -3,12 +3,27 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { JsonDisplay } from "@/components/json-display";
-import { useDataStore } from "@/stores/use-data-store";
-import { useUploadStore } from "@/stores/use-upload-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
+import { useShallow } from "zustand/react/shallow";
+import { useUploadStoreContext } from "@/providers/upload-store-provider";
 
 export default function StoreDebugger() {
-  const store = useDataStore();
-  const uploadStore = useUploadStore();
+  const { invoices, products, customers, processedFiles } = useDataStoreContext(
+    useShallow((state) => ({
+      invoices: state.invoices,
+      products: state.products,
+      customers: state.customers,
+      processedFiles: state.processedFiles,
+    })),
+  );
+
+  const { files, isUploading, isLoading } = useUploadStoreContext(
+    useShallow((state) => ({
+      files: state.files,
+      isUploading: state.isUploading,
+      isLoading: state.isLoading,
+    })),
+  );
 
   return (
     <Tabs defaultValue="files" className="mx-auto w-full max-w-7xl">
@@ -22,9 +37,9 @@ export default function StoreDebugger() {
           title="File Management"
           description="View and manage your uploaded files here."
           data={{
-            files: uploadStore.files,
-            isUploading: uploadStore.isUploading,
-            isLoading: uploadStore.isLoading,
+            files,
+            isUploading,
+            isLoading,
           }}
         />
       </TabsContent>
@@ -34,10 +49,10 @@ export default function StoreDebugger() {
           title="Store Data"
           description="Debug view of the current store state."
           data={{
-            invoices: store.invoices,
-            products: store.products,
-            customers: store.customers,
-            processedFiles: store.processedFiles,
+            invoices,
+            products,
+            customers,
+            processedFiles,
           }}
         />
       </TabsContent>

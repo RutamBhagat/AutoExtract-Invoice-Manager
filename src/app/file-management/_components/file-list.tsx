@@ -23,26 +23,26 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useDataStore } from "@/stores/use-data-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
 import { useShallow } from "zustand/react/shallow";
 import { useState } from "react";
-import { useUploadStore } from "@/stores/use-upload-store";
+import { useUploadStoreContext } from "@/providers/upload-store-provider";
 
 export default function FileList() {
-  const { files, removeFile } = useUploadStore(
+  const { files, removeFile } = useUploadStoreContext(
     useShallow((state) => ({
       files: state.files,
       removeFile: state.removeFile,
     })),
   );
-
-  const { processedFiles, processFile, deleteFileAndData } = useDataStore(
-    useShallow((state) => ({
-      processedFiles: state.processedFiles,
-      processFile: state.processFile,
-      deleteFileAndData: state.deleteFileAndData,
-    })),
-  );
+  const { processedFiles, processFile, deleteFileAndData } =
+    useDataStoreContext(
+      useShallow((state) => ({
+        processedFiles: state.processedFiles,
+        processFile: state.processFile,
+        deleteFileAndData: state.deleteFileAndData,
+      })),
+    );
 
   const [filesFetched, setFilesFetched] = useState(false);
 

@@ -17,7 +17,7 @@ import { type FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useUploadStore } from "@/stores/use-upload-store";
+import { useUploadStoreContext } from "@/providers/upload-store-provider";
 import { useShallow } from "zustand/react/shallow";
 import { fileUploadSchema } from "@/lib/validations/file";
 import { supportedTypes } from "@/lib/types/supported-files";
@@ -30,9 +30,8 @@ export default function FileUploadDemo() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [isUploading, setUploading] = useState(false);
 
-  const { files: storedFiles, addFile } = useUploadStore(
+  const { addFile } = useUploadStoreContext(
     useShallow((state) => ({
-      files: state.files,
       addFile: state.addFile,
     })),
   );

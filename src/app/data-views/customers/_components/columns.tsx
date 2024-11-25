@@ -5,7 +5,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Trash } from "lucide-react";
@@ -16,7 +15,7 @@ import { Customer } from "@/lib/validations/pdf-generate";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { TableType } from "@/types/table";
-import { useDataStore } from "@/stores/use-data-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
 
 export const getColumns = (): ColumnDef<Customer, string | number>[] => [
   {
@@ -61,9 +60,6 @@ export const getColumns = (): ColumnDef<Customer, string | number>[] => [
     cell: ({ row, getValue, table }) => {
       const amount = parseFloat(row.getValue("totalPurchaseAmount"));
       const currency = row.original.currency || "USD";
-      const isMissing = row.original.missingFields?.includes(
-        "totalPurchaseAmount",
-      );
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
@@ -77,7 +73,6 @@ export const getColumns = (): ColumnDef<Customer, string | number>[] => [
           column="totalPurchaseAmount"
           updateData={(table.options.meta as TableType<Customer>).updateData}
           type="currency"
-          isMissing={isMissing}
         />
       );
     },
@@ -86,7 +81,9 @@ export const getColumns = (): ColumnDef<Customer, string | number>[] => [
     id: "actions",
     cell: ({ row }) => {
       const customer = row.original;
-      const removeCustomer = useDataStore((state) => state.removeCustomer);
+      const removeCustomer = useDataStoreContext(
+        (state) => state.removeCustomer,
+      );
 
       return (
         <DropdownMenu>
