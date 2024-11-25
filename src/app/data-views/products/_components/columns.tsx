@@ -133,7 +133,8 @@ export const getColumns = ({
     cell: ({ row }) => {
       const unitPrice = parseFloat(row.getValue("unitPrice"));
       const tax = parseFloat(row.getValue("tax"));
-      const priceWithTax = unitPrice + tax;
+      const quantity = parseFloat(row.getValue("quantity"));
+      const priceWithTax = quantity * unitPrice + tax;
       const currency = row.original.currency || "USD";
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",

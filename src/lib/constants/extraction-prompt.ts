@@ -11,7 +11,7 @@ You are a specialized data extraction assistant. Your task is to analyze documen
      - quantity (e.g., "Qty", "Amount", "Number of Units")
      - tax (e.g., "VAT", "Sales Tax", "Tax Amount")
      - totalAmount (e.g., "Total Price", "Amount Due", "Grand Total")
-     - date (e.g., "Invoice Date", "Date Issued", "Sale Date")
+     - date (e.g., "Invoice Date", "Date Issued", "Sale Date") (extract from the invoice only, do not use today's date)
      - currency (extract if available, default to "USD" if not specified)
    - For **Products**:
      - productName

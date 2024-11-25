@@ -1,14 +1,19 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 
-import { Input } from "../ui/input";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+
+type UpdateDataFn<T> = (rowIndex: number, columnId: string, value: T) => void;
 
 interface EditableCellProps<T> {
   value: T;
   formattedValue?: string;
   row: number;
   column: string;
-  updateData?: (row: number, column: string, value: T) => void;
+  updateData?: UpdateDataFn<T>;
   type?: "text" | "number" | "currency";
   className?: string;
   isMissing?: boolean;
@@ -53,25 +58,27 @@ export function EditableCell<T extends string | number>({
     }
   };
 
-  const onBlur = () => {
-    setIsEditing(false);
-  };
+  const onFocus = () => setIsEditing(true);
+  const onBlur = () => setIsEditing(false);
 
-  const onFocus = () => {
-    setIsEditing(true);
-  };
-
-  const inputClasses = `${className} ${isMissing ? "border-red-500" : ""}`;
+  const containerClasses = cn("h-full cursor-pointer", className);
+  const contentClasses = cn(type !== "text" ? "text-right" : "text-left");
+  const sharedClasses = cn(
+    "m-0 h-full rounded-none font-medium border-0 shadow-none focus-visible:ring-0 appearance-none bg-transparent",
+    contentClasses,
+    containerClasses,
+    isMissing && "border-red-500",
+  );
 
   if (isEditing) {
     return (
       <Input
-        value={isMissing ? "" : value}
+        value={value}
         onChange={onChange}
         onBlur={onBlur}
         type={type === "currency" ? "number" : type}
         step={type === "currency" ? "0.01" : undefined}
-        className={inputClasses}
+        className={sharedClasses}
         autoFocus
       />
     );
@@ -79,11 +86,11 @@ export function EditableCell<T extends string | number>({
 
   return (
     <Input
-      value={isMissing ? "" : (formattedValue ?? value)}
+      value={formattedValue ?? value}
       onFocus={onFocus}
       type="text"
       readOnly
-      className={inputClasses}
+      className={sharedClasses}
     />
   );
 }
