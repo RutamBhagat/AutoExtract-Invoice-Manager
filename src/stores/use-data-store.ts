@@ -11,9 +11,9 @@ import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { z } from "zod";
 
-type Invoice = z.infer<typeof invoiceSchema>;
-type Product = z.infer<typeof productSchema>;
-type Customer = z.infer<typeof customerSchema>;
+type Invoice = z.infer<typeof invoiceSchema> & { missingFields?: string[] };
+type Product = z.infer<typeof productSchema> & { missingFields?: string[] };
+type Customer = z.infer<typeof customerSchema> & { missingFields?: string[] };
 
 interface ProcessedFile {
   fileUri: string;

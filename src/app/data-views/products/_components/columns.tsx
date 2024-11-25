@@ -21,20 +21,25 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as string}
-        row={row.index}
-        column="productName"
-        updateData={(rowIndex, columnId, value) => {
-          const productId = row.original.productId;
-          if (productId) {
-            updateProduct(productId, { [columnId]: value });
-          }
-        }}
-        type="text"
-      />
-    ),
+    cell: ({ row, getValue, table }) => {
+      const columnId = "productName";
+      const isMissing = row.original.missingFields?.includes(columnId);
+      return (
+        <EditableCell
+          value={getValue() as string}
+          row={row.index}
+          column={columnId}
+          updateData={(rowIndex, columnId, value) => {
+            const productId = row.original.productId;
+            if (productId) {
+              updateProduct(productId, { [columnId]: value });
+            }
+          }}
+          type="text"
+          isMissing={isMissing}
+        />
+      );
+    },
   },
   {
     accessorKey: "quantity",
@@ -45,20 +50,25 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => (
-      <EditableCell
-        value={getValue() as number}
-        row={row.index}
-        column="quantity"
-        updateData={(rowIndex, columnId, value) => {
-          const productId = row.original.productId;
-          if (productId) {
-            updateProduct(productId, { [columnId]: value });
-          }
-        }}
-        type="number"
-      />
-    ),
+    cell: ({ row, getValue, table }) => {
+      const columnId = "quantity";
+      const isMissing = row.original.missingFields?.includes(columnId);
+      return (
+        <EditableCell
+          value={getValue() as number}
+          row={row.index}
+          column={columnId}
+          updateData={(rowIndex, columnId, value) => {
+            const productId = row.original.productId;
+            if (productId) {
+              updateProduct(productId, { [columnId]: value });
+            }
+          }}
+          type="number"
+          isMissing={isMissing}
+        />
+      );
+    },
   },
   {
     accessorKey: "unitPrice",
@@ -70,9 +80,10 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => {
-      const amount = parseFloat(row.getValue("unitPrice"));
+      const columnId = "unitPrice";
+      const amount = parseFloat(row.getValue(columnId));
       const currency = row.original.currency || "USD";
-      const isMissing = row.original.missingFields?.includes("unitPrice");
+      const isMissing = row.original.missingFields?.includes(columnId);
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
@@ -83,14 +94,14 @@ export const getColumns = ({
           value={amount}
           formattedValue={formatted}
           row={row.index}
-          column="unitPrice"
+          column={columnId}
           updateData={(rowIndex, columnId, value) => {
             const productId = row.original.productId;
             if (productId) {
               updateProduct(productId, { [columnId]: value });
             }
           }}
-          type="currency"
+          type="number"
           isMissing={isMissing}
         />
       );
@@ -106,9 +117,10 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue, table }) => {
-      const amount = parseFloat(row.getValue("tax"));
+      const columnId = "tax";
+      const amount = parseFloat(row.getValue(columnId));
       const currency = row.original.currency || "USD";
-      const isMissing = row.original.missingFields?.includes("tax");
+      const isMissing = row.original.missingFields?.includes(columnId);
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
@@ -119,14 +131,14 @@ export const getColumns = ({
           value={amount}
           formattedValue={formatted}
           row={row.index}
-          column="tax"
+          column={columnId}
           updateData={(rowIndex, columnId, value) => {
             const productId = row.original.productId;
             if (productId) {
               updateProduct(productId, { [columnId]: value });
             }
           }}
-          type="currency"
+          type="number"
           isMissing={isMissing}
         />
       );

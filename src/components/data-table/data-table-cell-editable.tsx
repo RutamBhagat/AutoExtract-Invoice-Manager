@@ -20,16 +20,16 @@ interface EditableCellProps<T> {
   row: number;
   column: string;
   updateData?: UpdateDataFn<T>;
-  type?: "text" | "number" | "currency";
+  type?: "text" | "number";
   className?: string;
   isMissing?: boolean;
 }
 
 const isEmpty = <T extends string | number>(
   value: T,
-  type: "text" | "number" | "currency",
+  type: "text" | "number",
 ): boolean => {
-  if (type === "number" || type === "currency") {
+  if (type === "number") {
     return value === null || value === undefined || value === 0;
   } else {
     return !value || value === "";
@@ -57,7 +57,7 @@ export function EditableCell<T extends string | number>({
   }, [initialValue, type, initialIsMissing]); // Add initialIsMissing to dependency array
 
   const validateValue = (input: string): T | null => {
-    if (type === "number" || type === "currency") {
+    if (type === "number") {
       const num = Number(input);
       if (isNaN(num) || num < 0) {
         toast.error("Please enter a valid positive number");
@@ -130,8 +130,8 @@ export function EditableCell<T extends string | number>({
         </Tooltip>
       ) : isEditing ? (
         <Input
-          type={type === "currency" ? "number" : type}
-          step={type === "currency" ? "0.01" : undefined}
+          type={type}
+          step={type === "number" ? "0.01" : undefined}
           value={value as string} // Cast value to string to avoid type errors.
           onChange={onChange}
           onBlur={onBlur}

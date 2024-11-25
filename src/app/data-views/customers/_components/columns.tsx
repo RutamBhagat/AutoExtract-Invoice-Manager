@@ -21,40 +21,50 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Customer Name" />
     ),
-    cell: ({ row, getValue }) => (
-      <EditableCell
-        value={getValue() as string}
-        row={row.index}
-        column="customerName"
-        updateData={(rowIndex, columnId, value) => {
-          const customerId = row.original.customerId;
-          if (customerId) {
-            updateCustomer(customerId, { [columnId]: value });
-          }
-        }}
-        type="text"
-      />
-    ),
+    cell: ({ row, getValue }) => {
+      const columnId = "customerName";
+      const isMissing = row.original.missingFields?.includes(columnId);
+      return (
+        <EditableCell
+          value={getValue() as string}
+          row={row.index}
+          column={columnId}
+          updateData={(rowIndex, columnId, value) => {
+            const customerId = row.original.customerId;
+            if (customerId) {
+              updateCustomer(customerId, { [columnId]: value });
+            }
+          }}
+          type="text"
+          isMissing={isMissing}
+        />
+      );
+    },
   },
   {
     accessorKey: "phoneNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Phone Number" />
     ),
-    cell: ({ row, getValue }) => (
-      <EditableCell
-        value={getValue() as string}
-        row={row.index}
-        column="phoneNumber"
-        updateData={(rowIndex, columnId, value) => {
-          const customerId = row.original.customerId;
-          if (customerId) {
-            updateCustomer(customerId, { [columnId]: value });
-          }
-        }}
-        type="text"
-      />
-    ),
+    cell: ({ row, getValue }) => {
+      const columnId = "phoneNumber";
+      const isMissing = row.original.missingFields?.includes(columnId);
+      return (
+        <EditableCell
+          value={getValue() as string}
+          row={row.index}
+          column={columnId}
+          updateData={(rowIndex, columnId, value) => {
+            const customerId = row.original.customerId;
+            if (customerId) {
+              updateCustomer(customerId, { [columnId]: value });
+            }
+          }}
+          type="text"
+          isMissing={isMissing}
+        />
+      );
+    },
   },
   {
     accessorKey: "totalPurchaseAmount",
@@ -66,6 +76,8 @@ export const getColumns = ({
       />
     ),
     cell: ({ row, getValue }) => {
+      const columnId = "totalPurchaseAmount";
+      const isMissing = row.original.missingFields?.includes(columnId);
       const amount = parseFloat(row.getValue("totalPurchaseAmount"));
       const currency = row.original.currency || "USD";
       const formatted = new Intl.NumberFormat("en-US", {
@@ -78,14 +90,15 @@ export const getColumns = ({
           value={amount}
           formattedValue={formatted}
           row={row.index}
-          column="totalPurchaseAmount"
+          column={columnId}
           updateData={(rowIndex, columnId, value) => {
             const customerId = row.original.customerId;
             if (customerId) {
               updateCustomer(customerId, { [columnId]: value });
             }
           }}
-          type="currency"
+          type="number"
+          isMissing={isMissing}
         />
       );
     },
