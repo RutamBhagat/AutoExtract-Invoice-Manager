@@ -19,8 +19,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useDataStore } from "@/stores/use-data-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
 import { useForm } from "react-hook-form";
+import { useShallow } from "zustand/react/shallow";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface EditCustomerDialogProps {
@@ -34,7 +35,9 @@ export function EditCustomerDialog({
   open,
   onOpenChange,
 }: EditCustomerDialogProps) {
-  const updateCustomer = useDataStore((state) => state.updateCustomer);
+  const updateCustomer = useDataStoreContext(
+    useShallow((state) => state.updateCustomer),
+  );
 
   const form = useForm<Customer>({
     resolver: zodResolver(customerSchema),

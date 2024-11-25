@@ -6,10 +6,11 @@ import { DataTable } from "@/components/data-table/data-table";
 import { EditProductDialog } from "./_components/edit-product-dialog";
 import { Product } from "@/lib/validations/pdf-generate";
 import { getColumns } from "./_components/columns";
-import { useDataStore } from "@/stores/use-data-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
+import { useShallow } from "zustand/react/shallow";
 
 export default function ProductsPage() {
-  const products = useDataStore((state) => state.products);
+  const products = useDataStoreContext(useShallow((state) => state.products));
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const columns = useMemo(

@@ -20,8 +20,9 @@ import { Product, productSchema } from "@/lib/validations/pdf-generate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useDataStore } from "@/stores/use-data-store";
+import { useDataStoreContext } from "@/providers/data-store-provider";
 import { useForm } from "react-hook-form";
+import { useShallow } from "zustand/react/shallow";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface EditProductDialogProps {
@@ -35,7 +36,9 @@ export function EditProductDialog({
   open,
   onOpenChange,
 }: EditProductDialogProps) {
-  const updateProduct = useDataStore((state) => state.updateProduct);
+  const updateProduct = useDataStoreContext(
+    useShallow((state) => state.updateProduct),
+  );
 
   const form = useForm<Product>({
     resolver: zodResolver(productSchema),

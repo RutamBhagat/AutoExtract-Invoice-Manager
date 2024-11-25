@@ -26,8 +26,9 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { useDataStore } from "@/stores/use-data-store";
 import { TableType } from "@/types/table";
+import { useDataStoreContext } from "@/providers/data-store-provider";
+import { useShallow } from "zustand/react/shallow";
 
 interface DataTableProps<TData extends RowData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -40,6 +41,10 @@ export function DataTable<TData extends RowData, TValue>({
   data,
   filterColumn,
 }: DataTableProps<TData, TValue>) {
+  const updateProduct = useDataStoreContext(
+    useShallow((state) => state.updateProduct),
+  );
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -74,7 +79,7 @@ export function DataTable<TData extends RowData, TValue>({
         };
 
         if ("productId" in row) {
-          useDataStore.getState().updateProduct(row.productId, updatedData);
+          updateProduct(row.productId, updatedData);
         }
       },
     } satisfies TableType<TData>,
