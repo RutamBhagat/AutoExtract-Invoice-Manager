@@ -64,15 +64,17 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
-        title="Unit Price (USD)"
+        title="Unit Price"
         className="text-right"
       />
     ),
     cell: ({ row, getValue, table }) => {
       const amount = parseFloat(row.getValue("unitPrice"));
+      const currency = row.original.currency || "USD";
+      const isMissing = row.original.missingFields?.includes("unitPrice");
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency,
       }).format(amount);
 
       return (
@@ -83,6 +85,7 @@ export const getColumns = ({
           column="unitPrice"
           updateData={(table.options.meta as TableType<Product>).updateData}
           type="currency"
+          isMissing={isMissing}
         />
       );
     },
@@ -92,15 +95,17 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
-        title="Tax (USD)"
+        title="Tax"
         className="text-right"
       />
     ),
     cell: ({ row, getValue, table }) => {
       const amount = parseFloat(row.getValue("tax"));
+      const currency = row.original.currency || "USD";
+      const isMissing = row.original.missingFields?.includes("tax");
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency,
       }).format(amount);
 
       return (
@@ -111,6 +116,7 @@ export const getColumns = ({
           column="tax"
           updateData={(table.options.meta as TableType<Product>).updateData}
           type="currency"
+          isMissing={isMissing}
         />
       );
     },
@@ -120,7 +126,7 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
-        title="Price with Tax (USD)"
+        title="Price with Tax"
         className="text-right"
       />
     ),
@@ -128,9 +134,10 @@ export const getColumns = ({
       const unitPrice = parseFloat(row.getValue("unitPrice"));
       const tax = parseFloat(row.getValue("tax"));
       const priceWithTax = unitPrice + tax;
+      const currency = row.original.currency || "USD";
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency,
       }).format(priceWithTax);
       return <div className="text-right font-medium">{formatted}</div>;
     },

@@ -20,6 +20,7 @@ export const invoiceSchema = z.object({
   date: z.string().nullable().optional(),
   invoiceNumber: z.string().optional(),
   dueDate: z.string().optional(),
+  currency: z.string().optional(),
   missingFields: z.array(z.string()).optional(),
 });
 
@@ -38,6 +39,7 @@ export const productSchema = z.object({
   tax: z.number().nullable().optional(),
   priceWithTax: z.number().nullable().optional(),
   discount: z.number().nullable().optional(),
+  currency: z.string().optional(),
   missingFields: z.array(z.string()).optional(),
 });
 
@@ -53,6 +55,7 @@ export const customerSchema = z.object({
   customerName: z.string().optional(),
   phoneNumber: z.string().nullable().optional(),
   totalPurchaseAmount: z.number().nullable().optional(),
+  currency: z.string().optional(),
   missingFields: z.array(z.string()).optional(),
 });
 
@@ -110,8 +113,18 @@ export const combinedGeminiSchema = {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
           },
+          currency: { type: SchemaType.STRING },
         },
-        required: ["invoiceId"],
+        required: [
+          "invoiceId",
+          "serialNumber",
+          "customerName",
+          "productName",
+          "quantity",
+          "tax",
+          "totalAmount",
+          "date",
+        ],
       },
     },
     products: {
@@ -130,8 +143,16 @@ export const combinedGeminiSchema = {
             type: SchemaType.ARRAY,
             items: { type: SchemaType.STRING },
           },
+          currency: { type: SchemaType.STRING },
         },
-        required: ["productId"],
+        required: [
+          "productId",
+          "productName",
+          "quantity",
+          "unitPrice",
+          "tax",
+          "priceWithTax",
+        ],
       },
     },
     customers: {
@@ -148,7 +169,12 @@ export const combinedGeminiSchema = {
             items: { type: SchemaType.STRING },
           },
         },
-        required: ["customerId"],
+        required: [
+          "customerId",
+          "customerName",
+          "phoneNumber",
+          "totalPurchaseAmount",
+        ],
       },
     },
   },

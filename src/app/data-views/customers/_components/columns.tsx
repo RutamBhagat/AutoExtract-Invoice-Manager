@@ -60,9 +60,13 @@ export const getColumns = (): ColumnDef<Customer, string | number>[] => [
     ),
     cell: ({ row, getValue, table }) => {
       const amount = parseFloat(row.getValue("totalPurchaseAmount"));
+      const currency = row.original.currency || "USD";
+      const isMissing = row.original.missingFields?.includes(
+        "totalPurchaseAmount",
+      );
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency,
       }).format(amount);
 
       return (
@@ -73,6 +77,7 @@ export const getColumns = (): ColumnDef<Customer, string | number>[] => [
           column="totalPurchaseAmount"
           updateData={(table.options.meta as TableType<Customer>).updateData}
           type="currency"
+          isMissing={isMissing}
         />
       );
     },

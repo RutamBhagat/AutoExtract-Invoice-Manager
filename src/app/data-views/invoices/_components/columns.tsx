@@ -94,9 +94,11 @@ export const getColumns = (): ColumnDef<Invoice, string | number>[] => [
     ),
     cell: ({ row, getValue, table }) => {
       const amount = parseFloat(row.getValue("tax"));
+      const currency = row.original.currency || "USD";
+      const isMissing = row.original.missingFields?.includes("tax");
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency,
       }).format(amount);
 
       return (
@@ -107,6 +109,7 @@ export const getColumns = (): ColumnDef<Invoice, string | number>[] => [
           column="tax"
           updateData={(table.options.meta as TableType<Invoice>).updateData}
           type="currency"
+          isMissing={isMissing}
         />
       );
     },
@@ -122,9 +125,10 @@ export const getColumns = (): ColumnDef<Invoice, string | number>[] => [
     ),
     cell: ({ row, getValue, table }) => {
       const amount = parseFloat(row.getValue("totalAmount"));
+      const currency = row.original.currency || "USD";
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: "USD",
+        currency,
       }).format(amount);
 
       return (
