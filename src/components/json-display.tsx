@@ -8,12 +8,12 @@ import {
   CardTitle,
 } from "./ui/card";
 
-import JSONPretty from "react-json-pretty";
+import ReactJson from "react-json-view";
 
 interface JsonDisplayProps {
   title: string;
-  description: string;
-  data: Record<string, unknown>;
+  description?: string;
+  data: Record<string, unknown> | Array<unknown>;
 }
 
 export function JsonDisplay({ title, description, data }: JsonDisplayProps) {
@@ -21,21 +21,22 @@ export function JsonDisplay({ title, description, data }: JsonDisplayProps) {
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <div className="rounded-md bg-zinc-800 p-4">
-          <JSONPretty
-            data={data}
-            space="2"
-            mainStyle="padding:1em;line-height:1.3;background:transparent;color:#ffffff;"
-            theme={{
-              main: "color:#ffffff;",
-              key: "color:#f92672;",
-              string: "color:#a6e22e;",
-              value: "color:#fd971f;",
-              boolean: "color:#ae81ff;",
-              number: "color:#66d9ef;",
+        <div className="overflow-hidden rounded-md bg-zinc-800">
+          <ReactJson
+            src={data}
+            theme="monokai"
+            collapsed={false}
+            enableClipboard={true}
+            displayDataTypes={true}
+            displayObjectSize={true}
+            style={{
+              padding: "1em",
+              lineHeight: "1.3",
+              backgroundColor: "transparent",
+              color: "#ffffff",
             }}
           />
         </div>

@@ -2,10 +2,19 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { JsonDisplay } from "@/components/json-display";
+import { JsonDisplay } from "@/components/json-display"; // Import this
+import dynamic from "next/dynamic";
 import { useDataStoreContext } from "@/providers/data-store-provider";
 import { useShallow } from "zustand/react/shallow";
 import { useUploadStoreContext } from "@/providers/upload-store-provider";
+
+// Type the dynamic import
+const DynamicJsonDisplay = dynamic(
+  () => import("@/components/json-display").then((mod) => mod.JsonDisplay),
+  {
+    ssr: false,
+  },
+);
 
 export default function StoreDebugger() {
   const { invoices, products, customers, processedFiles } = useDataStoreContext(
@@ -33,28 +42,36 @@ export default function StoreDebugger() {
       </TabsList>
 
       <TabsContent value="files">
-        <JsonDisplay
-          title="File Management"
-          description="View and manage your uploaded files here."
-          data={{
-            files,
-            isUploading,
-            isLoading,
-          }}
-        />
+        {files && Object.keys(files).length > 0 ? (
+          <DynamicJsonDisplay
+            title="File Management"
+            description="View and manage your uploaded files here."
+            data={{
+              files,
+              isUploading,
+              isLoading,
+            }}
+          />
+        ) : (
+          <p>No files uploaded yet.</p>
+        )}
       </TabsContent>
 
       <TabsContent value="data">
-        <JsonDisplay
-          title="Store Data"
-          description="Debug view of the current store state."
-          data={{
-            invoices,
-            products,
-            customers,
-            processedFiles,
-          }}
-        />
+        {invoices || products || customers || processedFiles ? (
+          <DynamicJsonDisplay
+            title="Store Data"
+            description="Debug view of the current store state."
+            data={{
+              invoices,
+              products,
+              customers,
+              processedFiles,
+            }}
+          />
+        ) : (
+          <p>No store data available yet.</p>
+        )}
       </TabsContent>
     </Tabs>
   );
