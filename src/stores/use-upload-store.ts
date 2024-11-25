@@ -88,5 +88,3 @@ export const useUploadStore = create<UploadStore>()((set) => ({
     }
   },
 }));
-
-void useUploadStore.getState().fetchFiles();

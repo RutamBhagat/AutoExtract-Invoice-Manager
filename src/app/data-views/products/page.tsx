@@ -6,7 +6,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { EditProductDialog } from "./_components/edit-product-dialog";
 import { Product } from "@/lib/validations/pdf-generate";
 import { getColumns } from "./_components/columns";
-import { useDataStore } from "@/stores/useDataStore";
+import { useDataStore } from "@/stores/use-data-store";
 
 export default function ProductsPage() {
   const products = useDataStore((state) => state.products);

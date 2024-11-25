@@ -23,9 +23,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useDataStore } from "@/stores/useDataStore";
+import { useDataStore } from "@/stores/use-data-store";
 import { useShallow } from "zustand/react/shallow";
-import { useUploadStore } from "@/stores/useUploadStore";
+import { useState } from "react";
+import { useUploadStore } from "@/stores/use-upload-store";
 
 export default function FileList() {
   const { files, removeFile } = useUploadStore(
@@ -43,10 +44,13 @@ export default function FileList() {
     })),
   );
 
+  const [filesFetched, setFilesFetched] = useState(false);
+
   const handleDelete = async (fileUri: string) => {
-    const fileName = files.find(f => f.fileUri === fileUri)?.displayName || fileUri;
+    const fileName =
+      files.find((f) => f.fileUri === fileUri)?.displayName || fileUri;
     const deleteToastId = toast.loading("Deleting file...", {
-      description: `Removing ${fileName}`
+      description: `Removing ${fileName}`,
     });
 
     try {
@@ -65,7 +69,7 @@ export default function FileList() {
         removeFile(fileUri);
         toast.success("File removed", {
           id: deleteToastId,
-          description: response.ok 
+          description: response.ok
             ? `${fileName} has been deleted successfully`
             : `${fileName} has been removed from your list`,
         });
@@ -77,17 +81,19 @@ export default function FileList() {
       console.error("Failed to delete file", error);
       toast.error("Failed to delete file", {
         id: deleteToastId,
-        description: error instanceof Error 
-          ? `Error: ${error.message}`
-          : "There was a problem deleting the file. Please try again.",
+        description:
+          error instanceof Error
+            ? `Error: ${error.message}`
+            : "There was a problem deleting the file. Please try again.",
       });
     }
   };
 
   const handleDeleteWithData = async (fileUri: string) => {
-    const fileName = files.find(f => f.fileUri === fileUri)?.displayName || fileUri;
+    const fileName =
+      files.find((f) => f.fileUri === fileUri)?.displayName || fileUri;
     const deleteToastId = toast.loading("Deleting file and data...", {
-      description: `Removing ${fileName} and all associated data`
+      description: `Removing ${fileName} and all associated data`,
     });
 
     try {
@@ -120,9 +126,10 @@ export default function FileList() {
       console.error("Failed to delete file and data", error);
       toast.error("Failed to delete file and data", {
         id: deleteToastId,
-        description: error instanceof Error
-          ? `Error: ${error.message}`
-          : "There was a problem deleting the file and its data. Please try again.",
+        description:
+          error instanceof Error
+            ? `Error: ${error.message}`
+            : "There was a problem deleting the file and its data. Please try again.",
       });
     }
   };
@@ -131,7 +138,7 @@ export default function FileList() {
     const toastId = toast.loading(`Processing file...`, {
       description: "Extracting data from your document",
     });
-    
+
     try {
       await processFile(fileUri, mimeType);
       toast.success("File processed successfully", {
@@ -140,12 +147,14 @@ export default function FileList() {
       });
     } catch (error: unknown) {
       let errorMessage = "An error occurred while processing the file";
-      let description = "Please try again or contact support if the issue persists";
+      let description =
+        "Please try again or contact support if the issue persists";
 
       if (error instanceof Error) {
         if (error.message.includes("schema validation")) {
           errorMessage = "Document validation failed";
-          description = "The document structure doesn't match the expected format";
+          description =
+            "The document structure doesn't match the expected format";
         } else if (error.message.includes("parse")) {
           errorMessage = "Document parsing failed";
           description = "Unable to extract structured data from the document";

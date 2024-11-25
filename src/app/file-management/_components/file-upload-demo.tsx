@@ -17,7 +17,7 @@ import { type FileWithPath, useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { useUploadStore } from "@/stores/useUploadStore";
+import { useUploadStore } from "@/stores/use-upload-store";
 import { useShallow } from "zustand/react/shallow";
 import { fileUploadSchema } from "@/lib/validations/file";
 import { supportedTypes } from "@/lib/types/supported-files";

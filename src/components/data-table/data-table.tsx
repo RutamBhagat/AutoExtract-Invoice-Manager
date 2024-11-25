@@ -26,7 +26,7 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
-import { useDataStore } from "@/stores/useDataStore";
+import { useDataStore } from "@/stores/use-data-store";
 import { TableType } from "@/types/table";
 
 interface DataTableProps<TData extends RowData, TValue> {

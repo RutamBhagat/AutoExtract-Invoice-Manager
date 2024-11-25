@@ -3,8 +3,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { JsonDisplay } from "@/components/json-display";
-import { useDataStore } from "@/stores/useDataStore";
-import { useUploadStore } from "@/stores/useUploadStore";
+import { useDataStore } from "@/stores/use-data-store";
+import { useUploadStore } from "@/stores/use-upload-store";
 
 export default function StoreDebugger() {
   const store = useDataStore();

@@ -19,7 +19,7 @@ import { Invoice, invoiceSchema } from "@/lib/validations/pdf-generate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useDataStore } from "@/stores/useDataStore";
+import { useDataStore } from "@/stores/use-data-store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
