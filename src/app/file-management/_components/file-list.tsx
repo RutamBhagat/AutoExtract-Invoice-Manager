@@ -230,7 +230,7 @@ export default function FileList() {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <p>{file.displayName}</p>
-                                  <p className="text-xs text-slate-500 text-white">
+                                  <p className="text-xs text-white">
                                     {file.fileUri}
                                   </p>
                                 </TooltipContent>
