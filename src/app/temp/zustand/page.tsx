@@ -55,19 +55,15 @@ export default function StoreDebugger() {
       </TabsList>
 
       <TabsContent value="files">
-        {files && Object.keys(files).length > 0 ? (
-          <DynamicJsonDisplay
-            title="File Management"
-            description="View and manage your uploaded files here."
-            data={{
-              files,
-              isUploading,
-              isLoading,
-            }}
-          />
-        ) : (
-          <p>No files uploaded yet.</p>
-        )}
+        <DynamicJsonDisplay
+          title="File Management"
+          description="View and manage your uploaded files here."
+          data={{
+            files,
+            isUploading,
+            isLoading,
+          }}
+        />
       </TabsContent>
 
       <TabsContent value="data">
