@@ -453,58 +453,6 @@ const store = createStore<DataStore>()(
   ),
 );
 
-// Helper functions
-const calculatePriceWithTax = (
-  updates: Partial<Product>,
-  original: Product,
-) => {
-  const unitPrice = updates.unitPrice ?? original.unitPrice ?? 0;
-  const tax = updates.tax ?? original.tax ?? 0;
-  return unitPrice + tax;
-};
-
-const calculateInvoiceTotal = (
-  unitPrice: number,
-  quantity: number,
-  tax: number,
-) => {
-  return unitPrice * quantity + tax;
-};
-
-const updateMissingFields = (
-  current: string[] | undefined,
-  field: string,
-  isMissing: boolean,
-) => {
-  const fields = current || [];
-  if (isMissing && !fields.includes(field)) {
-    return [...fields, field];
-  }
-  return fields.filter((f) => f !== field);
-};
-
-const recalculateInvoice = (
-  invoice: Invoice,
-  products: Product[],
-  updates: Partial<Invoice> = {},
-): Invoice => {
-  const product = products.find((p) => p.productId === invoice.productId);
-  if (!product) return { ...invoice, ...updates };
-
-  const quantity = updates.quantity ?? invoice.quantity ?? 0;
-  const tax = product.tax ?? 0;
-  // Use product's unit price for calculation but don't store it in invoice
-  const totalAmount = quantity * (product.unitPrice ?? 0) + tax;
-
-  return {
-    ...invoice,
-    ...updates,
-    totalAmount,
-    productName: product.productName ?? "",
-    tax,
-  };
-};
-
 // Create and export the hook
 export const useDataStore = <T>(selector: (state: DataStore) => T): T =>
   useStore(store, selector);
