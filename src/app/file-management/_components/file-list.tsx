@@ -226,23 +226,11 @@ export default function FileList() {
                                     <p className="truncate font-medium">
                                       {file.displayName}
                                     </p>
-                                    <Badge
-                                      className={cn(
-                                        isProcessed
-                                          ? "bg-green-700"
-                                          : "bg-red-700",
-                                        "mt-1",
-                                      )}
-                                    >
-                                      {isProcessed
-                                        ? "Processed"
-                                        : "Unprocessed"}
-                                    </Badge>
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <p>{file.displayName}</p>
-                                  <p className="text-xs text-slate-500">
+                                  <p className="text-xs text-slate-500 text-white">
                                     {file.fileUri}
                                   </p>
                                 </TooltipContent>
