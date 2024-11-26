@@ -6,7 +6,6 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "@/trpc/react";
 import Providers from "@/components/providers";
 import Dashboard from "@/components/dashboard/dashboard";
-import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -25,7 +24,6 @@ export default function RootLayout({
             <Dashboard>{children}</Dashboard>
           </Providers>
         </TRPCReactProvider>
-        <Toaster />
       </body>
     </html>
   );

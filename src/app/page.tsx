@@ -1,20 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HydrateClient, api } from "@/trpc/server";
 
 import { Button } from "@/components/ui/button";
-import { auth } from "@/server/auth";
 
 export default async function Home() {
-  const session = await auth();
-
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
-
   return (
-    <HydrateClient>
+    <>
       {/* Hero Section */}
-      <section className="relative flex min-h-screen items-center justify-center bg-primary text-primary-foreground">
+      {/* <section className="relative flex min-h-screen items-center justify-center bg-primary text-primary-foreground">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/80 to-secondary" />
         <div className="relative z-10 space-y-6 text-center">
           <h1 className="text-5xl font-bold leading-tight md:text-6xl">
@@ -41,10 +33,10 @@ export default async function Home() {
             </Button>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Features Section */}
-      <section className="bg-background py-16 text-foreground">
+      {/* <section className="bg-background py-16 text-foreground">
         <div className="container mx-auto space-y-12 text-center">
           <h2 className="text-3xl font-bold md:text-4xl">
             Why Choose AutoExtract?
@@ -83,10 +75,10 @@ export default async function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* How It Works Section */}
-      <section className="bg-muted py-16">
+      {/* <section className="bg-muted py-16">
         <div className="container mx-auto space-y-12 text-center">
           <h2 className="text-3xl font-bold text-primary md:text-4xl">
             How It Works
@@ -126,10 +118,10 @@ export default async function Home() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Call to Action Section */}
-      <section className="bg-secondary py-16 text-secondary-foreground">
+      {/* <section className="bg-secondary py-16 text-secondary-foreground">
         <div className="container mx-auto space-y-6 text-center">
           <h2 className="text-3xl font-bold text-primary-foreground md:text-4xl">
             Start Your Journey Today
@@ -142,7 +134,8 @@ export default async function Home() {
             Get Started for Free
           </Button>
         </div>
-      </section>
-    </HydrateClient>
+      </section> */}
+      <div className="flex h-full w-full flex-1 bg-gray-700"></div>
+    </>
   );
 }

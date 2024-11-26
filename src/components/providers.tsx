@@ -13,8 +13,8 @@ export default function Providers({
   return (
     <QueryClientProvider client={queryClient}>
       <ZustandProviders>
-        {children}
         <Toaster />
+        {children}
       </ZustandProviders>
     </QueryClientProvider>
   );

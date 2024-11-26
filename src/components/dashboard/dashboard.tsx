@@ -20,7 +20,7 @@ export default function Dashboard({
           <Separator orientation="vertical" className="mr-2 h-4" />
           <DashboardBreadcrumbs />
         </header>
-        <div className="flex flex-1 flex-col gap-4">{children}</div>
+        <div className="flex flex-1 flex-col">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
