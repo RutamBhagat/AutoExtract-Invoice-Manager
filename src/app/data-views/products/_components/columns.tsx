@@ -29,10 +29,21 @@ export const getColumns = ({
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value) => {
+          updateData={(rowIndex, columnId, value, isMissing) => {
             const productId = row.original.productId;
             if (productId) {
-              updateProduct(productId, { [columnId]: value });
+              const updates: Partial<Product> = { [columnId]: value };
+              if (isMissing) {
+                updates.missingFields = [
+                  ...(row.original.missingFields || []),
+                  columnId,
+                ];
+              } else {
+                updates.missingFields = (
+                  row.original.missingFields || []
+                ).filter((field) => field !== columnId);
+              }
+              updateProduct(productId, updates);
             }
           }}
           type="text"
@@ -58,10 +69,21 @@ export const getColumns = ({
           value={getValue() as number}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value) => {
+          updateData={(rowIndex, columnId, value, isMissing) => {
             const productId = row.original.productId;
             if (productId) {
-              updateProduct(productId, { [columnId]: value });
+              const updates: Partial<Product> = { [columnId]: value };
+              if (isMissing) {
+                updates.missingFields = [
+                  ...(row.original.missingFields || []),
+                  columnId,
+                ];
+              } else {
+                updates.missingFields = (
+                  row.original.missingFields || []
+                ).filter((field) => field !== columnId);
+              }
+              updateProduct(productId, updates);
             }
           }}
           type="number"
@@ -95,10 +117,21 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value) => {
+          updateData={(rowIndex, columnId, value, isMissing) => {
             const productId = row.original.productId;
             if (productId) {
-              updateProduct(productId, { [columnId]: value });
+              const updates: Partial<Product> = { [columnId]: value };
+              if (isMissing) {
+                updates.missingFields = [
+                  ...(row.original.missingFields || []),
+                  columnId,
+                ];
+              } else {
+                updates.missingFields = (
+                  row.original.missingFields || []
+                ).filter((field) => field !== columnId);
+              }
+              updateProduct(productId, updates);
             }
           }}
           type="number"
@@ -132,10 +165,21 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value) => {
+          updateData={(rowIndex, columnId, value, isMissing) => {
             const productId = row.original.productId;
             if (productId) {
-              updateProduct(productId, { [columnId]: value });
+              const updates: Partial<Product> = { [columnId]: value };
+              if (isMissing) {
+                updates.missingFields = [
+                  ...(row.original.missingFields || []),
+                  columnId,
+                ];
+              } else {
+                updates.missingFields = (
+                  row.original.missingFields || []
+                ).filter((field) => field !== columnId);
+              }
+              updateProduct(productId, updates);
             }
           }}
           type="number"
@@ -144,6 +188,7 @@ export const getColumns = ({
       );
     },
   },
+  // Keep the priceWithTax and actions columns unchanged
   {
     id: "priceWithTax",
     header: ({ column }) => (
@@ -175,7 +220,6 @@ export const getColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const product = row.original;
-
       return (
         <div className="flex h-full w-full items-center justify-center">
           <Button

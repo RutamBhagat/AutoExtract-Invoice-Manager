@@ -130,19 +130,29 @@ const store = createStore<DataStore>()(
 
       updateProduct: (productId, updates) =>
         set((state) => {
-          const updatedProducts = state.products.map((product) =>
-            product.productId === productId
-              ? {
-                  ...product,
-                  ...updates,
-                  priceWithTax:
-                    updates.unitPrice !== undefined || updates.tax !== undefined
-                      ? (updates.unitPrice ?? product?.unitPrice ?? 0) +
-                        (updates.tax ?? product.tax ?? 0)
-                      : product.priceWithTax,
-                }
-              : product,
-          );
+          const updatedProducts = state.products.map((product) => {
+            if (product.productId === productId) {
+              const newProduct = { ...product, ...updates };
+
+              // Handle missing fields updates
+              if (updates.missingFields !== undefined) {
+                newProduct.missingFields = updates.missingFields;
+              }
+
+              // Update price with tax if relevant fields changed
+              if (
+                updates.unitPrice !== undefined ||
+                updates.tax !== undefined
+              ) {
+                newProduct.priceWithTax =
+                  (updates.unitPrice ?? product.unitPrice ?? 0) +
+                  (updates.tax ?? product.tax ?? 0);
+              }
+
+              return newProduct;
+            }
+            return product;
+          });
 
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.productId === productId

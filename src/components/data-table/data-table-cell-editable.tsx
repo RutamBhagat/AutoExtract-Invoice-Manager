@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useRef, useState } from "react";
 import {
   Tooltip,
@@ -12,7 +10,12 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-type UpdateDataFn<T> = (rowIndex: number, columnId: string, value: T) => void;
+type UpdateDataFn<T> = (
+  rowIndex: number,
+  columnId: string,
+  value: T,
+  isMissing: boolean,
+) => void;
 
 interface EditableCellProps<T> {
   value: T;
@@ -53,8 +56,8 @@ export function EditableCell<T extends string | number>({
 
   useEffect(() => {
     setValue(initialValue);
-    setIsMissing(initialIsMissing && isEmpty(initialValue, type)); // Fix: Check initialIsMissing here too
-  }, [initialValue, type, initialIsMissing]); // Add initialIsMissing to dependency array
+    setIsMissing(initialIsMissing && isEmpty(initialValue, type));
+  }, [initialValue, type, initialIsMissing]);
 
   const validateValue = (input: string): T | null => {
     if (type === "number") {
@@ -74,9 +77,10 @@ export function EditableCell<T extends string | number>({
 
     if (validatedValue !== null) {
       setValue(validatedValue);
-      setIsMissing(isEmpty(validatedValue, type)); // Correct isEmpty usage
+      const newIsMissing = isEmpty(validatedValue, type);
+      setIsMissing(newIsMissing);
       if (updateData) {
-        updateData(row, column, validatedValue);
+        updateData(row, column, validatedValue, newIsMissing);
       }
     }
   };
@@ -90,7 +94,11 @@ export function EditableCell<T extends string | number>({
 
   const onBlur = () => {
     setIsEditing(false);
-    setIsMissing(isEmpty(value, type)); // Correct isEmpty usage
+    const newIsMissing = isEmpty(value, type);
+    setIsMissing(newIsMissing);
+    if (updateData && isMissing !== newIsMissing) {
+      updateData(row, column, value, newIsMissing);
+    }
   };
 
   useEffect(() => {
@@ -118,7 +126,7 @@ export function EditableCell<T extends string | number>({
         <Tooltip>
           <TooltipTrigger asChild>
             <div
-              className="flex h-full min-h-6 w-full cursor-pointer items-center justify-center" // Add cursor pointer
+              className="flex h-full min-h-6 w-full cursor-pointer items-center justify-center"
               onClick={() => setIsEditing(true)}
             >
               <InfoIcon className="ml-2 h-4 w-4 align-middle text-red-500" />
@@ -132,7 +140,7 @@ export function EditableCell<T extends string | number>({
         <Input
           type={type}
           step={type === "number" ? "0.01" : undefined}
-          value={value as string} // Cast value to string to avoid type errors.
+          value={value as string}
           onChange={onChange}
           onBlur={onBlur}
           onFocus={onFocus}
@@ -145,7 +153,7 @@ export function EditableCell<T extends string | number>({
         />
       ) : (
         <Input
-          value={formattedValue ?? (value as string)} // Cast value to string
+          value={formattedValue ?? (value as string)}
           onFocus={onFocus}
           type="text"
           readOnly
