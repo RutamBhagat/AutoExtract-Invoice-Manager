@@ -116,6 +116,16 @@ async function convertExcelToPdf(
       landscape: false, // Change based on content analysis if needed
     });
 
+    // Add validation for generated PDF size
+    if (pdfBuffer.length > MAX_FILE_SIZE) {
+      throw new FileUploadError("Converted PDF exceeds size limit", null, 400);
+    }
+
+    // Verify PDF is valid
+    if (!Buffer.from(pdfBuffer).toString().startsWith("%PDF-")) {
+      throw new FileUploadError("Generated PDF is invalid", null, 400);
+    }
+
     return {
       filePath: htmlFilePath,
       buffer: pdfBuffer as Buffer,
@@ -178,15 +188,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     let uploadFilePath: string;
     let uploadFileType: string;
-    let uploadFileName: string;
+    let uploadFileName = file.name;
 
     if (isExcelFile) {
       try {
+        uploadFileName = file.name.replace(/\.[^.]+$/, ".pdf");
         const { buffer: pdfBuffer } = await convertExcelToPdf(
           buffer,
           file.name,
           uploadDir,
         );
+
+        // Add extra validation before upload
+        const stats = {
+          size: pdfBuffer.length,
+          type: "application/pdf",
+          name: uploadFileName,
+        };
+
+        if (!fileUploadApiSchema.safeParse({ file: stats }).success) {
+          return createErrorResponse("Converted PDF validation failed", 400);
+        }
+
         uploadFileName = file.name.replace(/\.[^.]+$/, ".pdf");
         uploadFilePath = path.join(
           uploadDir,
@@ -218,7 +241,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         message: "File uploaded successfully",
         fileUri: uploadResponse.file.uri,
         displayName: uploadResponse.file.displayName,
-        mimeType: uploadFileType,
+        mimeType: uploadResponse.file.mimeType,
       });
     } catch (error: any) {
       throw new FileUploadError("Failed to upload file to Google AI", error);

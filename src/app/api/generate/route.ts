@@ -65,17 +65,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const { files, prompt } = validation.data;
 
+    const fileParts: Part[] = files.map((file) => {
+      // Validate each file before processing
+      if (!file.fileUri || !file.fileUri.startsWith("https://")) {
+        throw new ContentGenerationError("Invalid file URI format", null, 400);
+      }
+
+      // Validate MIME type
+      if (
+        !file.mimeType ||
+        !file.mimeType.match(/^application\/(pdf|json|text)$/)
+      ) {
+        consola.log(`Unsupported MIME type: ${file.mimeType}`);
+        throw new ContentGenerationError("Unsupported MIME type", null, 400);
+      }
+
+      return {
+        fileData: {
+          mimeType: file.mimeType,
+          fileUri: file.fileUri,
+        },
+      };
+    });
+
+    // Use a more specific model configuration
     const model = genAI.getGenerativeModel({
       model: env.MODEL_NAME,
       generationConfig: {
-        responseMimeType: "application/json",
-        responseSchema: combinedGeminiSchema,
+        temperature: 0.7,
+        topP: 1,
+        topK: 32,
+        maxOutputTokens: 2048,
       },
     });
-
-    const fileParts: Part[] = files.map((file) => ({
-      fileData: { mimeType: file.mimeType, fileUri: file.fileUri },
-    }));
 
     try {
       // Generate content with explicit JSON formatting instruction
