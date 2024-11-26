@@ -8,18 +8,18 @@ import { z } from "zod";
 export const invoiceSchema = z.object({
   invoiceId: z.string(),
   serialNumber: z.number().optional(), // Added serialNumber field
-  customerId: z.string(),
-  productId: z.string(),
+  customerId: z.string().optional(),
+  productId: z.string().optional(),
   quantity: z.number().optional(),
   tax: z.number().optional(),
-  productName: z.string(),
+  productName: z.string().optional(),
   totalAmount: z.number().optional(),
   date: z.string().optional(),
   invoiceNumber: z.string().optional(),
   dueDate: z.string().optional(),
   currency: z.string().optional(),
   missingFields: z.array(z.string()).optional(),
-  customerName: z.string(),
+  customerName: z.string().optional(),
 });
 
 export type Invoice = z.infer<typeof invoiceSchema>;
