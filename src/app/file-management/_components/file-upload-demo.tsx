@@ -255,7 +255,7 @@ const FileUploadDemo = () => {
       <CardFooter>
         <Button
           size="lg"
-          className="w-full"
+          className="w-full hover:bg-gray-200 hover:text-black"
           disabled={files.length === 0 || isUploading}
           onClick={uploadFiles}
         >
