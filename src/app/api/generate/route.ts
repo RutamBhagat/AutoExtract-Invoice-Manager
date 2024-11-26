@@ -66,6 +66,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { files, prompt } = validation.data;
 
     const fileParts: Part[] = files.map((file) => {
+      consola.info("Processing file: ", file);
       // Validate each file before processing
       if (!file.fileUri || !file.fileUri.startsWith("https://")) {
         throw new ContentGenerationError("Invalid file URI format", null, 400);
@@ -74,7 +75,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Validate MIME type
       if (
         !file.mimeType ||
-        !file.mimeType.match(/^application\/pdf$|^image\/(jpeg|jpg|png)$/)
+        !file.mimeType.match(
+          /^application\/pdf$|^application\/x-javascript$|^text\/javascript$|^application\/x-python$|^text\/x-python$|^text\/plain$|^text\/html$|^text\/css$|^text\/md$|^text\/csv$|^text\/xml$|^text\/rtf$|^image\/png$|^image\/jpeg$|^image\/webp$|^image\/heic$|^image\/heif$/,
+        )
       ) {
         consola.log(`Unsupported MIME type: ${file.mimeType}`);
         throw new ContentGenerationError("Unsupported MIME type", null, 400);

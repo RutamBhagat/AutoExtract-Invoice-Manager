@@ -172,6 +172,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         displayName: uploadFileName,
       });
 
+      consola.info(
+        "File uploaded successfully to Google AI:",
+        uploadResponse.file,
+      );
+
       return NextResponse.json({
         message: "File uploaded successfully",
         fileUri: uploadResponse.file.uri,
