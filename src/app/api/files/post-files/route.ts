@@ -5,7 +5,8 @@ import path from "path";
 import { consola } from "consola";
 import { fileUploadApiSchema } from "@/lib/validations/file";
 import { env } from "@/env";
-import excelToJson from "convert-excel-to-json";
+import puppeteer from "puppeteer";
+import * as XLSX from "xlsx";
 
 /**
  * Custom error class for file upload errors
@@ -41,7 +42,7 @@ function createErrorResponse(
  * Handles file upload requests.
  *
  * Processes FormData, validates the uploaded file, saves it temporarily,
- * converts Excel files to JSON, uploads it to Google AI File Manager,
+ * converts Excel files to PDF using Puppeteer, uploads it to Google AI File Manager,
  * and responds with the metadata.
  *
  * @param {NextRequest} request - The incoming HTTP request.
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing file upload request ${requestId}`);
 
-  const uploadDir = "/tmp"; // Temporary directory for Vercel compatibility
+  const uploadDir = path.join(process.cwd(), "public", "uploads");
 
   let fileManager: GoogleAIFileManager;
   try {
@@ -92,6 +93,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let uploadFilePath: string;
     let uploadFileType: string;
     let uploadFileName: string;
+    let pdfBuffer: Buffer;
 
     if (
       file.type ===
@@ -102,21 +104,55 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const result = excelToJson({
-          source: buffer,
+        // Load Excel data using xlsx
+        const workbook = XLSX.read(buffer);
+
+        // Ensure sheetName is not undefined
+        const sheetName = workbook.SheetNames[0];
+        if (!sheetName) {
+          return createErrorResponse(
+            "Excel file does not contain any sheets",
+            400,
+          );
+        }
+        const sheet = workbook.Sheets[sheetName];
+        if (!sheet) {
+          return createErrorResponse("Excel sheet not found", 400);
+        }
+        const htmlData = XLSX.utils.sheet_to_html(sheet);
+
+        // Save HTML for Puppeteer
+        const htmlFilePath = path.join(uploadDir, `${Date.now()}-output.html`);
+        await fs.writeFile(htmlFilePath, htmlData);
+
+        // Launch Puppeteer and create PDF
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.goto(`file://${htmlFilePath}`, {
+          waitUntil: "networkidle2",
         });
 
-        const jsonText = JSON.stringify(result, null, 2); // Convert JSON to string with formatting
-        uploadFileName = file.name.replace(/\.[^.]+$/, ".txt");
+        pdfBuffer = (await page.pdf({
+          format: "A4",
+          printBackground: true,
+        })) as Buffer; // Type cast here
+
+        await browser.close();
+
+        // Clean up the temporary HTML file
+        await fs.unlink(htmlFilePath);
+
+        uploadFileName = file.name.replace(/\.[^.]+$/, ".pdf");
         uploadFilePath = path.join(uploadDir, uploadFileName);
-        uploadFileType = "text/plain";
-        await fs.writeFile(uploadFilePath, jsonText);
+        uploadFileType = "application/pdf";
+
+        await fs.writeFile(uploadFilePath, pdfBuffer);
       } catch (error) {
         consola.error(
-          `Failed to convert Excel to JSON in request ${requestId}:`,
+          `Failed to convert Excel to PDF in request ${requestId}:`,
           error,
         );
-        return createErrorResponse("Failed to convert Excel to JSON", 500);
+        return createErrorResponse("Failed to convert Excel to PDF", 500);
       }
     } else {
       const originalFileName = `${Date.now()}-${file.name}`;
@@ -149,7 +185,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       throw new FileUploadError("Failed to upload file to Google AI", error);
     } finally {
       try {
-        await fs.unlink(uploadFilePath);
+        // await fs.unlink(uploadFilePath);
       } catch (cleanupError) {
         consola.warn(`Failed to clean up temporary files:`, cleanupError);
       }
