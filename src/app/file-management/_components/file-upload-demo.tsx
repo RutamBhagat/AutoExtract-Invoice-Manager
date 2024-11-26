@@ -118,7 +118,8 @@ export default function FileUploadDemo() {
         addFile({
           ...result,
           mimeType: result.mimeType,
-          name: "",
+          name: result.displayName,
+          displayName: result.displayName,
         });
         toast.success(`${file.name} uploaded!`, { id: toastId });
       }
