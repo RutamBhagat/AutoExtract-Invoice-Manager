@@ -1,9 +1,4 @@
 import { createStore, useStore } from "zustand";
-import {
-  customerSchema,
-  invoiceSchema,
-  productSchema,
-} from "../lib/validations/pdf-generate";
 
 import { EXTRACTION_PROMPT } from "../lib/constants/extraction-prompt";
 import { generateId } from "@/lib/ids/ids";
@@ -13,6 +8,7 @@ import { z } from "zod";
 
 export type Invoice = {
   invoiceId: string;
+  serialNumber?: number; // Added serialNumber field
   customerId: string;
   productId: string;
   quantity: number | undefined; // Changed from optional to union with undefined

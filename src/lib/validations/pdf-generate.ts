@@ -7,6 +7,7 @@ import { z } from "zod";
  */
 export const invoiceSchema = z.object({
   invoiceId: z.string(),
+  serialNumber: z.number().optional(), // Added serialNumber field
   customerId: z.string(),
   productId: z.string(),
   quantity: z.number().optional(),
