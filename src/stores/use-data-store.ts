@@ -28,11 +28,27 @@ interface ProcessedFile {
   createdCustomerIds?: string[];
 }
 
+interface FileMetadata {
+  fileUri: string;
+  status: "success" | "error";
+  error?: {
+    message: string;
+    details?: string;
+    code?: string;
+  };
+  data?: {
+    invoices: string[];
+    products: string[];
+    customers: string[];
+  };
+}
+
 export interface DataStore {
   invoices: Invoice[];
   products: Product[];
   customers: Customer[];
   processedFiles: ProcessedFile[];
+  fileMetadata: Record<string, FileMetadata>;
 
   addInvoice: (invoice: Invoice) => void;
   addProduct: (product: Product) => void;
@@ -73,6 +89,7 @@ const store = createStore<DataStore>()(
       products: [],
       customers: [],
       processedFiles: [],
+      fileMetadata: {},
 
       addInvoice: (invoice) =>
         set((state) => ({
@@ -313,6 +330,22 @@ const store = createStore<DataStore>()(
               })) ?? [],
           };
 
+          const metadata: FileMetadata = {
+            fileUri,
+            status: "success",
+            data: {
+              invoices: processedResult.invoices.map(
+                (i: { invoiceId: any }) => i.invoiceId,
+              ),
+              products: processedResult.products.map(
+                (p: { productId: any }) => p.productId,
+              ),
+              customers: processedResult.customers.map(
+                (c: { customerId: any }) => c.customerId,
+              ),
+            },
+          };
+
           set((state) => ({
             invoices: [...state.invoices, ...processedResult.invoices],
             products: [...state.products, ...processedResult.products],
@@ -327,6 +360,10 @@ const store = createStore<DataStore>()(
                 createdCustomerIds,
               },
             ],
+            fileMetadata: {
+              ...state.fileMetadata,
+              [fileUri]: metadata,
+            },
           }));
 
           toast.success("File processed successfully", {
@@ -381,34 +418,24 @@ const store = createStore<DataStore>()(
 
       deleteFileAndData: (fileUri: string) =>
         set((state) => {
-          const processedFile = state.processedFiles.find(
-            (f) => f.fileUri === fileUri,
-          );
-
-          if (!processedFile) return state;
-
-          const filteredInvoices = state.invoices.filter(
-            (i) =>
-              !processedFile.createdInvoiceIds?.some((baseId) =>
-                i.invoiceId.startsWith(baseId + "-"),
-              ),
-          );
-
-          const filteredProducts = state.products.filter(
-            (p) => !processedFile.createdProductIds?.includes(p.productId),
-          );
-
-          const filteredCustomers = state.customers.filter(
-            (c) => !processedFile.createdCustomerIds?.includes(c.customerId),
-          );
+          const metadata = state.fileMetadata[fileUri];
+          if (!metadata?.data) return state;
 
           return {
-            processedFiles: state.processedFiles.filter(
-              (f) => f.fileUri !== fileUri,
+            invoices: state.invoices.filter(
+              (i) => !metadata.data!.invoices.includes(i.invoiceId),
             ),
-            invoices: filteredInvoices,
-            products: filteredProducts,
-            customers: filteredCustomers,
+            products: state.products.filter(
+              (p) => !metadata.data!.products.includes(p.productId),
+            ),
+            customers: state.customers.filter(
+              (c) => !metadata.data!.customers.includes(c.customerId),
+            ),
+            fileMetadata: Object.fromEntries(
+              Object.entries(state.fileMetadata).filter(
+                ([key]) => key !== fileUri,
+              ),
+            ),
           };
         }),
     }),
@@ -418,7 +445,7 @@ const store = createStore<DataStore>()(
         invoices: state.invoices,
         products: state.products,
         customers: state.customers,
-        processedFiles: state.processedFiles,
+        fileMetadata: state.fileMetadata,
       }),
     },
   ),
