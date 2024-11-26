@@ -147,30 +147,27 @@ const store = createStore<DataStore>()(
 
       updateProduct: (productId, updates) =>
         set((state) => {
-          const updatedProducts = state.products.map((product) => {
-            if (product.productId === productId) {
-              const newProduct = { ...product, ...updates };
+          const updatedProducts = state.products.map((product) =>
+            product.productId === productId
+              ? {
+                  ...product,
+                  ...updates,
+                  // Handle missing fields updates
+                  missingFields:
+                    updates.missingFields !== undefined
+                      ? updates.missingFields
+                      : product.missingFields,
+                  // Update price with tax if relevant fields changed
+                  priceWithTax:
+                    updates.unitPrice !== undefined || updates.tax !== undefined
+                      ? (updates.unitPrice ?? product.unitPrice ?? 0) +
+                        (updates.tax ?? product.tax ?? 0)
+                      : product.priceWithTax,
+                }
+              : product,
+          );
 
-              // Handle missing fields updates
-              if (updates.missingFields !== undefined) {
-                newProduct.missingFields = updates.missingFields;
-              }
-
-              // Update price with tax if relevant fields changed
-              if (
-                updates.unitPrice !== undefined ||
-                updates.tax !== undefined
-              ) {
-                newProduct.priceWithTax =
-                  (updates.unitPrice ?? product.unitPrice ?? 0) +
-                  (updates.tax ?? product.tax ?? 0);
-              }
-
-              return newProduct;
-            }
-            return product;
-          });
-
+          // Cascade updates to related invoices
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.productId === productId
               ? {
@@ -178,10 +175,11 @@ const store = createStore<DataStore>()(
                   productName: updates.productName ?? invoice.productName,
                   quantity: updates.quantity ?? invoice.quantity,
                   tax: updates.tax ?? invoice.tax,
-                  totalAmount: updates.unitPrice
-                    ? updates.unitPrice * (invoice.quantity ?? 0) +
-                      (updates.tax ?? invoice.tax ?? 0)
-                    : invoice.totalAmount,
+                  totalAmount:
+                    updates.unitPrice !== undefined
+                      ? (updates.unitPrice ?? 0) * (invoice.quantity ?? 0) +
+                        (updates.tax ?? invoice.tax ?? 0)
+                      : invoice.totalAmount,
                 }
               : invoice,
           );
@@ -194,20 +192,20 @@ const store = createStore<DataStore>()(
 
       updateCustomer: (customerId, updates) =>
         set((state) => {
-          const updatedCustomers = state.customers.map((customer) => {
-            if (customer.customerId === customerId) {
-              const newCustomer = { ...customer, ...updates };
+          const updatedCustomers = state.customers.map((customer) =>
+            customer.customerId === customerId
+              ? {
+                  ...customer,
+                  ...updates,
+                  missingFields:
+                    updates.missingFields !== undefined
+                      ? updates.missingFields
+                      : customer.missingFields,
+                }
+              : customer,
+          );
 
-              // Handle missing fields updates
-              if (updates.missingFields !== undefined) {
-                newCustomer.missingFields = updates.missingFields;
-              }
-
-              return newCustomer;
-            }
-            return customer;
-          });
-
+          // Cascade updates to related invoices
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.customerId === customerId
               ? {
