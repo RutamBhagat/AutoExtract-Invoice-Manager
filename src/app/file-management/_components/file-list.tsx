@@ -164,7 +164,7 @@ export default function FileList() {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xl">Files</span>
-            <Badge variant="secondary" className="rounded-full px-3">
+            <Badge variant="outline" className="rounded-full px-3">
               {files.length}
             </Badge>
           </div>

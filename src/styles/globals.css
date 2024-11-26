@@ -33,7 +33,7 @@
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 0, 93%, 64%; /* Red */
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240, 14%, 11%; /* Gray */
+    --sidebar-accent: 240, 5%, 96%; /* Light Gray */
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
@@ -73,7 +73,6 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
-
 @layer base {
   * {
     @apply border-border;
