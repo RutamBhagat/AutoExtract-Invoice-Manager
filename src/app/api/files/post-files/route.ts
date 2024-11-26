@@ -139,7 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing file upload request ${requestId}`);
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  const uploadDir = "/tmp";
 
   let fileManager: GoogleAIFileManager;
   try {
@@ -248,7 +248,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } finally {
       // Clean up temporary files
       try {
-        // await fs.unlink(uploadFilePath);
+        await fs.unlink(uploadFilePath);
       } catch (cleanupError) {
         consola.warn(`Failed to clean up temporary file:`, cleanupError);
       }

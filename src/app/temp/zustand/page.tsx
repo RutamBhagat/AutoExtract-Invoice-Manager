@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import dynamic from "next/dynamic";
 import { useDataStoreContext } from "@/providers/data-store-provider";
+import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useUploadStoreContext } from "@/providers/upload-store-provider";
 
@@ -16,14 +17,16 @@ const DynamicJsonDisplay = dynamic(
 );
 
 export default function StoreDebugger() {
-  const { invoices, products, customers, processedFiles } = useDataStoreContext(
-    useShallow((state) => ({
-      invoices: state.invoices,
-      products: state.products,
-      customers: state.customers,
-      processedFiles: state.processedFiles,
-    })),
-  );
+  const { invoices, products, customers, processedFiles, removeProcessedFile } =
+    useDataStoreContext(
+      useShallow((state) => ({
+        invoices: state.invoices,
+        products: state.products,
+        customers: state.customers,
+        processedFiles: state.processedFiles,
+        removeProcessedFile: state.removeProcessedFile,
+      })),
+    );
 
   const { files, isUploading, isLoading } = useUploadStoreContext(
     useShallow((state) => ({
@@ -32,6 +35,17 @@ export default function StoreDebugger() {
       isLoading: state.isLoading,
     })),
   );
+
+  // useEffect(() => {
+  //   [
+  //     "https://generativelanguage.googleapis.com/v1beta/files/ywdx053bt3l3",
+  //     "https://generativelanguage.googleapis.com/v1beta/files/gbsqu7pai68o",
+  //     "https://generativelanguage.googleapis.com/v1beta/files/7gahzvw7cs0n",
+  //     "https://generativelanguage.googleapis.com/v1beta/files/td33p8xupsli",
+  //   ].map((inst) => {
+  //     removeProcessedFile(inst);
+  //   });
+  // }, []);
 
   return (
     <Tabs defaultValue="files" className="mx-auto w-full max-w-7xl">

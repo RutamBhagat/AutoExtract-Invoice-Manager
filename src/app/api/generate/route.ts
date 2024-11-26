@@ -74,7 +74,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Validate MIME type
       if (
         !file.mimeType ||
-        !file.mimeType.match(/^application\/(pdf|json|text)$/)
+        !file.mimeType.match(/^application\/pdf$|^image\/(jpeg|jpg|png)$/)
       ) {
         consola.log(`Unsupported MIME type: ${file.mimeType}`);
         throw new ContentGenerationError("Unsupported MIME type", null, 400);

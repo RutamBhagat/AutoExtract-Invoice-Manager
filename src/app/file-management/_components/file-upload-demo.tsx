@@ -1,8 +1,10 @@
 "use client";
 
 interface UploadResponse {
+  message: string;
   fileUri: string;
   displayName: string;
+  mimeType: string;
 }
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -115,7 +117,7 @@ export default function FileUploadDemo() {
         const result = (await response.json()) as UploadResponse;
         addFile({
           ...result,
-          mimeType: file.type,
+          mimeType: result.mimeType,
           name: "",
         });
         toast.success(`${file.name} uploaded!`, { id: toastId });
