@@ -8,9 +8,10 @@ import { env } from "@/env";
 import puppeteer from "puppeteer";
 import * as XLSX from "xlsx";
 
-/**
- * Custom error class for file upload errors
- */
+// File size constants (in bytes)
+const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
+const LARGE_FILE_THRESHOLD = 20 * 1024 * 1024; // 20MB
+
 class FileUploadError extends Error {
   constructor(
     message: string,
@@ -22,32 +23,108 @@ class FileUploadError extends Error {
   }
 }
 
-/**
- * Creates a standardized error response
- */
 function createErrorResponse(
   message: string,
   status: number = 500,
 ): NextResponse {
   consola.error(`File upload error: ${message}`);
-  return NextResponse.json(
-    {
-      error: message,
-    },
-    { status },
-  );
+  return NextResponse.json({ error: message }, { status });
 }
 
-/**
- * Handles file upload requests.
- *
- * Processes FormData, validates the uploaded file, saves it temporarily,
- * converts Excel files to PDF using Puppeteer, uploads it to Google AI File Manager,
- * and responds with the metadata.
- *
- * @param {NextRequest} request - The incoming HTTP request.
- * @returns {Promise<NextResponse>} - Response with upload status and metadata.
- */
+async function convertExcelToPdf(
+  file: Buffer,
+  fileName: string,
+  uploadDir: string,
+): Promise<{ filePath: string; buffer: Buffer }> {
+  // Load Excel data
+  const workbook = XLSX.read(file);
+
+  // Generate enhanced HTML with proper styling
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { margin: 0; padding: 20px; }
+          table { border-collapse: collapse; width: 100%; max-width: 100%; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          th { background-color: #f2f2f2; }
+          tr:nth-child(even) { background-color: #f9f9f9; }
+          @page { size: A4; margin: 20px; }
+        </style>
+      </head>
+      <body>
+        ${workbook.SheetNames.map((sheetName) => {
+          const sheet = workbook.Sheets[sheetName];
+          return sheet
+            ? `
+              <div style="page-break-after: always;">
+                <h2>${sheetName}</h2>
+                ${XLSX.utils.sheet_to_html(sheet)}
+              </div>
+            `
+            : "";
+        }).join("")}
+      </body>
+    </html>
+  `;
+
+  const htmlFilePath = path.join(uploadDir, `${Date.now()}-${fileName}.html`);
+  await fs.writeFile(htmlFilePath, htmlContent, "utf8");
+
+  // Launch browser with optimal settings
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  try {
+    const page = await browser.newPage();
+
+    // Set viewport to match recommended scaling
+    await page.setViewport({
+      width: 1200,
+      height: 1600,
+      deviceScaleFactor: 2, // For better quality
+    });
+
+    await page.goto(`file://${htmlFilePath}`, {
+      waitUntil: ["networkidle0", "load", "domcontentloaded"],
+      timeout: 30000,
+    });
+
+    // Generate PDF with optimal settings
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      preferCSSPageSize: true,
+      scale: 1,
+      margin: {
+        top: "20px",
+        right: "20px",
+        bottom: "20px",
+        left: "20px",
+      },
+      displayHeaderFooter: true,
+      headerTemplate: "<div></div>",
+      footerTemplate: `
+        <div style="font-size: 10px; padding: 5px 5px 0; text-align: center; width: 100%;">
+          Page <span class="pageNumber"></span> of <span class="totalPages"></span>
+        </div>
+      `,
+      landscape: false, // Change based on content analysis if needed
+    });
+
+    return {
+      filePath: htmlFilePath,
+      buffer: pdfBuffer as Buffer,
+    };
+  } finally {
+    await browser.close();
+  }
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing file upload request ${requestId}`);
@@ -58,7 +135,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
   } catch (error) {
-    consola.error("Failed to initialize GoogleAIFileManager:", error);
     return createErrorResponse("Failed to initialize file manager");
   }
 
@@ -67,8 +143,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      consola.warn(`No file provided in request ${requestId}`);
       return createErrorResponse("No file uploaded", 400);
+    }
+
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return createErrorResponse("File size exceeds 2GB limit", 400);
     }
 
     const validateResult = fileUploadApiSchema.safeParse({
@@ -80,72 +160,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     if (!validateResult.success) {
-      const validationError =
-        validateResult.error.errors[0]?.message || "Invalid file format";
-      consola.warn(
-        `Validation failed for request ${requestId}: ${validationError}`,
+      return createErrorResponse(
+        validateResult.error.errors[0]?.message || "Invalid file format",
+        400,
       );
-      return createErrorResponse(validationError, 400);
     }
 
     await fs.mkdir(uploadDir, { recursive: true });
 
+    const isExcelFile =
+      file.type ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+      file.type === "application/vnd.ms-excel";
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
     let uploadFilePath: string;
     let uploadFileType: string;
     let uploadFileName: string;
-    let pdfBuffer: Buffer;
 
-    if (
-      file.type ===
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-      file.type === "application/vnd.ms-excel"
-    ) {
+    if (isExcelFile) {
       try {
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-
-        // Load Excel data using xlsx
-        const workbook = XLSX.read(buffer);
-
-        // Ensure sheetName is not undefined
-        const sheetName = workbook.SheetNames[0];
-        if (!sheetName) {
-          return createErrorResponse(
-            "Excel file does not contain any sheets",
-            400,
-          );
-        }
-        const sheet = workbook.Sheets[sheetName];
-        if (!sheet) {
-          return createErrorResponse("Excel sheet not found", 400);
-        }
-        const htmlData = XLSX.utils.sheet_to_html(sheet);
-
-        // Save HTML for Puppeteer
-        const htmlFilePath = path.join(uploadDir, `${Date.now()}-output.html`);
-        await fs.writeFile(htmlFilePath, htmlData);
-
-        // Launch Puppeteer and create PDF
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        await page.goto(`file://${htmlFilePath}`, {
-          waitUntil: "networkidle2",
-        });
-
-        pdfBuffer = (await page.pdf({
-          format: "A4",
-          printBackground: true,
-        })) as Buffer; // Type cast here
-
-        await browser.close();
-
-        // Clean up the temporary HTML file
-        await fs.unlink(htmlFilePath);
-
+        const { buffer: pdfBuffer } = await convertExcelToPdf(
+          buffer,
+          file.name,
+          uploadDir,
+        );
         uploadFileName = file.name.replace(/\.[^.]+$/, ".pdf");
-        uploadFilePath = path.join(uploadDir, uploadFileName);
+        uploadFilePath = path.join(
+          uploadDir,
+          `${Date.now()}-${uploadFileName}`,
+        );
         uploadFileType = "application/pdf";
-
         await fs.writeFile(uploadFilePath, pdfBuffer);
       } catch (error) {
         consola.error(
@@ -155,12 +202,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return createErrorResponse("Failed to convert Excel to PDF", 500);
       }
     } else {
-      const originalFileName = `${Date.now()}-${file.name}`;
-      uploadFilePath = path.join(uploadDir, originalFileName);
+      uploadFileName = `${Date.now()}-${file.name}`;
+      uploadFilePath = path.join(uploadDir, uploadFileName);
       uploadFileType = file.type;
-      uploadFileName = file.name;
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
       await fs.writeFile(uploadFilePath, buffer);
     }
 
@@ -170,7 +214,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         displayName: uploadFileName,
       });
 
-      consola.success(`File uploaded successfully in request ${requestId}`);
       return NextResponse.json({
         message: "File uploaded successfully",
         fileUri: uploadResponse.file.uri,
@@ -178,31 +221,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         mimeType: uploadFileType,
       });
     } catch (error: any) {
-      consola.error(
-        `Failed to upload file to Google AI in request ${requestId}:`,
-        error,
-      );
       throw new FileUploadError("Failed to upload file to Google AI", error);
     } finally {
+      // Clean up temporary files
       try {
         // await fs.unlink(uploadFilePath);
       } catch (cleanupError) {
-        consola.warn(`Failed to clean up temporary files:`, cleanupError);
+        consola.warn(`Failed to clean up temporary file:`, cleanupError);
       }
     }
   } catch (error: any) {
     if (error instanceof FileUploadError) {
-      consola.error(`File upload error in request ${requestId}:`, {
-        message: error.message,
-        cause: error.cause,
-      });
       return createErrorResponse(error.message, error.status || 500);
     }
-
-    consola.error(
-      `Unexpected error in file upload request ${requestId}:`,
-      error,
-    );
     return createErrorResponse(
       "An unexpected error occurred while processing the file upload",
       500,
