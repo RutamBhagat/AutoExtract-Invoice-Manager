@@ -5,7 +5,7 @@ import path from "path";
 import { consola } from "consola";
 import { fileUploadApiSchema } from "@/lib/validations/file";
 import { env } from "@/env";
-import * as XLSX from "xlsx";
+import excelToJson from "convert-excel-to-json";
 
 // File size constants (in bytes)
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
@@ -34,20 +34,16 @@ async function convertExcelToJson(
   fileName: string,
   uploadDir: string,
 ): Promise<{ filePath: string; buffer: Buffer }> {
-  // Load Excel data
-  const workbook = XLSX.read(file);
-
-  // Convert each sheet to JSON
-  const result = workbook.SheetNames.reduce(
-    (acc, sheetName) => {
-      const sheet = workbook.Sheets[sheetName];
-      if (sheet) {
-        acc[sheetName] = XLSX.utils.sheet_to_json(sheet);
-      }
-      return acc;
+  // Convert Excel to JSON
+  const result = excelToJson({
+    source: file,
+    header: {
+      rows: 1, // Use first row as headers
     },
-    {} as Record<string, any>,
-  );
+    columnToKey: {
+      "*": "{{columnHeader}}", // Use column headers as keys
+    },
+  });
 
   // Convert to formatted JSON string
   const jsonContent = JSON.stringify(result, null, 2);
@@ -171,11 +167,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         mimeType: uploadFileType,
         displayName: uploadFileName,
       });
-
-      consola.info(
-        "File uploaded successfully to Google AI:",
-        uploadResponse.file,
-      );
 
       return NextResponse.json({
         message: "File uploaded successfully",
