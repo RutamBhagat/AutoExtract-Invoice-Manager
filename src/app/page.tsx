@@ -2,6 +2,7 @@ import { ArrowRight, Edit3, Upload, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -20,20 +21,24 @@ export default function Home() {
                 and customers.
               </p>
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <Button
-                  size="lg"
-                  className="w-full bg-secondary text-background hover:bg-gray-800 sm:w-40"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full border-primary text-secondary-foreground hover:bg-gray-100 sm:w-40"
-                >
-                  Learn More
-                </Button>
+                <Link href={"/file-management/file-upload"}>
+                  <Button
+                    size="lg"
+                    className="w-full bg-secondary text-background hover:bg-gray-800 sm:w-40"
+                  >
+                    Get Started
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                </Link>
+                <Link href={"#how-it-works"}>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full border-primary text-secondary-foreground hover:bg-gray-100 sm:w-40"
+                  >
+                    Learn More
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -88,7 +93,7 @@ export default function Home() {
         </section>
 
         {/* How It Works Section */}
-        <section className="bg-muted py-20">
+        <section id="how-it-works" className="bg-muted py-20">
           <div className="container mx-auto px-4">
             <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">
               How It Works
@@ -136,13 +141,15 @@ export default function Home() {
               Simplify your invoice, product, and customer management with
               AutoExtract.
             </p>
-            <Button
-              size="lg"
-              variant="default"
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Get Started for Free
-            </Button>
+            <Link href={"/file-management/file-upload"}>
+              <Button
+                size="lg"
+                variant="default"
+                className="bg-primary text-primary-foreground hover:bg-gray-100 hover:text-secondary-foreground"
+              >
+                Get Started for Free
+              </Button>
+            </Link>
           </div>
         </section>
       </main>
