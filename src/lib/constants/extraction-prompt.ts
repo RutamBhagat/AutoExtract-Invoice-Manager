@@ -32,46 +32,45 @@ You are a specialized data extraction assistant. Your task is to analyze invoice
   "invoices": [
     {
       "invoiceId": "INV-1",
-      "serialNumber": null, 
+      "serialNumber": null,
       "customerId": "CUST-1",
-      "customerName": "Navya Sri",
+      "customerName": "Test Assam",
       "productId": "PROD-1",
-      "productName": "YONEX ZR 100 LIGHT Racket",
-      "quantity": 7,
-      "tax": 0, 
-      "totalAmount": 179200,
-      "date": "2024-11-12",
-      "invoiceNumber": "INV-TEST-1526",
+      "productName": "gertgerg rfreferf",
+      "quantity": 1,
+      "tax": null,
+      "totalAmount": 0,
+      "date": "2024-11-04",
+      "invoiceNumber": "INV-54CZS",
       "dueDate": "",
-      "currency": "INR",
-      "missingFields": []
+      "currency": "INR", // Defaulting to INR as it's an Indian invoice format
+      "missingFields": ["tax"] // Tax missing or ambiguous from "Tax" column
     },
     // ... more invoice entries
   ],
   "products": [
     {
       "productId": "PROD-1",
-      "productName": "YONEX ZR 100 LIGHT Racket",
-      "quantity": 7,
-      "unitPrice": 25600,
-      "tax": 0,
-      "priceWithTax": 179200,
+      "productName": "gertgerg rfreferf",
+      "quantity": 1,
+      "unitPrice": 0,
+      "tax": null,
+      "priceWithTax": 0,
       "currency": "INR",
       "discount": null,
-      "missingFields": []
+      "missingFields": ["tax", "discount"] // Tax missing or ambiguous, no discount info
     },
     // ... more product entries
   ],
   "customers": [
     {
       "customerId": "CUST-1",
-      "customerName": "Navya Sri",
-      "phoneNumber": "8965236147",
-      "totalPurchaseAmount": 368381, // Total from the invoice
+      "customerName": "Test Assam", 
+      "phoneNumber": "", // Phone number is missing
+      "totalPurchaseAmount": 3061814.98, // From "Amount Payable"
       "currency": "INR",
-      "missingFields": []
+      "missingFields": ["phoneNumber"]
     }
-     // ... more customer entries
   ]
 }
 \`\`\`
