@@ -29,10 +29,21 @@ export const getColumns = ({
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value) => {
+          updateData={(rowIndex, columnId, value, isMissing) => {
             const customerId = row.original.customerId;
             if (customerId) {
-              updateCustomer(customerId, { [columnId]: value });
+              const updates: Partial<Customer> = { [columnId]: value };
+              if (isMissing) {
+                updates.missingFields = [
+                  ...(row.original.missingFields || []),
+                  columnId,
+                ];
+              } else {
+                updates.missingFields = (
+                  row.original.missingFields || []
+                ).filter((field) => field !== columnId);
+              }
+              updateCustomer(customerId, updates);
             }
           }}
           type="text"
@@ -58,10 +69,21 @@ export const getColumns = ({
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value) => {
+          updateData={(rowIndex, columnId, value, isMissing) => {
             const customerId = row.original.customerId;
             if (customerId) {
-              updateCustomer(customerId, { [columnId]: value });
+              const updates: Partial<Customer> = { [columnId]: value };
+              if (isMissing) {
+                updates.missingFields = [
+                  ...(row.original.missingFields || []),
+                  columnId,
+                ];
+              } else {
+                updates.missingFields = (
+                  row.original.missingFields || []
+                ).filter((field) => field !== columnId);
+              }
+              updateCustomer(customerId, updates);
             }
           }}
           type="text"
@@ -96,10 +118,21 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value) => {
+          updateData={(rowIndex, columnId, value, isMissing) => {
             const customerId = row.original.customerId;
             if (customerId) {
-              updateCustomer(customerId, { [columnId]: value });
+              const updates: Partial<Customer> = { [columnId]: value };
+              if (isMissing) {
+                updates.missingFields = [
+                  ...(row.original.missingFields || []),
+                  columnId,
+                ];
+              } else {
+                updates.missingFields = (
+                  row.original.missingFields || []
+                ).filter((field) => field !== columnId);
+              }
+              updateCustomer(customerId, updates);
             }
           }}
           type="number"

@@ -177,11 +177,19 @@ const store = createStore<DataStore>()(
 
       updateCustomer: (customerId, updates) =>
         set((state) => {
-          const updatedCustomers = state.customers.map((customer) =>
-            customer.customerId === customerId
-              ? { ...customer, ...updates }
-              : customer,
-          );
+          const updatedCustomers = state.customers.map((customer) => {
+            if (customer.customerId === customerId) {
+              const newCustomer = { ...customer, ...updates };
+
+              // Handle missing fields updates
+              if (updates.missingFields !== undefined) {
+                newCustomer.missingFields = updates.missingFields;
+              }
+
+              return newCustomer;
+            }
+            return customer;
+          });
 
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.customerId === customerId
@@ -199,13 +207,23 @@ const store = createStore<DataStore>()(
         }),
 
       updateInvoice: (invoiceId, updates) =>
-        set((state) => ({
-          invoices: state.invoices.map((invoice) =>
-            invoice.invoiceId === invoiceId
-              ? { ...invoice, ...updates }
-              : invoice,
-          ),
-        })),
+        set((state) => {
+          const updatedInvoices = state.invoices.map((invoice) => {
+            if (invoice.invoiceId === invoiceId) {
+              const newInvoice = { ...invoice, ...updates };
+
+              // Handle missing fields updates
+              if (updates.missingFields !== undefined) {
+                newInvoice.missingFields = updates.missingFields;
+              }
+
+              return newInvoice;
+            }
+            return invoice;
+          });
+
+          return { invoices: updatedInvoices };
+        }),
 
       setInvoices: (invoices) => set({ invoices }),
       setProducts: (products) => set({ products }),
