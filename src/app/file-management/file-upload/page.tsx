@@ -15,7 +15,7 @@ export default function Home() {
             Upload your invoice documents (PDF, Excel, or Images)
           </p>
         </div>
-        <Card className="bg-white shadow-sm">
+        <Card className="bg-white pb-10 shadow-sm">
           <CardHeader>
             <CardTitle>Document Upload</CardTitle>
           </CardHeader>
