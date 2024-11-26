@@ -11,23 +11,23 @@ import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { z } from "zod";
 
-type Invoice = {
+export type Invoice = {
   invoiceId: string;
   customerId: string;
   productId: string;
-  quantity?: number;
-  tax?: number;
+  quantity: number | undefined; // Changed from optional to union with undefined
+  tax: number | undefined; // Changed from optional to union with undefined
   productName: string;
-  totalAmount?: number;
-  date?: string;
-  invoiceNumber?: string;
-  dueDate?: string;
-  currency?: string;
+  totalAmount: number | undefined; // Changed from optional to union with undefined
+  date: string | undefined; // Changed from optional to union with undefined
+  invoiceNumber: string | undefined;
+  dueDate: string | undefined;
+  currency: string | undefined;
   missingFields?: string[];
   customerName: string;
 };
 
-type Product = {
+export type Product = {
   productId: string;
   productName?: string;
   quantity?: number;
@@ -39,7 +39,7 @@ type Product = {
   missingFields?: string[];
 };
 
-type Customer = {
+export type Customer = {
   customerId: string;
   customerName?: string;
   phoneNumber?: string;
@@ -48,7 +48,7 @@ type Customer = {
   missingFields?: string[];
 };
 
-interface ProcessedFile {
+export interface ProcessedFile {
   fileUri: string;
   status: "success" | "error";
   error?: {
@@ -61,7 +61,7 @@ interface ProcessedFile {
   createdCustomerIds?: string[];
 }
 
-interface FileMetadata {
+export interface FileMetadata {
   fileUri: string;
   status: "success" | "error";
   error?: {

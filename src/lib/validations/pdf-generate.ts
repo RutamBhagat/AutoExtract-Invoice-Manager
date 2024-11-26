@@ -6,22 +6,19 @@ import { z } from "zod";
  * Schema for validating individual invoice data.
  */
 export const invoiceSchema = z.object({
-  invoiceId: z.string().refine(validateId, {
-    message: "Invalid invoice ID format",
-  }),
-  serialNumber: z.number().nullable().optional(),
-  customerId: z.string().optional(),
-  customerName: z.string(),
-  productId: z.string().optional(),
+  invoiceId: z.string(),
+  customerId: z.string(),
+  productId: z.string(),
+  quantity: z.number().optional(), // Changed from nullable() to optional()
+  tax: z.number().optional(), // Changed from nullable() to optional()
   productName: z.string(),
-  quantity: z.number().nullable().optional(),
-  tax: z.number().nullable().optional(),
-  totalAmount: z.number().nullable().optional(),
-  date: z.string().nullable().optional(),
+  totalAmount: z.number().optional(), // Changed from nullable() to optional()
+  date: z.string().optional(), // Changed from nullable() to optional()
   invoiceNumber: z.string().optional(),
   dueDate: z.string().optional(),
   currency: z.string().optional(),
   missingFields: z.array(z.string()).optional(),
+  customerName: z.string(),
 });
 
 export type Invoice = z.infer<typeof invoiceSchema>;

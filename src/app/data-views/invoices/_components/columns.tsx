@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
-import { Invoice } from "@/lib/validations/pdf-generate";
+import type { Invoice } from "@/stores/use-data-store"; // Change import to use store type
 import { Trash } from "lucide-react";
 
 interface InvoicesColumnProps {
@@ -135,16 +135,19 @@ export const getColumns = ({
     ),
     cell: ({ row, getValue, table }) => {
       const columnId = "quantity";
+      const value = getValue() as number | undefined;
       const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
-          value={getValue() as number}
+          value={value ?? ""} // Handle undefined case
           row={row.index}
           column={columnId}
           updateData={(rowIndex, columnId, value, isMissing) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = { [columnId]: value };
+              const updates: Partial<Invoice> = {
+                [columnId]: value ? Number(value) : undefined,
+              };
               if (isMissing) {
                 updates.missingFields = [
                   ...(row.original.missingFields || []),
