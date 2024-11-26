@@ -5,7 +5,6 @@ import path from "path";
 import { consola } from "consola";
 import { fileUploadApiSchema } from "@/lib/validations/file";
 import { env } from "@/env";
-import puppeteer from "puppeteer";
 import * as XLSX from "xlsx";
 
 // File size constants (in bytes)
@@ -30,7 +29,7 @@ function createErrorResponse(
   return NextResponse.json({ error: message }, { status });
 }
 
-async function convertExcelToPdf(
+async function convertExcelToJson(
   file: Buffer,
   fileName: string,
   uploadDir: string,
@@ -38,100 +37,39 @@ async function convertExcelToPdf(
   // Load Excel data
   const workbook = XLSX.read(file);
 
-  // Generate enhanced HTML with proper styling
-  const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          body { margin: 0; padding: 20px; }
-          table { border-collapse: collapse; width: 100%; max-width: 100%; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #f2f2f2; }
-          tr:nth-child(even) { background-color: #f9f9f9; }
-          @page { size: A4; margin: 20px; }
-        </style>
-      </head>
-      <body>
-        ${workbook.SheetNames.map((sheetName) => {
-          const sheet = workbook.Sheets[sheetName];
-          return sheet
-            ? `
-              <div style="page-break-after: always;">
-                <h2>${sheetName}</h2>
-                ${XLSX.utils.sheet_to_html(sheet)}
-              </div>
-            `
-            : "";
-        }).join("")}
-      </body>
-    </html>
-  `;
+  // Convert each sheet to JSON
+  const result = workbook.SheetNames.reduce(
+    (acc, sheetName) => {
+      const sheet = workbook.Sheets[sheetName];
+      if (sheet) {
+        acc[sheetName] = XLSX.utils.sheet_to_json(sheet);
+      }
+      return acc;
+    },
+    {} as Record<string, any>,
+  );
 
-  const htmlFilePath = path.join(uploadDir, `${Date.now()}-${fileName}.html`);
-  await fs.writeFile(htmlFilePath, htmlContent, "utf8");
+  // Convert to formatted JSON string
+  const jsonContent = JSON.stringify(result, null, 2);
 
-  // Launch browser with optimal settings
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
+  // Create text file
+  const textFilePath = path.join(uploadDir, `${Date.now()}-${fileName}.txt`);
+  await fs.writeFile(textFilePath, jsonContent, "utf8");
 
-  try {
-    const page = await browser.newPage();
-
-    // Set viewport to match recommended scaling
-    await page.setViewport({
-      width: 1200,
-      height: 1600,
-      deviceScaleFactor: 2, // For better quality
-    });
-
-    await page.goto(`file://${htmlFilePath}`, {
-      waitUntil: ["networkidle0", "load", "domcontentloaded"],
-      timeout: 30000,
-    });
-
-    // Generate PDF with optimal settings
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      preferCSSPageSize: true,
-      scale: 1,
-      margin: {
-        top: "20px",
-        right: "20px",
-        bottom: "20px",
-        left: "20px",
-      },
-      displayHeaderFooter: true,
-      headerTemplate: "<div></div>",
-      footerTemplate: `
-        <div style="font-size: 10px; padding: 5px 5px 0; text-align: center; width: 100%;">
-          Page <span class="pageNumber"></span> of <span class="totalPages"></span>
-        </div>
-      `,
-      landscape: false, // Change based on content analysis if needed
-    });
-
-    // Add validation for generated PDF size
-    if (pdfBuffer.length > MAX_FILE_SIZE) {
-      throw new FileUploadError("Converted PDF exceeds size limit", null, 400);
-    }
-
-    // Verify PDF is valid
-    if (!Buffer.from(pdfBuffer).toString().startsWith("%PDF-")) {
-      throw new FileUploadError("Generated PDF is invalid", null, 400);
-    }
-
-    return {
-      filePath: htmlFilePath,
-      buffer: pdfBuffer as Buffer,
-    };
-  } finally {
-    await browser.close();
+  // Add validation for generated text file size
+  const buffer = Buffer.from(jsonContent);
+  if (buffer.length > MAX_FILE_SIZE) {
+    throw new FileUploadError(
+      "Converted text file exceeds size limit",
+      null,
+      400,
+    );
   }
+
+  return {
+    filePath: textFilePath,
+    buffer: buffer,
+  };
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -191,8 +129,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     if (isExcelFile) {
       try {
-        uploadFileName = file.name.replace(/\.[^.]+$/, ".pdf");
-        const { buffer: pdfBuffer } = await convertExcelToPdf(
+        uploadFileName = file.name.replace(/\.[^.]+$/, ".txt");
+        const { filePath, buffer: textBuffer } = await convertExcelToJson(
           buffer,
           file.name,
           uploadDir,
@@ -200,28 +138,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
         // Add extra validation before upload
         const stats = {
-          size: pdfBuffer.length,
-          type: "application/pdf",
+          size: textBuffer.length,
+          type: "text/plain",
           name: uploadFileName,
         };
 
         if (!fileUploadApiSchema.safeParse({ file: stats }).success) {
-          return createErrorResponse("Converted PDF validation failed", 400);
+          return createErrorResponse(
+            "Converted text file validation failed",
+            400,
+          );
         }
 
-        uploadFileName = file.name.replace(/\.[^.]+$/, ".pdf");
-        uploadFilePath = path.join(
-          uploadDir,
-          `${Date.now()}-${uploadFileName}`,
-        );
-        uploadFileType = "application/pdf";
-        await fs.writeFile(uploadFilePath, pdfBuffer);
+        uploadFilePath = filePath;
+        uploadFileType = "text/plain";
       } catch (error) {
         consola.error(
-          `Failed to convert Excel to PDF in request ${requestId}:`,
+          `Failed to convert Excel to JSON in request ${requestId}:`,
           error,
         );
-        return createErrorResponse("Failed to convert Excel to PDF", 500);
+        return createErrorResponse("Failed to convert Excel to JSON", 500);
       }
     } else {
       uploadFileName = `${Date.now()}-${file.name}`;
