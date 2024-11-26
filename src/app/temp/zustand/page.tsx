@@ -47,7 +47,7 @@ export default function StoreDebugger() {
   // }, []);
 
   return (
-    <Tabs defaultValue="files" className="mx-auto w-full max-w-7xl">
+    <Tabs defaultValue="files" className="mx-auto w-full max-w-7xl py-10">
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="files">Files</TabsTrigger>
         <TabsTrigger value="data">Data</TabsTrigger>
