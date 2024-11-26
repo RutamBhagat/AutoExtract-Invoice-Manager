@@ -2,16 +2,16 @@
 
 import { DataTable } from "@/components/data-table/data-table";
 import { getColumns } from "./_components/columns";
-import { useDataStoreContext } from "@/providers/data-store-provider";
+import { useDataStore } from "@/stores/use-data-store";
 import { useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 export default function InvoicesPage() {
-  const invoices = useDataStoreContext(useShallow((state) => state.invoices));
-  const updateInvoice = useDataStoreContext(
+  const invoices = useDataStore(useShallow((state) => state.invoices));
+  const updateInvoice = useDataStore(
     useShallow((state) => state.updateInvoice),
   );
-  const removeInvoice = useDataStoreContext(
+  const removeInvoice = useDataStore(
     useShallow((state) => state.removeInvoice),
   );
   const columns = useMemo(

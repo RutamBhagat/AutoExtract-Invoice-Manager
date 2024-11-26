@@ -27,8 +27,8 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { TableType } from "@/types/table";
-import { useDataStoreContext } from "@/providers/data-store-provider";
 import { useShallow } from "zustand/react/shallow";
+import { useDataStore } from "@/stores/use-data-store";
 
 interface DataTableProps<TData extends RowData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -41,7 +41,7 @@ export function DataTable<TData extends RowData, TValue>({
   data,
   filterColumn,
 }: DataTableProps<TData, TValue>) {
-  const updateProduct = useDataStoreContext(
+  const updateProduct = useDataStore(
     useShallow((state) => state.updateProduct),
   );
 

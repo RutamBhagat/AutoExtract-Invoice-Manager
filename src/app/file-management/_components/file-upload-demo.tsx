@@ -14,9 +14,9 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { useUploadStoreContext } from "@/providers/upload-store-provider";
 import { fileUploadSchema } from "@/lib/validations/file";
 import { supportedTypes } from "@/lib/types/supported-files";
+import { useUploadStore } from "@/stores/use-upload-store";
 
 interface UploadResponse {
   message: string;
@@ -95,7 +95,7 @@ const FileUploadDemo = () => {
     {},
   );
 
-  const { addFile } = useUploadStoreContext(
+  const { addFile } = useUploadStore(
     useShallow((state) => ({ addFile: state.addFile })),
   );
 

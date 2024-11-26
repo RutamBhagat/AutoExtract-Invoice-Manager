@@ -3,10 +3,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import dynamic from "next/dynamic";
-import { useDataStoreContext } from "@/providers/data-store-provider";
-import { useEffect } from "react";
+import { useDataStore } from "@/stores/use-data-store";
 import { useShallow } from "zustand/react/shallow";
-import { useUploadStoreContext } from "@/providers/upload-store-provider";
+import { useUploadStore } from "@/stores/use-upload-store";
 
 // Type the dynamic import
 const DynamicJsonDisplay = dynamic(
@@ -18,7 +17,7 @@ const DynamicJsonDisplay = dynamic(
 
 export default function StoreDebugger() {
   const { invoices, products, customers, processedFiles, removeProcessedFile } =
-    useDataStoreContext(
+    useDataStore(
       useShallow((state) => ({
         invoices: state.invoices,
         products: state.products,
@@ -28,7 +27,7 @@ export default function StoreDebugger() {
       })),
     );
 
-  const { files, isUploading, isLoading } = useUploadStoreContext(
+  const { files, isUploading, isLoading } = useUploadStore(
     useShallow((state) => ({
       files: state.files,
       isUploading: state.isUploading,

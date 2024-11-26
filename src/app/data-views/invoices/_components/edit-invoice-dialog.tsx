@@ -19,7 +19,7 @@ import { Invoice, invoiceSchema } from "@/lib/validations/pdf-generate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { useDataStoreContext } from "@/providers/data-store-provider";
+import { useDataStore } from "@/stores/use-data-store";
 import { useForm } from "react-hook-form";
 import { useShallow } from "zustand/react/shallow";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,7 +35,7 @@ export function EditInvoiceDialog({
   open,
   onOpenChange,
 }: EditInvoiceDialogProps) {
-  const updateInvoice = useDataStoreContext(
+  const updateInvoice = useDataStore(
     useShallow((state) => state.updateInvoice),
   );
 
