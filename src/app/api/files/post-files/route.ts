@@ -10,7 +10,6 @@ import * as XLSX from "xlsx";
 
 // File size constants (in bytes)
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
-const LARGE_FILE_THRESHOLD = 20 * 1024 * 1024; // 20MB
 
 class FileUploadError extends Error {
   constructor(
@@ -244,7 +243,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         mimeType: uploadResponse.file.mimeType,
       });
     } catch (error: any) {
-      throw new FileUploadError("Failed to upload file to Google AI", error);
+      throw new FileUploadError(
+        `Failed to upload file to Google AI. File: ${uploadFileName} (${uploadFileType}) at ${uploadFilePath}`,
+        error,
+      );
     } finally {
       // Clean up temporary files
       try {
