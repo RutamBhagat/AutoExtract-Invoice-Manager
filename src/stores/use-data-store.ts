@@ -11,9 +11,42 @@ import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import { z } from "zod";
 
-type Invoice = z.infer<typeof invoiceSchema> & { missingFields?: string[] };
-type Product = z.infer<typeof productSchema> & { missingFields?: string[] };
-type Customer = z.infer<typeof customerSchema> & { missingFields?: string[] };
+type Invoice = {
+  invoiceId: string;
+  customerId: string;
+  productId: string;
+  quantity?: number;
+  tax?: number;
+  productName: string;
+  totalAmount?: number;
+  date?: string;
+  invoiceNumber?: string;
+  dueDate?: string;
+  currency?: string;
+  missingFields?: string[];
+  customerName: string;
+};
+
+type Product = {
+  productId: string;
+  productName?: string;
+  quantity?: number;
+  unitPrice?: number;
+  tax?: number;
+  priceWithTax?: number;
+  discount?: number;
+  currency?: string;
+  missingFields?: string[];
+};
+
+type Customer = {
+  customerId: string;
+  customerName?: string;
+  phoneNumber?: string;
+  totalPurchaseAmount?: number;
+  currency?: string;
+  missingFields?: string[];
+};
 
 interface ProcessedFile {
   fileUri: string;
@@ -79,6 +112,9 @@ export interface DataStore {
   }>;
   removeProcessedFile: (fileUri: string) => void;
   deleteFileAndData: (fileUri: string) => void;
+
+  getProductById: (productId: string) => Product | undefined;
+  getCustomerById: (customerId: string) => Customer | undefined;
 }
 
 // Create the store instance
@@ -147,33 +183,19 @@ const store = createStore<DataStore>()(
 
       updateProduct: (productId, updates) =>
         set((state) => {
-          const originalProduct = state.products.find(
-            (p) => p.productId === productId,
-          );
-          if (!originalProduct) return state;
-
-          // Update product
           const updatedProducts = state.products.map((product) =>
             product.productId === productId
-              ? {
-                  ...product,
-                  ...updates,
-                  priceWithTax: calculatePriceWithTax(updates, product),
-                  missingFields:
-                    updates.missingFields !== undefined
-                      ? updates.missingFields
-                      : product.missingFields,
-                }
+              ? { ...product, ...updates }
               : product,
           );
-
-          // Update related invoices
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.productId === productId
-              ? recalculateInvoice(invoice, updatedProducts)
+              ? {
+                  ...invoice,
+                  productName: updates.productName ?? invoice.productName,
+                }
               : invoice,
           );
-
           return {
             products: updatedProducts,
             invoices: updatedInvoices,
@@ -182,36 +204,19 @@ const store = createStore<DataStore>()(
 
       updateCustomer: (customerId, updates) =>
         set((state) => {
-          const originalCustomer = state.customers.find(
-            (c) => c.customerId === customerId,
-          );
-          if (!originalCustomer) return state;
-
-          // Update customer
           const updatedCustomers = state.customers.map((customer) =>
             customer.customerId === customerId
-              ? {
-                  ...customer,
-                  ...updates,
-                  missingFields:
-                    updates.missingFields !== undefined
-                      ? updates.missingFields
-                      : customer.missingFields,
-                }
+              ? { ...customer, ...updates }
               : customer,
           );
-
-          // Update related invoices
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.customerId === customerId
               ? {
                   ...invoice,
                   customerName: updates.customerName ?? invoice.customerName,
-                  customerId, // Preserve relationship
                 }
               : invoice,
           );
-
           return {
             customers: updatedCustomers,
             invoices: updatedInvoices,
@@ -219,15 +224,13 @@ const store = createStore<DataStore>()(
         }),
 
       updateInvoice: (invoiceId, updates) =>
-        set((state) => {
-          const updatedInvoices = state.invoices.map((invoice) =>
+        set((state) => ({
+          invoices: state.invoices.map((invoice) =>
             invoice.invoiceId === invoiceId
-              ? recalculateInvoice(invoice, state.products, updates)
+              ? { ...invoice, ...updates }
               : invoice,
-          );
-
-          return { invoices: updatedInvoices };
-        }),
+          ),
+        })),
 
       setInvoices: (invoices) => set({ invoices }),
       setProducts: (products) => set({ products }),
@@ -425,6 +428,18 @@ const store = createStore<DataStore>()(
             ),
           };
         }),
+
+      getProductById: (productId) => {
+        return get().products.find(
+          (product) => product.productId === productId,
+        );
+      },
+
+      getCustomerById: (customerId) => {
+        return get().customers.find(
+          (customer) => customer.customerId === customerId,
+        );
+      },
     }),
     {
       name: "data-store",
@@ -485,7 +500,7 @@ const recalculateInvoice = (
     ...invoice,
     ...updates,
     totalAmount,
-    productName: product.productName,
+    productName: product.productName ?? "",
     tax,
   };
 };
