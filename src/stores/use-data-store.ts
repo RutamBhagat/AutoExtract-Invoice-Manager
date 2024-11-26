@@ -147,40 +147,30 @@ const store = createStore<DataStore>()(
 
       updateProduct: (productId, updates) =>
         set((state) => {
+          const originalProduct = state.products.find(
+            (p) => p.productId === productId,
+          );
+          if (!originalProduct) return state;
+
+          // Update product
           const updatedProducts = state.products.map((product) =>
             product.productId === productId
               ? {
                   ...product,
                   ...updates,
-                  // Handle missing fields updates
+                  priceWithTax: calculatePriceWithTax(updates, product),
                   missingFields:
                     updates.missingFields !== undefined
                       ? updates.missingFields
                       : product.missingFields,
-                  // Update price with tax if relevant fields changed
-                  priceWithTax:
-                    updates.unitPrice !== undefined || updates.tax !== undefined
-                      ? (updates.unitPrice ?? product.unitPrice ?? 0) +
-                        (updates.tax ?? product.tax ?? 0)
-                      : product.priceWithTax,
                 }
               : product,
           );
 
-          // Cascade updates to related invoices
+          // Update related invoices
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.productId === productId
-              ? {
-                  ...invoice,
-                  productName: updates.productName ?? invoice.productName,
-                  quantity: updates.quantity ?? invoice.quantity,
-                  tax: updates.tax ?? invoice.tax,
-                  totalAmount:
-                    updates.unitPrice !== undefined
-                      ? (updates.unitPrice ?? 0) * (invoice.quantity ?? 0) +
-                        (updates.tax ?? invoice.tax ?? 0)
-                      : invoice.totalAmount,
-                }
+              ? recalculateInvoice(invoice, updatedProducts)
               : invoice,
           );
 
@@ -192,6 +182,12 @@ const store = createStore<DataStore>()(
 
       updateCustomer: (customerId, updates) =>
         set((state) => {
+          const originalCustomer = state.customers.find(
+            (c) => c.customerId === customerId,
+          );
+          if (!originalCustomer) return state;
+
+          // Update customer
           const updatedCustomers = state.customers.map((customer) =>
             customer.customerId === customerId
               ? {
@@ -205,12 +201,13 @@ const store = createStore<DataStore>()(
               : customer,
           );
 
-          // Cascade updates to related invoices
+          // Update related invoices
           const updatedInvoices = state.invoices.map((invoice) =>
             invoice.customerId === customerId
               ? {
                   ...invoice,
                   customerName: updates.customerName ?? invoice.customerName,
+                  customerId, // Preserve relationship
                 }
               : invoice,
           );
@@ -223,19 +220,11 @@ const store = createStore<DataStore>()(
 
       updateInvoice: (invoiceId, updates) =>
         set((state) => {
-          const updatedInvoices = state.invoices.map((invoice) => {
-            if (invoice.invoiceId === invoiceId) {
-              const newInvoice = { ...invoice, ...updates };
-
-              // Handle missing fields updates
-              if (updates.missingFields !== undefined) {
-                newInvoice.missingFields = updates.missingFields;
-              }
-
-              return newInvoice;
-            }
-            return invoice;
-          });
+          const updatedInvoices = state.invoices.map((invoice) =>
+            invoice.invoiceId === invoiceId
+              ? recalculateInvoice(invoice, state.products, updates)
+              : invoice,
+          );
 
           return { invoices: updatedInvoices };
         }),
@@ -448,6 +437,58 @@ const store = createStore<DataStore>()(
     },
   ),
 );
+
+// Helper functions
+const calculatePriceWithTax = (
+  updates: Partial<Product>,
+  original: Product,
+) => {
+  const unitPrice = updates.unitPrice ?? original.unitPrice ?? 0;
+  const tax = updates.tax ?? original.tax ?? 0;
+  return unitPrice + tax;
+};
+
+const calculateInvoiceTotal = (
+  unitPrice: number,
+  quantity: number,
+  tax: number,
+) => {
+  return unitPrice * quantity + tax;
+};
+
+const updateMissingFields = (
+  current: string[] | undefined,
+  field: string,
+  isMissing: boolean,
+) => {
+  const fields = current || [];
+  if (isMissing && !fields.includes(field)) {
+    return [...fields, field];
+  }
+  return fields.filter((f) => f !== field);
+};
+
+const recalculateInvoice = (
+  invoice: Invoice,
+  products: Product[],
+  updates: Partial<Invoice> = {},
+): Invoice => {
+  const product = products.find((p) => p.productId === invoice.productId);
+  if (!product) return { ...invoice, ...updates };
+
+  const quantity = updates.quantity ?? invoice.quantity ?? 0;
+  const tax = product.tax ?? 0;
+  // Use product's unit price for calculation but don't store it in invoice
+  const totalAmount = quantity * (product.unitPrice ?? 0) + tax;
+
+  return {
+    ...invoice,
+    ...updates,
+    totalAmount,
+    productName: product.productName,
+    tax,
+  };
+};
 
 // Create and export the hook
 export const useDataStore = <T>(selector: (state: DataStore) => T): T =>
