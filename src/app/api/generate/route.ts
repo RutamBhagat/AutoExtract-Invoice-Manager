@@ -92,10 +92,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const model = genAI.getGenerativeModel({
       model: env.MODEL_NAME,
       generationConfig: {
-        temperature: 0.7,
-        topP: 1,
-        topK: 32,
-        maxOutputTokens: 2048,
+        responseMimeType: "application/json",
+        responseSchema: combinedGeminiSchema,
       },
     });
 
