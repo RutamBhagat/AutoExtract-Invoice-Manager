@@ -188,4 +188,5 @@ export const combinedGeminiSchema = {
       },
     },
   },
+  required: ["invoices", "products", "customers"],
 };

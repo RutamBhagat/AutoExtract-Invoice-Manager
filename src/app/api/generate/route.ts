@@ -2,6 +2,8 @@ import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
 import { consola } from "consola";
 import { env } from "@/env";
+// import path from "path";
+// import { mkdir, writeFile } from "fs/promises";
 import {
   generateContentSchema,
   combinedZodSchema,
@@ -46,6 +48,16 @@ function createErrorResponse(
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing content generation request ${requestId}`);
+
+  // const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+
+  // // Ensure upload directory exists
+  // try {
+  //   await mkdir(UPLOAD_DIR, { recursive: true });
+  // } catch (error) {
+  //   consola.error(`Failed to create upload directory: ${error}`);
+  //   return createErrorResponse("Failed to initialize storage", 500);
+  // }
 
   const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -114,7 +126,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       consola.debug(`Raw Gemini response for ${requestId}:`, response);
 
       try {
-        // Attempt to parse and validate JSON
+        // Parse and format JSON properly
         const responseJson = JSON.parse(response.trim());
         const validationResult = combinedZodSchema.safeParse(responseJson);
 
@@ -129,8 +141,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           );
         }
 
-        consola.success(`Content generated successfully for ${requestId}`);
-        return NextResponse.json({ result: validationResult.data });
+        // // Save response to file
+        // const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        // const filename = `response-${requestId}-${timestamp}.json`;
+        // const filepath = path.join(UPLOAD_DIR, filename);
+
+        // await writeFile(
+        //   filepath,
+        //   JSON.stringify(validationResult.data, null, 2),
+        //   "utf-8",
+        // );
+
+        // consola.success(`Content generated and saved to ${filepath}`);
+        return NextResponse.json({
+          result: validationResult.data,
+          // savedTo: `/uploads/${filename}`,
+        });
       } catch (jsonError) {
         consola.error(`JSON parsing failed for ${requestId}:`, {
           error: jsonError,

@@ -10,6 +10,7 @@ import excelToJson from "convert-excel-to-json";
 // Constants
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
 const UPLOAD_DIR = "/tmp";
+// const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const EXCEL_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-excel",
