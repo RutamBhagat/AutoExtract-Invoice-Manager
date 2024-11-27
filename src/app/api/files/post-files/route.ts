@@ -5,7 +5,7 @@ import path from "path";
 import { consola } from "consola";
 import { fileUploadApiSchema } from "@/lib/validations/file";
 import { env } from "@/env";
-import excelToJson from "convert-excel-to-json";
+import * as XLSX from "xlsx";
 
 // Constants
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
@@ -60,43 +60,68 @@ async function cleanupFile(filePath: string): Promise<void> {
   }
 }
 
-async function convertExcelToJson(
+async function convertExcelToCSV(
   file: Buffer,
   fileName: string,
 ): Promise<UploadResult> {
   try {
-    const result = excelToJson({
-      source: file,
-      header: { rows: 1 },
-      columnToKey: { "*": "{{columnHeader}}" },
-    });
+    const workbook: XLSX.WorkBook = XLSX.read(file);
+    if (!workbook.SheetNames.length) {
+      throw new FileUploadError(
+        "Excel file is empty",
+        null,
+        400,
+        "EMPTY_EXCEL_FILE",
+      );
+    }
 
-    const jsonContent = JSON.stringify(result, null, 2);
-    const buffer = Buffer.from(jsonContent);
+    const firstSheetName: string | undefined = workbook.SheetNames[0];
+    if (!firstSheetName) {
+      throw new FileUploadError(
+        "No sheet found in Excel file",
+        null,
+        400,
+        "NO_SHEET_FOUND",
+      );
+    }
+
+    const worksheet: XLSX.WorkSheet | undefined =
+      workbook.Sheets[firstSheetName];
+    if (!worksheet) {
+      throw new FileUploadError(
+        "Failed to read Excel worksheet",
+        null,
+        500,
+        "WORKSHEET_READ_ERROR",
+      );
+    }
+
+    const csvContent = XLSX.utils.sheet_to_csv(worksheet);
+    const buffer = Buffer.from(csvContent);
 
     if (buffer.length > MAX_FILE_SIZE) {
       throw new FileUploadError(
-        "Converted text file exceeds size limit",
+        "Converted CSV file exceeds size limit",
         null,
         400,
         "CONVERTED_FILE_TOO_LARGE",
       );
     }
 
-    const textFileName = fileName.replace(/\.[^.]+$/, ".txt");
-    const filePath = path.join(UPLOAD_DIR, `${Date.now()}-${textFileName}`);
-    await fs.writeFile(filePath, jsonContent, "utf8");
+    const csvFileName = fileName.replace(/\.[^.]+$/, ".csv");
+    const filePath = path.join(UPLOAD_DIR, `${Date.now()}-${csvFileName}`);
+    await fs.writeFile(filePath, csvContent, "utf8");
 
     return {
       filePath,
       buffer,
-      mimeType: "text/plain",
-      fileName: textFileName,
+      mimeType: "text/csv",
+      fileName: csvFileName,
     };
   } catch (error) {
     if (error instanceof FileUploadError) throw error;
     throw new FileUploadError(
-      "Failed to convert Excel to JSON",
+      "Failed to convert Excel to CSV",
       error,
       500,
       "EXCEL_CONVERSION_FAILED",
@@ -140,7 +165,7 @@ async function validateAndProcessFile(file: File): Promise<UploadResult> {
   const isExcelFile = EXCEL_MIME_TYPES.includes(file.type);
 
   if (isExcelFile) {
-    return await convertExcelToJson(buffer, file.name);
+    return await convertExcelToCSV(buffer, file.name);
   }
 
   const fileName = `${Date.now()}-${file.name}`;
