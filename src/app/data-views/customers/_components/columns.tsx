@@ -1,4 +1,3 @@
-// _components/columns.ts
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { Customer } from "@/lib/validations/pdf-generate";

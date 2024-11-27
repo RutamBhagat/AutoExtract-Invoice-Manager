@@ -1,9 +1,9 @@
+import path from "path";
+import { env } from "@/env";
+import { consola } from "consola";
+import { mkdir, writeFile } from "fs/promises";
 import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
-import { consola } from "consola";
-import { env } from "@/env";
-import path from "path";
-import { mkdir, writeFile } from "fs/promises";
 import {
   generateContentSchema,
   combinedZodSchema,
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   consola.info(`Processing content generation request ${requestId}`);
   const startTime = Date.now(); // Start time
 
-  const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+  const UPLOAD_DIR = "/tmp";
 
   // Ensure upload directory exists
   try {
@@ -129,8 +129,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       const filename = `response-${requestId}-${timestamp}.json`;
       const filepath = path.join(UPLOAD_DIR, filename);
 
-      await writeFile(filepath, response, "utf-8");
-      consola.debug(`Raw Gemini response for ${requestId}:`, response);
+      // await writeFile(filepath, response, "utf-8");
+      // consola.debug(`Raw Gemini response for ${requestId}:`, response);
 
       try {
         // Parse and format JSON properly
@@ -148,30 +148,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           );
         }
 
-        // // // Save response to file
-        // const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        // const filename = `response-${requestId}-${timestamp}.json`;
-        // const filepath = path.join(UPLOAD_DIR, filename);
-
-        // await writeFile(
-        //   filepath,
-        //   JSON.stringify(validationResult.data, null, 2),
-        //   "utf-8",
-        // );
-
         consola.success(`Content generated and saved to ${filepath}`);
         return NextResponse.json({
           result: validationResult.data,
           savedTo: `/uploads/${filename}`,
         });
       } catch (jsonError) {
-        consola.error(`JSON parsing failed for ${requestId}:`, {
-          error: jsonError,
-          response,
-        });
         throw new ContentGenerationError(
-          "Failed to parse Gemini response as JSON",
+          "Response exceeded Gemini's token limit. Please try with smaller files.",
           jsonError,
+          413,
         );
       }
     } catch (generationError) {
