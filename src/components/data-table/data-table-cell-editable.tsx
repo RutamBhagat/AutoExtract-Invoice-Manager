@@ -10,12 +10,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-type UpdateDataFn<T> = (
-  rowIndex: number,
-  columnId: string,
-  value: T,
-  isMissing: boolean,
-) => void;
+type UpdateDataFn<T> = (rowIndex: number, columnId: string, value: T) => void;
 
 interface EditableCellProps<T> {
   value: T;
@@ -25,7 +20,6 @@ interface EditableCellProps<T> {
   updateData?: UpdateDataFn<T>;
   type?: "text" | "number";
   className?: string;
-  isMissing?: boolean;
 }
 
 const isEmpty = <T extends string | number>(
@@ -33,7 +27,7 @@ const isEmpty = <T extends string | number>(
   type: "text" | "number",
 ): boolean => {
   if (type === "number") {
-    return value === null || value === undefined || value === 0;
+    return value === null || value === undefined || Number.isNaN(value);
   } else {
     return !value || value === "";
   }
@@ -47,17 +41,16 @@ export function EditableCell<T extends string | number>({
   updateData,
   type = "text",
   className,
-  isMissing: initialIsMissing = false,
 }: EditableCellProps<T>) {
   const [value, setValue] = useState<T>(initialValue);
   const [isEditing, setIsEditing] = useState(false);
-  const [isMissing, setIsMissing] = useState<boolean>(initialIsMissing);
+  const [isMissing, setIsMissing] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setValue(initialValue);
-    setIsMissing(initialIsMissing && isEmpty(initialValue, type));
-  }, [initialValue, type, initialIsMissing]);
+    setIsMissing(isEmpty(initialValue, type));
+  }, [initialValue, type]);
 
   const validateValue = (input: string): T | null => {
     if (type === "number") {
@@ -80,7 +73,7 @@ export function EditableCell<T extends string | number>({
       const newIsMissing = isEmpty(validatedValue, type);
       setIsMissing(newIsMissing);
       if (updateData) {
-        updateData(row, column, validatedValue, newIsMissing);
+        updateData(row, column, validatedValue);
       }
     }
   };
@@ -97,7 +90,7 @@ export function EditableCell<T extends string | number>({
     const newIsMissing = isEmpty(value, type);
     setIsMissing(newIsMissing);
     if (updateData && isMissing !== newIsMissing) {
-      updateData(row, column, value, newIsMissing);
+      updateData(row, column, value);
     }
   };
 

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
-import type { Invoice } from "@/stores/use-data-store"; // Change import to use store type
+import { Invoice } from "@/lib/validations/pdf-generate";
 import { Trash } from "lucide-react";
 
 interface InvoicesColumnProps {
@@ -21,33 +21,20 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Serial Number" />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "serialNumber";
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateInvoice(invoiceId, updates);
+              updateInvoice(invoiceId, { [columnId]: value });
             }
           }}
           type="text"
-          isMissing={isMissing}
         />
       );
     },
@@ -57,33 +44,20 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Customer Name" />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "customerName";
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateInvoice(invoiceId, updates);
+              updateInvoice(invoiceId, { [columnId]: value });
             }
           }}
           type="text"
-          isMissing={isMissing}
         />
       );
     },
@@ -93,33 +67,20 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Product Name" />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "productName";
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateInvoice(invoiceId, updates);
+              updateInvoice(invoiceId, { [columnId]: value });
             }
           }}
           type="text"
-          isMissing={isMissing}
         />
       );
     },
@@ -133,36 +94,23 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "quantity";
       const value = getValue() as number | undefined;
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
-          value={value ?? ""} // Handle undefined case
+          value={value ?? ""}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = {
+              updateInvoice(invoiceId, {
                 [columnId]: value ? Number(value) : undefined,
-              };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateInvoice(invoiceId, updates);
+              });
             }
           }}
           type="number"
-          isMissing={isMissing}
         />
       );
     },
@@ -176,11 +124,10 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "tax";
       const amount = parseFloat(row.getValue("tax"));
       const currency = row.original.currency || "USD";
-      const isMissing = row.original.missingFields?.includes(columnId);
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
@@ -192,25 +139,13 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateInvoice(invoiceId, updates);
+              updateInvoice(invoiceId, { [columnId]: value });
             }
           }}
           type="number"
-          isMissing={isMissing}
         />
       );
     },
@@ -224,11 +159,10 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "totalAmount";
       const amount = parseFloat(row.getValue("totalAmount"));
       const currency = row.original.currency || "USD";
-      const isMissing = row.original.missingFields?.includes(columnId);
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
@@ -240,25 +174,13 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateInvoice(invoiceId, updates);
+              updateInvoice(invoiceId, { [columnId]: value });
             }
           }}
           type="number"
-          isMissing={isMissing}
         />
       );
     },
@@ -272,33 +194,20 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "date";
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const invoiceId = row.original.invoiceId;
             if (invoiceId) {
-              const updates: Partial<Invoice> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateInvoice(invoiceId, updates);
+              updateInvoice(invoiceId, { [columnId]: value });
             }
           }}
           type="text"
-          isMissing={isMissing}
         />
       );
     },
@@ -307,7 +216,6 @@ export const getColumns = ({
     id: "actions",
     cell: ({ row }) => {
       const invoice = row.original;
-
       return (
         <div className="flex h-full w-full items-center justify-center">
           <Button

@@ -21,33 +21,20 @@ export const getColumns = ({
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "productName";
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const productId = row.original.productId;
             if (productId) {
-              const updates: Partial<Product> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateProduct(productId, updates);
+              updateProduct(productId, { [columnId]: value });
             }
           }}
           type="text"
-          isMissing={isMissing}
         />
       );
     },
@@ -61,33 +48,20 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "quantity";
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
           value={getValue() as number}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const productId = row.original.productId;
             if (productId) {
-              const updates: Partial<Product> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateProduct(productId, updates);
+              updateProduct(productId, { [columnId]: value });
             }
           }}
           type="number"
-          isMissing={isMissing}
         />
       );
     },
@@ -101,11 +75,10 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "unitPrice";
       const amount = parseFloat(row.getValue(columnId));
       const currency = row.original.currency || "USD";
-      const isMissing = row.original.missingFields?.includes(columnId);
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
@@ -117,25 +90,13 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const productId = row.original.productId;
             if (productId) {
-              const updates: Partial<Product> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateProduct(productId, updates);
+              updateProduct(productId, { [columnId]: value });
             }
           }}
           type="number"
-          isMissing={isMissing}
         />
       );
     },
@@ -149,11 +110,10 @@ export const getColumns = ({
         className="text-right"
       />
     ),
-    cell: ({ row, getValue, table }) => {
+    cell: ({ row, getValue }) => {
       const columnId = "tax";
       const amount = parseFloat(row.getValue(columnId));
       const currency = row.original.currency || "USD";
-      const isMissing = row.original.missingFields?.includes(columnId);
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,
@@ -165,30 +125,17 @@ export const getColumns = ({
           formattedValue={formatted}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const productId = row.original.productId;
             if (productId) {
-              const updates: Partial<Product> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateProduct(productId, updates);
+              updateProduct(productId, { [columnId]: value });
             }
           }}
           type="number"
-          isMissing={isMissing}
         />
       );
     },
   },
-  // Keep the priceWithTax and actions columns unchanged
   {
     id: "priceWithTax",
     header: ({ column }) => (

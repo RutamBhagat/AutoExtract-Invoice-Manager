@@ -23,120 +23,64 @@ export const getColumns = ({
     ),
     cell: ({ row, getValue }) => {
       const columnId = "customerName";
-      const isMissing = row.original.missingFields?.includes(columnId);
       return (
         <EditableCell
           value={getValue() as string}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const customerId = row.original.customerId;
             if (customerId) {
-              const updates: Partial<Customer> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateCustomer(customerId, updates);
+              updateCustomer(customerId, { [columnId]: value });
             }
           }}
           type="text"
-          isMissing={isMissing}
         />
       );
     },
   },
   {
-    accessorKey: "phoneNumber",
+    accessorKey: "totalAmount",
     header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Phone Number"
-        className="text-right" // Ensure header aligns right
-      />
+      <DataTableColumnHeader column={column} title="Total Amount" />
     ),
     cell: ({ row, getValue }) => {
-      const columnId = "phoneNumber";
-      const isMissing = row.original.missingFields?.includes(columnId);
+      const columnId = "totalAmount";
       return (
         <EditableCell
-          value={getValue() as string}
+          value={getValue() as number}
           row={row.index}
           column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
+          updateData={(rowIndex, columnId, value) => {
             const customerId = row.original.customerId;
             if (customerId) {
-              const updates: Partial<Customer> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateCustomer(customerId, updates);
-            }
-          }}
-          type="text"
-          className="text-right" // Add this to align text to the right
-          isMissing={isMissing}
-        />
-      );
-    },
-  },
-  {
-    accessorKey: "totalPurchaseAmount",
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title="Total Purchase Amount"
-        className="text-right"
-      />
-    ),
-    cell: ({ row, getValue }) => {
-      const columnId = "totalPurchaseAmount";
-      const isMissing = row.original.missingFields?.includes(columnId);
-      const amount = parseFloat(row.getValue("totalPurchaseAmount"));
-      const currency = row.original.currency || "USD";
-      const formatted = new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency,
-      }).format(amount);
-
-      return (
-        <EditableCell
-          value={amount}
-          formattedValue={formatted}
-          row={row.index}
-          column={columnId}
-          updateData={(rowIndex, columnId, value, isMissing) => {
-            const customerId = row.original.customerId;
-            if (customerId) {
-              const updates: Partial<Customer> = { [columnId]: value };
-              if (isMissing) {
-                updates.missingFields = [
-                  ...(row.original.missingFields || []),
-                  columnId,
-                ];
-              } else {
-                updates.missingFields = (
-                  row.original.missingFields || []
-                ).filter((field) => field !== columnId);
-              }
-              updateCustomer(customerId, updates);
+              updateCustomer(customerId, { [columnId]: value });
             }
           }}
           type="number"
-          isMissing={isMissing}
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "paidAmount",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Paid Amount" />
+    ),
+    cell: ({ row, getValue }) => {
+      const columnId = "paidAmount";
+      return (
+        <EditableCell
+          value={getValue() as number}
+          row={row.index}
+          column={columnId}
+          updateData={(rowIndex, columnId, value) => {
+            const customerId = row.original.customerId;
+            if (customerId) {
+              updateCustomer(customerId, { [columnId]: value });
+            }
+          }}
+          type="number"
         />
       );
     },
@@ -144,21 +88,19 @@ export const getColumns = ({
   {
     id: "actions",
     cell: ({ row }) => {
-      const customer = row.original;
-
       return (
-        <div className="flex h-full w-full items-center justify-center">
-          <Button
-            variant="ghost"
-            className="h-8 w-8 p-0 hover:bg-red-500 hover:text-white"
-            onClick={() => {
-              removeCustomer(customer.customerId);
-            }}
-          >
-            <span className="sr-only">Delete Customer</span>
-            <Trash className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          onClick={() => {
+            const customerId = row.original.customerId;
+            if (customerId) {
+              removeCustomer(customerId);
+            }
+          }}
+        >
+          <Trash className="h-4 w-4" />
+        </Button>
       );
     },
   },
