@@ -2,8 +2,8 @@ import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
 import { consola } from "consola";
 import { env } from "@/env";
-// import path from "path";
-// import { mkdir, writeFile } from "fs/promises";
+import path from "path";
+import { mkdir, writeFile } from "fs/promises";
 import {
   generateContentSchema,
   combinedZodSchema,
@@ -50,15 +50,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   consola.info(`Processing content generation request ${requestId}`);
   const startTime = Date.now(); // Start time
 
-  // const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+  const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
-  // // Ensure upload directory exists
-  // try {
-  //   await mkdir(UPLOAD_DIR, { recursive: true });
-  // } catch (error) {
-  //   consola.error(`Failed to create upload directory: ${error}`);
-  //   return createErrorResponse("Failed to initialize storage", 500);
-  // }
+  // Ensure upload directory exists
+  try {
+    await mkdir(UPLOAD_DIR, { recursive: true });
+  } catch (error) {
+    consola.error(`Failed to create upload directory: ${error}`);
+    return createErrorResponse("Failed to initialize storage", 500);
+  }
 
   const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -124,6 +124,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
       // Get response as structured data
       const response = generateContentResult.response.text();
+      // // Save response to file
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const filename = `response-${requestId}-${timestamp}.json`;
+      const filepath = path.join(UPLOAD_DIR, filename);
+
+      await writeFile(filepath, response, "utf-8");
       consola.debug(`Raw Gemini response for ${requestId}:`, response);
 
       try {
@@ -142,7 +148,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           );
         }
 
-        // // Save response to file
+        // // // Save response to file
         // const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
         // const filename = `response-${requestId}-${timestamp}.json`;
         // const filepath = path.join(UPLOAD_DIR, filename);
@@ -153,10 +159,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         //   "utf-8",
         // );
 
-        // consola.success(`Content generated and saved to ${filepath}`);
+        consola.success(`Content generated and saved to ${filepath}`);
         return NextResponse.json({
           result: validationResult.data,
-          // savedTo: `/uploads/${filename}`,
+          savedTo: `/uploads/${filename}`,
         });
       } catch (jsonError) {
         consola.error(`JSON parsing failed for ${requestId}:`, {

@@ -9,8 +9,8 @@ import * as XLSX from "xlsx";
 
 // Constants
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
-const UPLOAD_DIR = "/tmp";
-// const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+// const UPLOAD_DIR = "/tmp";
+const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const EXCEL_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-excel",
@@ -53,8 +53,8 @@ function createErrorResponse(error: FileUploadError): NextResponse {
 
 async function cleanupFile(filePath: string): Promise<void> {
   try {
-    await fs.access(filePath);
-    await fs.unlink(filePath);
+    // await fs.access(filePath);
+    // await fs.unlink(filePath);
   } catch (error) {
     consola.warn(`Failed to cleanup file ${filePath}:`, error);
   }

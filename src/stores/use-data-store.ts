@@ -4,45 +4,11 @@ import { EXTRACTION_PROMPT } from "../lib/constants/extraction-prompt";
 import { generateId } from "@/lib/ids/ids";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
-import { z } from "zod";
-
-export type Invoice = {
-  invoiceId: string;
-  serialNumber?: number; // Added serialNumber field
-  customerId: string;
-  productId: string;
-  quantity: number | undefined; // Changed from optional to union with undefined
-  tax: number | undefined; // Changed from optional to union with undefined
-  productName: string;
-  totalAmount: number | undefined; // Changed from optional to union with undefined
-  date: string | undefined; // Changed from optional to union with undefined
-  invoiceNumber: string | undefined;
-  dueDate: string | undefined;
-  currency: string | undefined;
-  missingFields?: string[];
-  customerName: string;
-};
-
-export type Product = {
-  productId: string;
-  productName?: string;
-  quantity?: number;
-  unitPrice?: number;
-  tax?: number;
-  priceWithTax?: number;
-  discount?: number;
-  currency?: string;
-  missingFields?: string[];
-};
-
-export type Customer = {
-  customerId: string;
-  customerName?: string;
-  phoneNumber?: string;
-  totalPurchaseAmount?: number;
-  currency?: string;
-  missingFields?: string[];
-};
+import {
+  type Invoice,
+  type Product,
+  type Customer,
+} from "@/lib/validations/pdf-generate";
 
 export interface ProcessedFile {
   fileUri: string;
@@ -71,13 +37,10 @@ export interface FileMetadata {
     customers: string[];
   };
 }
-
-export interface DataStore {
+interface DataStore {
   invoices: Invoice[];
   products: Product[];
   customers: Customer[];
-  processedFiles: ProcessedFile[];
-  fileMetadata: Record<string, FileMetadata>;
 
   addInvoice: (invoice: Invoice) => void;
   addProduct: (product: Product) => void;
@@ -94,20 +57,6 @@ export interface DataStore {
   setInvoices: (invoices: Invoice[]) => void;
   setProducts: (products: Product[]) => void;
   setCustomers: (customers: Customer[]) => void;
-
-  processFile: (
-    fileUri: string,
-    mimeType: string,
-  ) => Promise<{
-    success: boolean;
-    error?: {
-      message: string;
-      details?: string;
-      code?: string;
-    };
-  }>;
-  removeProcessedFile: (fileUri: string) => void;
-  deleteFileAndData: (fileUri: string) => void;
 
   getProductById: (productId: string) => Product | undefined;
   getCustomerById: (customerId: string) => Customer | undefined;
@@ -233,19 +182,6 @@ const store = createStore<DataStore>()(
       setCustomers: (customers) => set({ customers }),
 
       processFile: async (fileUri: string, mimeType: string) => {
-        const state = get();
-
-        if (
-          state.processedFiles.some(
-            (f) => f.fileUri === fileUri && f.status === "success",
-          )
-        ) {
-          return {
-            success: false,
-            error: { message: "File already processed" },
-          };
-        }
-
         const toastId = toast.loading("Processing file...");
 
         try {
@@ -268,17 +204,6 @@ const store = createStore<DataStore>()(
               details: data.details || "An unexpected error occurred",
               code: data.code || "PROCESSING_ERROR",
             };
-
-            set((state) => ({
-              processedFiles: [
-                ...state.processedFiles,
-                {
-                  fileUri,
-                  status: "error",
-                  error,
-                },
-              ],
-            }));
 
             toast.error("Failed to process file", {
               id: toastId,
@@ -316,40 +241,10 @@ const store = createStore<DataStore>()(
               })) ?? [],
           };
 
-          const metadata: FileMetadata = {
-            fileUri,
-            status: "success",
-            data: {
-              invoices: processedResult.invoices.map(
-                (i: { invoiceId: any }) => i.invoiceId,
-              ),
-              products: processedResult.products.map(
-                (p: { productId: any }) => p.productId,
-              ),
-              customers: processedResult.customers.map(
-                (c: { customerId: any }) => c.customerId,
-              ),
-            },
-          };
-
           set((state) => ({
             invoices: [...state.invoices, ...processedResult.invoices],
             products: [...state.products, ...processedResult.products],
             customers: [...state.customers, ...processedResult.customers],
-            processedFiles: [
-              ...state.processedFiles,
-              {
-                fileUri,
-                status: "success",
-                createdInvoiceIds,
-                createdProductIds,
-                createdCustomerIds,
-              },
-            ],
-            fileMetadata: {
-              ...state.fileMetadata,
-              [fileUri]: metadata,
-            },
           }));
 
           toast.success("File processed successfully", {
@@ -364,17 +259,6 @@ const store = createStore<DataStore>()(
             code: "NETWORK_ERROR",
           };
 
-          set((state) => ({
-            processedFiles: [
-              ...state.processedFiles,
-              {
-                fileUri,
-                status: "error",
-                error: errorDetails,
-              },
-            ],
-          }));
-
           toast.error("Failed to process file", {
             id: toastId,
             description:
@@ -384,47 +268,6 @@ const store = createStore<DataStore>()(
           return { success: false, error: errorDetails };
         }
       },
-
-      removeProcessedFile: (fileUri) =>
-        set((state) => {
-          const processedFile = state.processedFiles.find(
-            (f) => f.fileUri === fileUri,
-          );
-          if (!processedFile) return state;
-
-          return {
-            processedFiles: state.processedFiles.filter(
-              (f) => f.fileUri !== fileUri,
-            ),
-            invoices: [],
-            products: [],
-            customers: [],
-          };
-        }),
-
-      deleteFileAndData: (fileUri: string) =>
-        set((state) => {
-          const metadata = state.fileMetadata[fileUri];
-          if (!metadata?.data) return state;
-
-          return {
-            invoices: state.invoices.filter(
-              (i) => !metadata.data!.invoices.includes(i.invoiceId),
-            ),
-            products: state.products.filter(
-              (p) => !metadata.data!.products.includes(p.productId),
-            ),
-            customers: state.customers.filter(
-              (c) => !metadata.data!.customers.includes(c.customerId),
-            ),
-            fileMetadata: Object.fromEntries(
-              Object.entries(state.fileMetadata).filter(
-                ([key]) => key !== fileUri,
-              ),
-            ),
-          };
-        }),
-
       getProductById: (productId) => {
         return get().products.find(
           (product) => product.productId === productId,
@@ -443,7 +286,6 @@ const store = createStore<DataStore>()(
         invoices: state.invoices,
         products: state.products,
         customers: state.customers,
-        fileMetadata: state.fileMetadata,
       }),
     },
   ),
@@ -453,7 +295,6 @@ const store = createStore<DataStore>()(
 export const useDataStore = <T>(selector: (state: DataStore) => T): T =>
   useStore(store, selector);
 
-// Export vanilla store methods for usage outside of React
 export const dataStore = {
   getState: store.getState,
   setState: store.setState,
