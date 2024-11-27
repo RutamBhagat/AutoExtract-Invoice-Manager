@@ -16,16 +16,13 @@ const DynamicJsonDisplay = dynamic(
 );
 
 export default function StoreDebugger() {
-  const { invoices, products, customers, processedFiles, removeProcessedFile } =
-    useDataStore(
-      useShallow((state) => ({
-        invoices: state.invoices,
-        products: state.products,
-        customers: state.customers,
-        processedFiles: state.processedFiles,
-        removeProcessedFile: state.removeProcessedFile,
-      })),
-    );
+  const { invoices, products, customers } = useDataStore(
+    useShallow((state) => ({
+      invoices: state.invoices,
+      products: state.products,
+      customers: state.customers,
+    })),
+  );
 
   const { files, isUploading, isLoading } = useUploadStore(
     useShallow((state) => ({
@@ -34,17 +31,6 @@ export default function StoreDebugger() {
       isLoading: state.isLoading,
     })),
   );
-
-  // useEffect(() => {
-  //   [
-  //     "https://generativelanguage.googleapis.com/v1beta/files/ywdx053bt3l3",
-  //     "https://generativelanguage.googleapis.com/v1beta/files/gbsqu7pai68o",
-  //     "https://generativelanguage.googleapis.com/v1beta/files/7gahzvw7cs0n",
-  //     "https://generativelanguage.googleapis.com/v1beta/files/td33p8xupsli",
-  //   ].map((inst) => {
-  //     removeProcessedFile(inst);
-  //   });
-  // }, []);
 
   return (
     <Tabs defaultValue="files" className="mx-auto w-full max-w-7xl py-10">
@@ -66,7 +52,7 @@ export default function StoreDebugger() {
       </TabsContent>
 
       <TabsContent value="data">
-        {invoices || products || customers || processedFiles ? (
+        {invoices || products || customers ? (
           <DynamicJsonDisplay
             title="Store Data"
             description="Debug view of the current store state."
@@ -74,7 +60,6 @@ export default function StoreDebugger() {
               invoices,
               products,
               customers,
-              processedFiles,
             }}
           />
         ) : (
