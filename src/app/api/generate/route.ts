@@ -48,6 +48,7 @@ function createErrorResponse(
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing content generation request ${requestId}`);
+  const startTime = Date.now(); // Start time
 
   // const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 
@@ -190,6 +191,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return createErrorResponse(
       "An unexpected error occurred while generating content",
       500,
+    );
+  } finally {
+    const endTime = Date.now(); // End time
+    const durationMs = endTime - startTime;
+    const durationSec = (durationMs / 1000).toFixed(2);
+    consola.info(
+      `Request ${requestId} completed in ${durationMs}ms (${durationSec}s)`,
     );
   }
 }
