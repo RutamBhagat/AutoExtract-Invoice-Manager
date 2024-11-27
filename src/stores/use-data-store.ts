@@ -216,14 +216,6 @@ const store = createStore<DataStore>()(
 
           const { result } = data;
 
-          const createdInvoiceIds =
-            result.invoices?.map((i: { invoiceId: any }) => i.invoiceId) ?? [];
-          const createdProductIds =
-            result.products?.map((p: { productId: any }) => p.productId) ?? [];
-          const createdCustomerIds =
-            result.customers?.map((c: { customerId: any }) => c.customerId) ??
-            [];
-
           const processedResult = {
             invoices:
               result.invoices?.map((invoice: { invoiceId: any }) => ({
