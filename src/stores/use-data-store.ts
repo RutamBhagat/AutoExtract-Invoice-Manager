@@ -58,6 +58,7 @@ interface DataStore {
   setProducts: (products: Product[]) => void;
   setCustomers: (customers: Customer[]) => void;
 
+  processFile: (fileUri: string, mimeType: string) => void;
   getProductById: (productId: string) => Product | undefined;
   getCustomerById: (customerId: string) => Customer | undefined;
 }
@@ -273,7 +274,6 @@ const store = createStore<DataStore>()(
           (product) => product.productId === productId,
         );
       },
-
       getCustomerById: (customerId) => {
         return get().customers.find(
           (customer) => customer.customerId === customerId,
