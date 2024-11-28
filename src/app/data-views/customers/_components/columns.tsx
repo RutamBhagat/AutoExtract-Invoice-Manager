@@ -48,11 +48,11 @@ export const getColumns = ({
     ),
     cell: ({ row, getValue }) => {
       const columnId = "phoneNumber";
-      const amount = parseFloat(row.getValue(columnId));
+      const phoneNumber = parseFloat(row.getValue(columnId));
 
       return (
         <EditableCell
-          value={amount}
+          value={phoneNumber}
           row={row.index}
           column={columnId}
           updateData={(rowIndex, columnId, value) => {
@@ -61,7 +61,8 @@ export const getColumns = ({
               updateCustomer(customerId, { [columnId]: value });
             }
           }}
-          type="number"
+          className="text-right"
+          type="text"
         />
       );
     },

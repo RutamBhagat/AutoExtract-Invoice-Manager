@@ -44,7 +44,7 @@ export function EditableCell<T extends string | number>({
 }: EditableCellProps<T>) {
   const [value, setValue] = useState<T>(initialValue);
   const [isEditing, setIsEditing] = useState(false);
-  const [isMissing, setIsMissing] = useState<boolean>(false);
+  const [isMissing, setIsMissing] = useState<boolean>(true);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
