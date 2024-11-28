@@ -1,29 +1,147 @@
-# Create T3 App
+---
+title: "AutoExtract: Invoice Manager"
+publishedAt: "2024-11-06"
+summary: "Developed AutoExtract: Invoice Manager, an automated invoice processing application that uses Google Gemini AI to extract and organize data from various file formats into a structured format with real-time synchronization."
+images:
+  - "https://github.com/user-attachments/assets/85720540-b534-4907-bfe3-da125306e684"
+  - "https://github.com/user-attachments/assets/f798dff9-eae2-4818-b0f9-620ea596e034"
+  - "https://github.com/user-attachments/assets/288af3ed-bc70-4191-9bf6-b00c8f44fdd2"
+  - "https://github.com/user-attachments/assets/e31b8075-d5ef-4a28-a113-37fc9f8c2842"
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+team:
+  - name: "Rutam Bhagat"
+    role: "Software Engineer"
+    avatar: "/images/avatar.jpg"
+    linkedIn: "https://github.com/RutamBhagat"
+---
 
-## What's next? How do I make an app with this?
+# Swipe Invoice: AI-Powered Invoice Processing Application
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Overview
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+Swipe Invoice is an AI-powered invoice processing application that automates data extraction from various file formats (Excel, PDF, images) using Google Gemini AI. The application organizes extracted data into structured sections for Invoices, Products, and Customers with real-time synchronization using Zustand state management.
+
+**Live Site:** [Code Wizard UI](https://code-wizard-frontend.vercel.app/)
+
+**Frontend and Backend Repo:** [Code Wizard Frontend](https://github.com/RutamBhagat/code_wizard_frontend)
+
+## Demo Video
+
+[Watch the Walkthrough](https://github.com/user-attachments/assets/399aae3e-a1fc-4160-b878-4aa43cd28a38)
+
+## Key Features
+
+- **AI-Powered Data Extraction**: Utilizes Google Gemini AI for accurate data extraction from multiple file formats
+- **Real-time Synchronization**: Uses Zustand for seamless state management across components
+- **Interactive Tables**: Implements shadcn table components for data display and management
+- **Responsive Design**: Built with Next.js 15 and Tailwind CSS for optimal user experience
+- **File Format Support**: Handles Excel, PDF, and image file formats
+
+## Technologies Used
+
+- **Frontend**: Next.js 15 App Router, React, TypeScript
+- **Styling**: Tailwind CSS, shadcn UI components
+- **State Management**: Zustand
+- **AI Integration**: Google Gemini API
+- **Data Display**: shadcn Table Components
+
+## Challenges and Learnings
+
+The development process provided valuable insights into:
+
+- **AI Integration**: Implementing Google Gemini API for accurate data extraction
+- **State Management**: Using Zustand for efficient state synchronization
+- **Component Architecture**: Building reusable components with shadcn
+- **Data Validation**: Implementing robust validation for extracted data
+
+## Optimizations
+
+1. **Efficient Data Processing**
+
+   - Optimized AI extraction pipeline for faster processing
+   - Implemented error handling and validation checks
+
+2. **UI/UX Improvements**
+
+   - Responsive design for all screen sizes
+   - Interactive tables with sorting and filtering
+
+3. **State Management**
+   - Centralized state management with Zustand
+   - Real-time updates across components
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- Google Gemini API key
+
+### Installation
+
+```bash
+git clone git@github.com:RutamBhagat/swipe-assignment.git
+
+cd swipe-assignment
+
+cp .env.example .env
+# Provide Gemini API key and desired model in the .env
+
+npm install
+
+npm run dev
+```
+
+```
+
+## Project Structure
+
+The application is organized into three main sections:
+
+1. **Invoices Tab**
+
+   - Displays invoice details including serial number, customer info, and totals
+   - Supports real-time updates and filtering
+
+2. **Products Tab**
+
+   - Shows product information with pricing and tax details
+   - Enables sorting and filtering capabilities
+
+3. **Customers Tab**
+   - Manages customer information and purchase history
+   - Provides comprehensive customer data view
+
+## Features Implementation
+
+### File Upload and Processing
+
+- Handles multiple file formats (Excel, PDF, images)
+- Implements AI-powered data extraction
+- Validates and processes extracted data
+
+### Data Management
+
+- Real-time state updates using Zustand
+- Efficient data organization across tabs
+- Robust error handling and validation
+
+## Technology Stack Details
 
 - [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
 - [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- [ShadCN](https://ui.shadcn.com/docs)
+- [Tanstack Table](https://tanstack.com/table/latest)
+- [Zustand](https://zustand.docs.pmnd.rs/getting-started/introduction)
 
-## Learn More
+## Outcome
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Swipe Invoice demonstrates effective implementation of AI-powered data processing combined with modern web technologies to create a robust invoice management solution.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+# Screenshots
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+![Screenshot 1](https://github.com/user-attachments/assets/85720540-b534-4907-bfe3-da125306e684)
+![Screenshot 2](https://github.com/user-attachments/assets/f798dff9-eae2-4818-b0f9-620ea596e034)
+![Screenshot 3](https://github.com/user-attachments/assets/288af3ed-bc70-4191-9bf6-b00c8f44fdd2)
+![Screenshot 4](https://github.com/user-attachments/assets/e31b8075-d5ef-4a28-a113-37fc9f8c2842)
+```
