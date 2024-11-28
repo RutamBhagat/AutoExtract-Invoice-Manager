@@ -1,33 +1,16 @@
----
-title: "AutoExtract: Invoice Manager"
-publishedAt: "2024-11-06"
-summary: "Developed AutoExtract: Invoice Manager, an automated invoice processing application that uses Google Gemini AI to extract and organize data from various file formats into a structured format with real-time synchronization."
-images:
-  - "https://github.com/user-attachments/assets/85720540-b534-4907-bfe3-da125306e684"
-  - "https://github.com/user-attachments/assets/f798dff9-eae2-4818-b0f9-620ea596e034"
-  - "https://github.com/user-attachments/assets/288af3ed-bc70-4191-9bf6-b00c8f44fdd2"
-  - "https://github.com/user-attachments/assets/e31b8075-d5ef-4a28-a113-37fc9f8c2842"
-
-team:
-  - name: "Rutam Bhagat"
-    role: "Software Engineer"
-    avatar: "/images/avatar.jpg"
-    linkedIn: "https://github.com/RutamBhagat"
----
-
-# Swipe Invoice: AI-Powered Invoice Processing Application
+# AutoExtract: Invoice Manager
 
 ## Overview
 
 Swipe Invoice is an AI-powered invoice processing application that automates data extraction from various file formats (Excel, PDF, images) using Google Gemini AI. The application organizes extracted data into structured sections for Invoices, Products, and Customers with real-time synchronization using Zustand state management.
 
-**Live Site:** [Code Wizard UI](https://code-wizard-frontend.vercel.app/)
+**Live Site:** [AutoExtract: Invoice Manager Website](https://swipe-assignment-five.vercel.app/)
 
-**Frontend and Backend Repo:** [Code Wizard Frontend](https://github.com/RutamBhagat/code_wizard_frontend)
+**Frontend and Backend Repo:** [AutoExtract: Invoice Manager](https://github.com/RutamBhagat/swipe-assignment)
 
 ## Demo Video
 
-[Watch the Walkthrough](https://github.com/user-attachments/assets/399aae3e-a1fc-4160-b878-4aa43cd28a38)
+[Watch the Walkthrough](https://github.com/user-attachments/assets/cffb5e74-09ec-4a70-bfe6-2c1f9507fd5e)
 
 ## Key Features
 
@@ -138,7 +121,9 @@ Swipe Invoice demonstrates effective implementation of AI-powered data processin
 
 # Screenshots
 
-![Screenshot 1](https://github.com/user-attachments/assets/85720540-b534-4907-bfe3-da125306e684)
-![Screenshot 2](https://github.com/user-attachments/assets/f798dff9-eae2-4818-b0f9-620ea596e034)
-![Screenshot 3](https://github.com/user-attachments/assets/288af3ed-bc70-4191-9bf6-b00c8f44fdd2)
-![Screenshot 4](https://github.com/user-attachments/assets/e31b8075-d5ef-4a28-a113-37fc9f8c2842)
+![1](https://github.com/user-attachments/assets/b497990c-c886-4d1c-8409-9c84bf5b50ad)
+![2](https://github.com/user-attachments/assets/ad8faf8f-dce3-4fa0-849a-ff558f51cd94)
+![3](https://github.com/user-attachments/assets/8f92fff3-6ef4-4891-ae79-0e8775e47b96)
+![4](https://github.com/user-attachments/assets/4c0c1e36-3012-4d1f-8b5c-031bb5c63135)
+![5](https://github.com/user-attachments/assets/78d05094-afa5-415f-a245-fc65ca78d09a)
+
