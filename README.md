@@ -92,8 +92,6 @@ npm install
 npm run dev
 ```
 
-```
-
 ## Project Structure
 
 The application is organized into three main sections:
@@ -144,4 +142,3 @@ Swipe Invoice demonstrates effective implementation of AI-powered data processin
 ![Screenshot 2](https://github.com/user-attachments/assets/f798dff9-eae2-4818-b0f9-620ea596e034)
 ![Screenshot 3](https://github.com/user-attachments/assets/288af3ed-bc70-4191-9bf6-b00c8f44fdd2)
 ![Screenshot 4](https://github.com/user-attachments/assets/e31b8075-d5ef-4a28-a113-37fc9f8c2842)
-```
