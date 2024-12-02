@@ -7,10 +7,8 @@ import { fileUploadApiSchema } from "@/lib/validations/file";
 import { env } from "@/env";
 import * as XLSX from "xlsx";
 
-// Constants
 const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
 const UPLOAD_DIR = "/tmp";
-// const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const EXCEL_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-excel",
@@ -35,6 +33,9 @@ interface UploadResult {
   fileName: string;
 }
 
+/**
+ * Creates a standardized error response for file upload failures
+ */
 function createErrorResponse(error: FileUploadError): NextResponse {
   consola.error({
     message: `File upload error: ${error.message}`,
@@ -51,6 +52,9 @@ function createErrorResponse(error: FileUploadError): NextResponse {
   );
 }
 
+/**
+ * Removes temporary files from the filesystem
+ */
 async function cleanupFile(filePath: string): Promise<void> {
   try {
     await fs.access(filePath);
@@ -60,6 +64,10 @@ async function cleanupFile(filePath: string): Promise<void> {
   }
 }
 
+/**
+ * Converts Excel files to CSV format for processing
+ * Handles various Excel-specific errors and validates sheet contents
+ */
 async function convertExcelToCSV(
   file: Buffer,
   fileName: string,
@@ -129,6 +137,10 @@ async function convertExcelToCSV(
   }
 }
 
+/**
+ * Validates file size and format, then processes it based on type
+ * Converts Excel files to CSV and saves other files directly
+ */
 async function validateAndProcessFile(file: File): Promise<UploadResult> {
   if (!file) {
     throw new FileUploadError("No file uploaded", null, 400, "NO_FILE");
@@ -180,6 +192,9 @@ async function validateAndProcessFile(file: File): Promise<UploadResult> {
   };
 }
 
+/**
+ * Initializes Google AI file manager with API key
+ */
 async function initializeFileManager(): Promise<GoogleAIFileManager> {
   try {
     return new GoogleAIFileManager(env.GEMINI_API_KEY);
@@ -193,6 +208,11 @@ async function initializeFileManager(): Promise<GoogleAIFileManager> {
   }
 }
 
+/**
+ * Handles POST requests for file uploads
+ * Processes files, validates them, and uploads to Google AI
+ * Includes performance monitoring and cleanup
+ */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Starting file upload request ${requestId}`);
@@ -201,7 +221,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   let processedFile: UploadResult | null = null;
 
   try {
-    // Ensure upload directory exists
     await fs.mkdir(UPLOAD_DIR, { recursive: true });
 
     const fileManager = await initializeFileManager();
@@ -244,11 +263,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return createErrorResponse(fileUploadError);
   } finally {
-    // Cleanup temporary file
     if (processedFile?.filePath) {
       await cleanupFile(processedFile.filePath);
     }
-    const endTime = Date.now(); // End time
+    const endTime = Date.now();
     const durationMs = endTime - startTime;
     const durationSec = (durationMs / 1000).toFixed(2);
     consola.info(
