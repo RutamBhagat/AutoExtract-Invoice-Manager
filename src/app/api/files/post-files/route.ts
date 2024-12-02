@@ -53,7 +53,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       requestId,
     });
   } catch (error) {
-    const fileUploadError =
+    const FileOperationError =
       error instanceof FileOperationError
         ? error
         : new FileOperationError(
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
             "UPLOAD_FAILED",
           );
 
-    return createErrorResponse(fileUploadError);
+    return createErrorResponse(FileOperationError);
   } finally {
     if (processedFile?.filePath) {
       await cleanupFile(processedFile.filePath);

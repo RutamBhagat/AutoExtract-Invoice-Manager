@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 
-import { FileUploadError, UploadResult } from "./utils";
+import { FileOperationError, UploadResult } from "./utils";
 import { MAX_FILE_SIZE, UPLOAD_DIR } from "./consts";
 
 import { promises as fs } from "fs";
@@ -17,7 +17,7 @@ export async function convertExcelToCSV(
   try {
     const workbook: XLSX.WorkBook = XLSX.read(file);
     if (!workbook.SheetNames.length) {
-      throw new FileUploadError(
+      throw new FileOperationError(
         "Excel file is empty",
         null,
         400,
@@ -27,7 +27,7 @@ export async function convertExcelToCSV(
 
     const firstSheetName: string | undefined = workbook.SheetNames[0];
     if (!firstSheetName) {
-      throw new FileUploadError(
+      throw new FileOperationError(
         "No sheet found in Excel file",
         null,
         400,
@@ -38,7 +38,7 @@ export async function convertExcelToCSV(
     const worksheet: XLSX.WorkSheet | undefined =
       workbook.Sheets[firstSheetName];
     if (!worksheet) {
-      throw new FileUploadError(
+      throw new FileOperationError(
         "Failed to read Excel worksheet",
         null,
         500,
@@ -50,7 +50,7 @@ export async function convertExcelToCSV(
     const buffer = Buffer.from(csvContent);
 
     if (buffer.length > MAX_FILE_SIZE) {
-      throw new FileUploadError(
+      throw new FileOperationError(
         "Converted CSV file exceeds size limit",
         null,
         400,
@@ -69,8 +69,8 @@ export async function convertExcelToCSV(
       fileName: csvFileName,
     };
   } catch (error) {
-    if (error instanceof FileUploadError) throw error;
-    throw new FileUploadError(
+    if (error instanceof FileOperationError) throw error;
+    throw new FileOperationError(
       "Failed to convert Excel to CSV",
       error,
       500,
