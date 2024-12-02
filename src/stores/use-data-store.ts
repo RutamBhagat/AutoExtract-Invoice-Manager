@@ -77,37 +77,13 @@ const store = createStore<DataStore>()(
       fileMetadata: {},
 
       addInvoice: (invoice) =>
-        set((state) => ({
-          invoices: [
-            ...state.invoices,
-            {
-              ...invoice,
-              invoiceId: invoice.invoiceId || generateId("invoice"),
-            },
-          ],
-        })),
+        set((state) => ({ invoices: [...state.invoices, { ...invoice }] })),
 
       addProduct: (product) =>
-        set((state) => ({
-          products: [
-            ...state.products,
-            {
-              ...product,
-              productId: product.productId || generateId("product"),
-            },
-          ],
-        })),
+        set((state) => ({ products: [...state.products, { ...product }] })),
 
       addCustomer: (customer) =>
-        set((state) => ({
-          customers: [
-            ...state.customers,
-            {
-              ...customer,
-              customerId: customer.customerId || generateId("customer"),
-            },
-          ],
-        })),
+        set((state) => ({ customers: [...state.customers, { ...customer }] })),
 
       removeInvoice: (invoiceId) =>
         set((state) => ({
@@ -236,28 +212,10 @@ const store = createStore<DataStore>()(
 
           const { result } = data;
 
-          const processedResult = {
-            invoices:
-              result.invoices?.map((invoice: { invoiceId: any }) => ({
-                ...invoice,
-                invoiceId: invoice.invoiceId || generateId("invoice"),
-              })) ?? [],
-            products:
-              result.products?.map((product: { productId: any }) => ({
-                ...product,
-                productId: product.productId || generateId("product"),
-              })) ?? [],
-            customers:
-              result.customers?.map((customer: { customerId: any }) => ({
-                ...customer,
-                customerId: customer.customerId || generateId("customer"),
-              })) ?? [],
-          };
-
           set((state) => ({
-            invoices: [...state.invoices, ...processedResult.invoices],
-            products: [...state.products, ...processedResult.products],
-            customers: [...state.customers, ...processedResult.customers],
+            invoices: [...state.invoices, ...result.invoices],
+            products: [...state.products, ...result.products],
+            customers: [...state.customers, ...result.customers],
           }));
 
           toast.success("File processed successfully", {
