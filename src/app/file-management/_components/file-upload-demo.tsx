@@ -18,6 +18,9 @@ import { fileUploadSchema } from "@/lib/validations/file";
 import { supportedTypes } from "@/lib/types/supported-files";
 import { useUploadStore } from "@/stores/use-upload-store";
 
+/**
+ * Response structure from the file upload API
+ */
 interface UploadResponse {
   message: string;
   fileUri: string;
@@ -26,12 +29,17 @@ interface UploadResponse {
   requestId?: string;
 }
 
+/**
+ * Props for the FileTypeIcon component
+ */
 interface FileIconProps {
   file: FileWithPath | null;
   className?: string;
 }
 
-// Memoized FileIcon component
+/**
+ * Renders an appropriate icon based on file type
+ */
 const FileTypeIcon = memo(({ file, className = "h-6 w-6" }: FileIconProps) => {
   if (!file) return <FileIcon className={className} />;
 
@@ -41,6 +49,7 @@ const FileTypeIcon = memo(({ file, className = "h-6 w-6" }: FileIconProps) => {
   if (fileType === "application/pdf")
     return <FileTextIcon className={className} />;
   if (
+    fileType === "text/csv" ||
     fileType.startsWith("application/vnd.ms-excel") ||
     fileType.startsWith(
       "application/vnd.openxmlformats-officedocument.spreadsheetml",
@@ -53,7 +62,9 @@ const FileTypeIcon = memo(({ file, className = "h-6 w-6" }: FileIconProps) => {
 
 FileTypeIcon.displayName = "FileTypeIcon";
 
-// Memoized file item component
+/**
+ * Displays a single file item with removal capability
+ */
 const FileItem = memo(
   ({
     file,
@@ -88,6 +99,10 @@ const FileItem = memo(
 
 FileItem.displayName = "FileItem";
 
+/**
+ * Main file upload component with drag and drop functionality
+ * Handles file selection, validation, and upload to server
+ */
 const FileUploadDemo = () => {
   const [files, setFiles] = useState<FileWithPath[]>([]);
   const [isUploading, setUploading] = useState(false);
@@ -99,6 +114,10 @@ const FileUploadDemo = () => {
     useShallow((state) => ({ addFile: state.addFile })),
   );
 
+  /**
+   * Handles files dropped into the upload zone
+   * Prevents duplicate files based on name and size
+   */
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles((prev) => {
       // Filter out duplicates based on name and size
@@ -114,6 +133,9 @@ const FileUploadDemo = () => {
     });
   }, []);
 
+  /**
+   * Removes a file from the upload queue and cleans up its progress state
+   */
   const removeFile = useCallback((fileToRemove: FileWithPath) => {
     setFiles((prev) => prev.filter((file) => file !== fileToRemove));
     setUploadProgress((prev) => {
@@ -135,6 +157,10 @@ const FileUploadDemo = () => {
     },
   });
 
+  /**
+   * Handles the upload process for all selected files
+   * Manages upload state, progress, and error handling
+   */
   const uploadFiles = async () => {
     setUploading(true);
     const toastId = toast.loading(
@@ -211,6 +237,9 @@ const FileUploadDemo = () => {
     }
   };
 
+  /**
+   * Computes the dynamic class names for the dropzone based on its state
+   */
   const dropzoneClass = useMemo(() => {
     const baseClass =
       "flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 border-dashed p-6 transition-colors";
