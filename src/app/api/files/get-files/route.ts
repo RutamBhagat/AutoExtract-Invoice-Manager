@@ -1,4 +1,4 @@
-import { FileUploadError, createErrorResponse } from "@/lib/files/utils";
+import { FileOperationError, createErrorResponse } from "@/lib/files/utils";
 
 import { NextResponse } from "next/server";
 import { consola } from "consola";
@@ -38,7 +38,7 @@ export async function GET(): Promise<NextResponse> {
         error,
       );
       return createErrorResponse(
-        new FileUploadError(
+        new FileOperationError(
           "Access denied. Please check your API key and permissions.",
           error,
           403,
@@ -49,7 +49,7 @@ export async function GET(): Promise<NextResponse> {
     if (error?.status === 401 || error?.statusText === "Unauthorized") {
       consola.warn(`Unauthorized access in request ${requestId}:`, error);
       return createErrorResponse(
-        new FileUploadError(
+        new FileOperationError(
           "Unauthorized. Please check your API key.",
           error,
           401,
@@ -62,7 +62,7 @@ export async function GET(): Promise<NextResponse> {
       error,
     );
     return createErrorResponse(
-      new FileUploadError(
+      new FileOperationError(
         "An unexpected error occurred while listing files.",
         error,
         500,

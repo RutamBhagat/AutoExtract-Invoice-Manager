@@ -1,51 +1,10 @@
-import { GoogleAIFileManager } from "@google/generative-ai/server";
+import { FileOperationError, createErrorResponse } from "@/lib/files/utils";
+
 import { NextResponse } from "next/server";
 import { consola } from "consola";
-import { env } from "@/env";
 import { fileDeleteSchema } from "@/lib/validations/file";
+import { initializeFileManager } from "@/lib/files/google-file-manager";
 import { z } from "zod";
-
-// Custom error class for file deletion errors
-class FileDeletionError extends Error {
-  constructor(
-    message: string,
-    public cause?: unknown,
-    public status?: number,
-  ) {
-    super(message);
-    this.name = "FileDeletionError";
-  }
-}
-
-/**
- * Creates a standardized error response
- */
-function createErrorResponse(
-  message: string,
-  status: number = 500,
-  fileNotFound: boolean = false,
-) {
-  consola.error(`File deletion error: ${message}`);
-  return NextResponse.json(
-    {
-      error: message,
-      fileNotFound, // Include flag to indicate if file was not found
-    },
-    { status },
-  );
-}
-
-/**
- * Safely parses JSON from the request body
- */
-async function parseRequestBody(request: Request): Promise<unknown> {
-  try {
-    return await request.json();
-  } catch (error) {
-    consola.error("Failed to parse request body:", error);
-    throw new FileDeletionError("Invalid JSON in request body", error, 400);
-  }
-}
 
 /**
  * Handles DELETE requests to delete a file.
@@ -54,17 +13,10 @@ export async function DELETE(request: Request): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing delete request ${requestId}`);
 
-  let fileManager: GoogleAIFileManager;
+  const fileManager = await initializeFileManager();
 
   try {
-    fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
-  } catch (error) {
-    consola.error("Failed to initialize GoogleAIFileManager:", error);
-    return createErrorResponse("Failed to initialize file manager");
-  }
-
-  try {
-    const body = await parseRequestBody(request);
+    const body = await request.json();
 
     const result = fileDeleteSchema.safeParse(body);
     if (!result.success) {
@@ -73,7 +25,9 @@ export async function DELETE(request: Request): Promise<NextResponse> {
       consola.warn(
         `Validation failed for request ${requestId}: ${validationError}`,
       );
-      return createErrorResponse(validationError, 400);
+      return createErrorResponse(
+        new FileOperationError(validationError, null, 400),
+      );
     }
 
     const { fileUri } = result.data;
@@ -86,7 +40,9 @@ export async function DELETE(request: Request): Promise<NextResponse> {
 
       if (!fileToDelete) {
         consola.warn(`File not found: ${fileUri}`);
-        return createErrorResponse("File not found", 404, true);
+        return createErrorResponse(
+          new FileOperationError("File not found", null, 404),
+        );
       }
 
       try {
@@ -101,11 +57,12 @@ export async function DELETE(request: Request): Promise<NextResponse> {
       } catch (error: any) {
         // Check if error is a 404
         if (error?.status === 404 || error?.statusText === "Not Found") {
-          consola.warn(`File not found: ${fileUri}`);
-          return createErrorResponse("File not found", 404, true);
+          return createErrorResponse(
+            new FileOperationError("File not found", error, 404),
+          );
         }
 
-        throw new FileDeletionError(
+        throw new FileOperationError(
           "Failed to delete file from Google AI service",
           error,
         );
@@ -114,40 +71,40 @@ export async function DELETE(request: Request): Promise<NextResponse> {
       if (error instanceof z.ZodError) {
         const validationError = error.errors[0]?.message || "Validation failed";
         consola.warn(`Validation error in request ${requestId}:`, error);
-        return createErrorResponse(validationError, 400);
+        return createErrorResponse(
+          new FileOperationError(validationError, error, 400),
+        );
       }
 
-      if (error instanceof FileDeletionError) {
-        consola.error(`File deletion error in request ${requestId}:`, {
-          message: error.message,
-          cause: error.cause,
-        });
-        return createErrorResponse(error.message, error.status || 500);
+      if (error instanceof FileOperationError) {
+        return createErrorResponse(error);
       }
 
-      consola.error(`Unexpected error in request ${requestId}:`, error);
       return createErrorResponse(
-        "An unexpected error occurred while processing your request",
+        new FileOperationError(
+          "An unexpected error occurred while processing your request",
+          error,
+        ),
       );
     }
   } catch (error) {
     if (error instanceof z.ZodError) {
       const validationError = error.errors[0]?.message || "Validation failed";
       consola.warn(`Validation error in request ${requestId}:`, error);
-      return createErrorResponse(validationError, 400);
+      return createErrorResponse(
+        new FileOperationError(validationError, error, 400),
+      );
     }
 
-    if (error instanceof FileDeletionError) {
-      consola.error(`File deletion error in request ${requestId}:`, {
-        message: error.message,
-        cause: error.cause,
-      });
-      return createErrorResponse(error.message, error.status || 500);
+    if (error instanceof FileOperationError) {
+      return createErrorResponse(error);
     }
 
-    consola.error(`Unexpected error in request ${requestId}:`, error);
     return createErrorResponse(
-      "An unexpected error occurred while processing your request",
+      new FileOperationError(
+        "An unexpected error occurred while processing your request",
+        error,
+      ),
     );
   }
 }

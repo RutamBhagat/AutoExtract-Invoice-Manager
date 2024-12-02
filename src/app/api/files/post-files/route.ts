@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import {
   cleanupFile,
   createErrorResponse,
-  FileUploadError,
+  FileOperationError,
   UploadResult,
 } from "@/lib/files/utils";
 import { UPLOAD_DIR } from "@/lib/files/consts";
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      throw new FileUploadError("No file uploaded", null, 400, "NO_FILE");
+      throw new FileOperationError("No file uploaded", null, 400, "NO_FILE");
     }
 
     processedFile = await validateAndProcessFile(file);
@@ -54,9 +54,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
   } catch (error) {
     const fileUploadError =
-      error instanceof FileUploadError
+      error instanceof FileOperationError
         ? error
-        : new FileUploadError(
+        : new FileOperationError(
             "Failed to upload file to Google AI",
             error,
             500,

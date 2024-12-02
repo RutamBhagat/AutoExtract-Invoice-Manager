@@ -9,7 +9,7 @@ export interface UploadResult {
   fileName: string;
 }
 
-export class FileUploadError extends Error {
+export class FileOperationError extends Error {
   constructor(
     message: string,
     public cause?: unknown,
@@ -17,16 +17,16 @@ export class FileUploadError extends Error {
     public code?: string,
   ) {
     super(message);
-    this.name = "FileUploadError";
+    this.name = "FileOperationError";
   }
 }
 
 /**
- * Creates a standardized error response for file upload failures
+ * Creates a standardized error response for file operations
  */
-export function createErrorResponse(error: FileUploadError): NextResponse {
+export function createErrorResponse(error: FileOperationError): NextResponse {
   consola.error({
-    message: `File upload error: ${error.message}`,
+    message: `File operation error: ${error.message}`,
     code: error.code,
     cause: error.cause,
   });

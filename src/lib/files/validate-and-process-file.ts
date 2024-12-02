@@ -1,5 +1,5 @@
 import { EXCEL_MIME_TYPES, MAX_FILE_SIZE, UPLOAD_DIR } from "./consts";
-import { FileUploadError, UploadResult } from "./utils";
+import { FileOperationError, UploadResult } from "./utils";
 
 import { convertExcelToCSV } from "./convert-excel-to-csv";
 import { fileUploadApiSchema } from "../validations/file";
@@ -14,7 +14,7 @@ export async function validateAndProcessFile(
   file: File,
 ): Promise<UploadResult> {
   if (file.size > MAX_FILE_SIZE) {
-    throw new FileUploadError(
+    throw new FileOperationError(
       "File size exceeds 2GB limit",
       null,
       400,
@@ -31,7 +31,7 @@ export async function validateAndProcessFile(
   });
 
   if (!validateResult.success) {
-    throw new FileUploadError(
+    throw new FileOperationError(
       validateResult.error.errors[0]?.message || "Invalid file format",
       null,
       400,
