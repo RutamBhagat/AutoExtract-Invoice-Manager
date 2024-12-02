@@ -1,23 +1,8 @@
-import { GoogleAIFileManager } from "@google/generative-ai/server";
+import { FileUploadError, createErrorResponse } from "@/lib/files/utils";
+
 import { NextResponse } from "next/server";
 import { consola } from "consola";
-import { env } from "@/env";
-
-/**
- * Creates a standardized error response
- */
-function createErrorResponse(
-  message: string,
-  status: number = 500,
-): NextResponse {
-  consola.error(`File listing error: ${message}`);
-  return NextResponse.json(
-    {
-      error: message,
-    },
-    { status },
-  );
-}
+import { initializeFileManager } from "@/lib/files/google-file-manager";
 
 /**
  * Handles GET requests to list all uploaded files.
@@ -29,14 +14,7 @@ export async function GET(): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing list files request ${requestId}`);
 
-  let fileManager: GoogleAIFileManager;
-
-  try {
-    fileManager = new GoogleAIFileManager(env.GEMINI_API_KEY);
-  } catch (error) {
-    consola.error("Failed to initialize GoogleAIFileManager:", error);
-    return createErrorResponse("Failed to initialize file manager");
-  }
+  const fileManager = await initializeFileManager();
 
   try {
     const listFilesResponse = await fileManager.listFiles();
@@ -48,35 +26,34 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ files: [] });
     }
 
-    const files = listFilesResponse.files.map((file) => ({
-      uri: file.uri,
-      name: file.name,
-      displayName: file.displayName,
-      mimeType: file.mimeType,
-    }));
-
+    const files = listFilesResponse.files.map((file) => file);
     consola.info(
       `Successfully retrieved ${files.length} files in request ${requestId}`,
     );
     return NextResponse.json({ files });
   } catch (error: any) {
-    // Handle specific API error statuses if available
     if (error?.status === 403 || error?.statusText === "Forbidden") {
       consola.warn(
         `Permission denied in list files request ${requestId}:`,
         error,
       );
       return createErrorResponse(
-        "Access denied. Please check your API key and permissions.",
-        403,
+        new FileUploadError(
+          "Access denied. Please check your API key and permissions.",
+          error,
+          403,
+        ),
       );
     }
 
     if (error?.status === 401 || error?.statusText === "Unauthorized") {
       consola.warn(`Unauthorized access in request ${requestId}:`, error);
       return createErrorResponse(
-        "Unauthorized. Please check your API key.",
-        401,
+        new FileUploadError(
+          "Unauthorized. Please check your API key.",
+          error,
+          401,
+        ),
       );
     }
 
@@ -85,8 +62,11 @@ export async function GET(): Promise<NextResponse> {
       error,
     );
     return createErrorResponse(
-      "An unexpected error occurred while listing files.",
-      500,
+      new FileUploadError(
+        "An unexpected error occurred while listing files.",
+        error,
+        500,
+      ),
     );
   }
 }
