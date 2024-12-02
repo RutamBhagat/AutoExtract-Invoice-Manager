@@ -19,7 +19,6 @@ import { validateAndProcessFile } from "@/lib/files/validate-and-process-file";
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Starting file upload request ${requestId}`);
-  const startTime = Date.now();
 
   let processedFile: UploadResult | null = null;
 
@@ -69,11 +68,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (processedFile?.filePath) {
       await cleanupFile(processedFile.filePath);
     }
-    const endTime = Date.now();
-    const durationMs = endTime - startTime;
-    const durationSec = (durationMs / 1000).toFixed(2);
-    consola.info(
-      `Request ${requestId} completed in ${durationMs}ms (${durationSec}s)`,
-    );
   }
 }
