@@ -63,7 +63,10 @@ interface DataStore {
   getCustomerById: (customerId: string) => Customer | undefined;
 }
 
-// Create the store instance
+/**
+ * Main data store that manages invoices, products, and customers.
+ * Provides methods for CRUD operations and file processing.
+ */
 const store = createStore<DataStore>()(
   persist(
     (set, get) => ({
@@ -127,6 +130,11 @@ const store = createStore<DataStore>()(
           ),
         })),
 
+      /**
+       * Updates a product and cascades changes to related invoices.
+       * When a product is updated, all invoices referencing this product
+       * will have their product name updated accordingly.
+       */
       updateProduct: (productId, updates) =>
         set((state) => {
           const updatedProducts = state.products.map((product) =>
@@ -148,6 +156,11 @@ const store = createStore<DataStore>()(
           };
         }),
 
+      /**
+       * Updates a customer and cascades changes to related invoices.
+       * When a customer is updated, all invoices referencing this customer
+       * will have their customer name updated accordingly.
+       */
       updateCustomer: (customerId, updates) =>
         set((state) => {
           const updatedCustomers = state.customers.map((customer) =>
@@ -182,6 +195,13 @@ const store = createStore<DataStore>()(
       setProducts: (products) => set({ products }),
       setCustomers: (customers) => set({ customers }),
 
+      /**
+       * Processes a file by sending it to the API and updating the store with extracted data.
+       * Handles success and error cases with toast notifications.
+       * @param fileUri - The URI of the file to process
+       * @param mimeType - The MIME type of the file
+       * @returns Promise with success status and error details if applicable
+       */
       processFile: async (fileUri: string, mimeType: string) => {
         const toastId = toast.loading("Processing file...");
 
@@ -261,11 +281,23 @@ const store = createStore<DataStore>()(
           return { success: false, error: errorDetails };
         }
       },
+
+      /**
+       * Retrieves a product by its ID from the store
+       * @param productId - The ID of the product to find
+       * @returns The found product or undefined
+       */
       getProductById: (productId) => {
         return get().products.find(
           (product) => product.productId === productId,
         );
       },
+
+      /**
+       * Retrieves a customer by its ID from the store
+       * @param customerId - The ID of the customer to find
+       * @returns The found customer or undefined
+       */
       getCustomerById: (customerId) => {
         return get().customers.find(
           (customer) => customer.customerId === customerId,
@@ -283,7 +315,11 @@ const store = createStore<DataStore>()(
   ),
 );
 
-// Create and export the hook
+/**
+ * Custom hook to access the data store with type-safe selectors
+ * @param selector - Function to select specific state from the store
+ * @returns The selected state portion
+ */
 export const useDataStore = <T>(selector: (state: DataStore) => T): T =>
   useStore(store, selector);
 

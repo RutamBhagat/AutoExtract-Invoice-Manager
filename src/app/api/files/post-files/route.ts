@@ -13,8 +13,8 @@ import { validateAndProcessFile } from "@/lib/files/validate-and-process-file";
 
 /**
  * Handles POST requests for file uploads
- * Processes files, validates them, and uploads to Google AI
- * Includes performance monitoring and cleanup
+ * Processes files, validates them, and uploads to Google
+ * Includes cleanup
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
