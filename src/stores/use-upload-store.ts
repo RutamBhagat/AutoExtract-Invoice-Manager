@@ -22,6 +22,10 @@ export interface UploadStore {
   fetchFiles: () => Promise<void>;
 }
 
+/**
+ * Fetches initial file data from the server
+ * @returns Promise containing array of uploaded files
+ */
 const fetchInitialData = async (): Promise<UploadedFile[]> => {
   try {
     const response = await fetch("/api/files/get-files");
@@ -51,7 +55,10 @@ const fetchInitialData = async (): Promise<UploadedFile[]> => {
   }
 };
 
-// Create the store instance
+/**
+ * Store for managing file uploads and their status
+ * Handles file listing, upload status, and file operations
+ */
 const store = createStore<UploadStore>()(
   persist(
     (set) => ({
@@ -62,10 +69,19 @@ const store = createStore<UploadStore>()(
       addFile: (file) => set((state) => ({ files: [...state.files, file] })),
       clearFiles: () => set({ files: [] }),
       setUploading: (isUploading) => set({ isUploading }),
+
+      /**
+       * Removes a file from the store by its URI
+       */
       removeFile: (fileUri) =>
         set((state) => ({
           files: state.files.filter((file) => file.fileUri !== fileUri),
         })),
+
+      /**
+       * Fetches files from the server and updates the store
+       * Manages loading state during the fetch operation
+       */
       fetchFiles: async () => {
         set({ isLoading: true });
         try {
@@ -89,11 +105,14 @@ const store = createStore<UploadStore>()(
   ),
 );
 
-// Create and export the hook
+/**
+ * Custom hook to access the upload store with type-safe selectors
+ * @param selector Function to select specific state from the store
+ * @returns The selected state portion
+ */
 export const useUploadStore = <T>(selector: (state: UploadStore) => T): T =>
   useStore(store, selector);
 
-// Export vanilla store methods for usage outside of React
 export const uploadStore = {
   getState: store.getState,
   setState: store.setState,
