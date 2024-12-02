@@ -26,6 +26,10 @@ import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useUploadStore } from "@/stores/use-upload-store";
 
+/**
+ * Displays a list of uploaded files with actions for generation and deletion
+ * Includes loading states, file type icons, and tooltips for actions
+ */
 export default function FileList() {
   const { files, removeFile, fetchFiles } = useUploadStore(
     useShallow((state) => ({
@@ -44,6 +48,10 @@ export default function FileList() {
     fetchFiles();
   }, []);
 
+  /**
+   * Handles file deletion with optimistic updates and error handling
+   * @param fileUri - URI of the file to delete
+   */
   const handleDelete = async (fileUri: string) => {
     const fileName =
       files.find((f) => f.fileUri === fileUri)?.displayName || fileUri;
@@ -87,6 +95,11 @@ export default function FileList() {
     }
   };
 
+  /**
+   * Initiates file processing for data extraction
+   * @param fileUri - URI of the file to process
+   * @param mimeType - MIME type of the file
+   */
   const handleGenerate = async (fileUri: string, mimeType: string) => {
     try {
       await processFile(fileUri, mimeType);
@@ -95,10 +108,14 @@ export default function FileList() {
     }
   };
 
+  /**
+   * Returns appropriate icon component based on file extension
+   * @param fileUri - URI of the file to get icon for
+   */
   const getFileIcon = (fileUri: string) => {
     const imageRegex = /\.(jpg|jpeg|png)$/i;
     const pdfRegex = /\.pdf$/i;
-    const spreadsheetRegex = /\.(xlsx|xls)$/i;
+    const spreadsheetRegex = /\.(xlsx|xls|csv)$/i;
 
     if (imageRegex.test(fileUri))
       return <ImageIcon className="h-6 w-6 text-blue-400" />;
