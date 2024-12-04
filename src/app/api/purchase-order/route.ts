@@ -77,6 +77,37 @@ const emailSchema = z.object({
   internalDate: z.string(),
 });
 
+function extractEmailData(email: any): string {
+  const extractedData: string[] = [];
+
+  const extractHeaderValue = (name: string) => {
+    const header = email.payload.headers.find(
+      (h: { name: string }) => h.name === name,
+    );
+    return header ? header.value : "";
+  };
+
+  extractedData.push(`Subject: ${extractHeaderValue("Subject")}`);
+  extractedData.push(`Snippet: ${email.snippet}`);
+  extractedData.push(`From: ${extractHeaderValue("From")}`);
+  extractedData.push(`Date: ${extractHeaderValue("Date")}`);
+  extractedData.push(`To: ${extractHeaderValue("To")}`);
+
+  const processAttachments = (part: any) => {
+    if (allowedMimeTypes.includes(part.mimeType)) {
+      extractedData.push(`Attachment: ${part.mimeType}, ${part.filename}`);
+    }
+
+    if (part.parts) {
+      part.parts.forEach(processAttachments);
+    }
+  };
+
+  email.payload.parts.forEach(processAttachments);
+
+  return extractedData.join("\n");
+}
+
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID();
   try {
@@ -93,30 +124,7 @@ export async function POST(request: NextRequest) {
     }
 
     const email = validationResult.data;
-    let extractedData = "";
-
-    const extractHeaderValue = (name: string) => {
-      const header = email.payload.headers.find((h) => h.name === name);
-      return header ? header.value : "";
-    };
-
-    extractedData += `Subject: ${extractHeaderValue("Subject")}\n`;
-    extractedData += `Snippet: ${email.snippet}\n`;
-    extractedData += `From: ${extractHeaderValue("From")}\n`;
-    extractedData += `Date: ${extractHeaderValue("Date")}\n`;
-    extractedData += `To: ${extractHeaderValue("To")}\n`;
-
-    const processAttachments = (part: any) => {
-      if (allowedMimeTypes.includes(part.mimeType)) {
-        extractedData += `Attachment: ${part.mimeType}, ${part.filename}\n`;
-      }
-
-      if (part.parts) {
-        part.parts.forEach(processAttachments);
-      }
-    };
-
-    email.payload.parts.forEach(processAttachments);
+    const extractedData = extractEmailData(email);
 
     return NextResponse.json({ extractedData });
   } catch (error: any) {
