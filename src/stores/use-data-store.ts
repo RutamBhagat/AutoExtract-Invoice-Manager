@@ -179,7 +179,7 @@ const store = createStore<DataStore>()(
         const toastId = toast.loading("Processing file...");
 
         try {
-          const response = await fetch("/api/generate", {
+          const response = await fetch("/api/generate/structured-data", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

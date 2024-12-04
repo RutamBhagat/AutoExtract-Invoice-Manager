@@ -1,5 +1,13 @@
+import {
+  combinedGeminiSchema,
+  combinedZodSchema,
+} from "../validations/pdf-generate";
+
+import { ZodObject } from "zod";
+
 export const GEMINI_PROMPTS = {
-  EXTRACTION_PROMPT: `
+  EXTRACTION_PROMPT: {
+    prompt: `
     You are a specialized data extraction assistant. Your task is to analyze invoice documents and extract structured information into a JSON format **strictly adhering to the provided schema.  Output ONLY valid JSON. No explanatory text, markdown, or any other content is permitted.**
 
     **Key Instructions:**
@@ -70,6 +78,17 @@ export const GEMINI_PROMPTS = {
       ]
     }
     `,
-  PROCESSING_ORDER: `PROCESSING_ORDER`,
-  CLASSIFY: `CLASSIFY`,
+    zod_schema: combinedZodSchema,
+    gemini_schema: combinedGeminiSchema,
+  },
+  PROCESSING_ORDER: {
+    prompt: `PROCESSING_ORDER`,
+    zod_schema: ZodObject.create({}),
+    gemini_schema: {},
+  },
+  CLASSIFY: {
+    prompt: `CLASSIFY`,
+    zod_schema: ZodObject.create({}),
+    gemini_schema: {},
+  },
 };
