@@ -1,81 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { ALLOWED_EMAIL_MIME_TYPES } from "@/lib/files/consts";
 import { consola } from "consola";
-import { z } from "zod";
-
-const allowedMimeTypes = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/jpg",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "text/csv",
-];
-
-const emailPayloadPartSchema: z.ZodSchema = z.object({
-  partId: z.string(),
-  mimeType: z.string(),
-  filename: z.string(),
-  headers: z.array(
-    z.object({
-      name: z.string(),
-      value: z.string(),
-    }),
-  ),
-  body: z.object({
-    size: z.number(),
-    attachmentId: z.string().optional(), // Make attachmentId optional
-    data: z.string().optional(),
-  }),
-  parts: z
-    .array(
-      z.object({
-        partId: z.string(),
-        mimeType: z.string(),
-        filename: z.string(),
-        headers: z.array(
-          z.object({
-            name: z.string(),
-            value: z.string(),
-          }),
-        ),
-        body: z.object({
-          size: z.number(),
-          attachmentId: z.string().optional(),
-          data: z.string().optional(),
-        }),
-        parts: z.lazy(() => emailPayloadPartSchema.array()).optional(),
-      }),
-    )
-    .optional(),
-});
-
-const emailPayloadSchema = z.object({
-  partId: z.string(),
-  mimeType: z.string(),
-  filename: z.string(),
-  headers: z.array(
-    z.object({
-      name: z.string(),
-      value: z.string(),
-    }),
-  ),
-  body: z.object({
-    size: z.number(),
-  }),
-  parts: emailPayloadPartSchema.array(),
-});
-
-const emailSchema = z.object({
-  id: z.string(),
-  threadId: z.string(),
-  labelIds: z.array(z.string()),
-  snippet: z.string(),
-  payload: emailPayloadSchema,
-  sizeEstimate: z.number(),
-  historyId: z.string(),
-  internalDate: z.string(),
-});
+import { emailSchema } from "@/lib/validations/purchase-order-generate";
 
 function extractEmailData(email: any): string {
   const extractedData: string[] = [];
@@ -94,7 +21,7 @@ function extractEmailData(email: any): string {
   extractedData.push(`To: ${extractHeaderValue("To")}`);
 
   const processAttachments = (part: any) => {
-    if (allowedMimeTypes.includes(part.mimeType)) {
+    if (ALLOWED_EMAIL_MIME_TYPES.includes(part.mimeType)) {
       extractedData.push(`Attachment: ${part.mimeType}, ${part.filename}`);
     }
 

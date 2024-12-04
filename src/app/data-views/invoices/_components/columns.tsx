@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
-import { Invoice } from "@/lib/validations/pdf-generate";
+import { Invoice } from "@/lib/validations/invoice-generate";
 import { Trash } from "lucide-react";
 
 interface InvoicesColumnProps {

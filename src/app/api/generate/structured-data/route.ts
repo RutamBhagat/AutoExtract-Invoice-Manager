@@ -4,8 +4,8 @@ import { consola } from "consola";
 import { mkdir } from "fs/promises";
 import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
-import { generateContentSchema } from "@/lib/validations/pdf-generate";
-import { SUPPORTED_MIME_TYPES_REGEX } from "@/lib/files/consts";
+import { generateContentSchema } from "@/lib/validations/invoice-generate";
+import { ALLOWED_GEMINI_MIME_TYPES } from "@/lib/files/consts";
 import { GEMINI_PROMPTS } from "@/lib/constants/extraction-prompt";
 
 /**
@@ -84,7 +84,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
 
       // Validate MIME type
-      if (!file.mimeType || !file.mimeType.match(SUPPORTED_MIME_TYPES_REGEX)) {
+      if (
+        !file.mimeType ||
+        !ALLOWED_GEMINI_MIME_TYPES.includes(file.mimeType)
+      ) {
         consola.log(`Unsupported MIME type: ${file.mimeType}`);
         throw new ContentGenerationError("Unsupported MIME type", null, 400);
       }

@@ -1,7 +1,7 @@
 import {
   combinedGeminiSchema,
   combinedZodSchema,
-} from "../validations/pdf-generate";
+} from "../validations/invoice-generate";
 
 import { ZodObject } from "zod";
 

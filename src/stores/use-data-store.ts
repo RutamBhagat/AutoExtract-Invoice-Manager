@@ -5,7 +5,7 @@ import {
   type Invoice,
   type Product,
   type Customer,
-} from "@/lib/validations/pdf-generate";
+} from "@/lib/validations/invoice-generate";
 import axios from "axios";
 
 export interface ProcessedFile {

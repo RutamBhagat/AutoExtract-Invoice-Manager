@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table";
-import { Customer } from "@/lib/validations/pdf-generate";
+import { Customer } from "@/lib/validations/invoice-generate";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { EditableCell } from "@/components/data-table/data-table-cell-editable";
 import { Trash } from "lucide-react";

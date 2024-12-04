@@ -4,5 +4,20 @@ export const EXCEL_MIME_TYPES = [
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.ms-excel",
 ];
-export const SUPPORTED_MIME_TYPES_REGEX =
-  /^application\/pdf$|^application\/x-javascript$|^text\/javascript$|^application\/x-python$|^text\/x-python$|^text\/plain$|^text\/html$|^text\/css$|^text\/md$|^text\/csv$|^text\/xml$|^text\/rtf$|^image\/png$|^image\/jpeg$|^image\/webp$|^image\/heic$|^image\/heif$/;
+
+export const ALLOWED_GEMINI_MIME_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/jpg",
+  "text/csv",
+];
+
+export const ALLOWED_EMAIL_MIME_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/jpg",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+];
