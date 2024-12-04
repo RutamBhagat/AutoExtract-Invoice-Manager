@@ -1,5 +1,6 @@
 import { createStore, useStore } from "zustand";
 
+import axios from "axios";
 import { persist } from "zustand/middleware";
 
 export interface UploadedFile {
@@ -28,8 +29,7 @@ export interface UploadStore {
  */
 const fetchInitialData = async (): Promise<UploadedFile[]> => {
   try {
-    const response = await fetch("/api/files/get-files");
-    const data = (await response.json()) as {
+    const { data } = await axios.get<{
       error: string;
       files: {
         uri: string;
@@ -37,18 +37,16 @@ const fetchInitialData = async (): Promise<UploadedFile[]> => {
         mimeType: string;
         name: string;
       }[];
-    };
+    }>("/api/files/get-files");
 
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to fetch files");
-    }
-
-    return data.files.map((file) => ({
-      fileUri: file.uri,
-      displayName: file.displayName,
-      mimeType: file.mimeType,
-      name: file.name,
-    }));
+    return data.files.map(
+      (file: { uri: any; displayName: any; mimeType: any; name: any }) => ({
+        fileUri: file.uri,
+        displayName: file.displayName,
+        mimeType: file.mimeType,
+        name: file.name,
+      }),
+    );
   } catch (error) {
     console.error("Failed to fetch initial files:", error);
     return [];
