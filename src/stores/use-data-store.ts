@@ -1,7 +1,4 @@
 import { createStore, useStore } from "zustand";
-
-import { EXTRACTION_PROMPT } from "../lib/constants/extraction-prompt";
-import { generateId } from "@/lib/ids/ids";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
 import {
@@ -189,7 +186,7 @@ const store = createStore<DataStore>()(
             },
             body: JSON.stringify({
               files: [{ fileUri, mimeType }],
-              prompt: EXTRACTION_PROMPT,
+              prompt: "EXTRACTION_PROMPT",
             }),
           });
 

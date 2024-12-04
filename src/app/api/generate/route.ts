@@ -10,6 +10,7 @@ import {
   combinedGeminiSchema,
 } from "@/lib/validations/pdf-generate";
 import { SUPPORTED_MIME_TYPES_REGEX } from "@/lib/files/consts";
+import { GEMINI_PROMPTS } from "@/lib/constants/extraction-prompt";
 
 /**
  * Custom error class for content generation errors
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Generate content with explicit JSON formatting instruction
       const generateContentResult = await model.generateContent([
         {
-          text: prompt,
+          text: GEMINI_PROMPTS[prompt],
         },
         ...fileParts,
       ]);

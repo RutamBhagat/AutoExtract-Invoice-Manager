@@ -15,7 +15,7 @@ export const fileItemSchema = z.object({
  */
 export const generateContentSchema = z.object({
   files: z.array(fileItemSchema),
-  prompt: z.string().min(1),
+  prompt: z.enum(["EXTRACTION_PROMPT", "PROCESSING_ORDER", "CLASSIFY"]),
 });
 
 /**
