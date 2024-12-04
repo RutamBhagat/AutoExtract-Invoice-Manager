@@ -1,7 +1,7 @@
 import path from "path";
 import { env } from "@/env";
 import { consola } from "consola";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir } from "fs/promises";
 import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
 import {
@@ -9,6 +9,7 @@ import {
   combinedZodSchema,
   combinedGeminiSchema,
 } from "@/lib/validations/pdf-generate";
+import { SUPPORTED_MIME_TYPES_REGEX } from "@/lib/files/consts";
 
 /**
  * Custom error class for content generation errors
@@ -86,12 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }
 
       // Validate MIME type
-      if (
-        !file.mimeType ||
-        !file.mimeType.match(
-          /^application\/pdf$|^application\/x-javascript$|^text\/javascript$|^application\/x-python$|^text\/x-python$|^text\/plain$|^text\/html$|^text\/css$|^text\/md$|^text\/csv$|^text\/xml$|^text\/rtf$|^image\/png$|^image\/jpeg$|^image\/webp$|^image\/heic$|^image\/heif$/,
-        )
-      ) {
+      if (!file.mimeType || !file.mimeType.match(SUPPORTED_MIME_TYPES_REGEX)) {
         consola.log(`Unsupported MIME type: ${file.mimeType}`);
         throw new ContentGenerationError("Unsupported MIME type", null, 400);
       }
