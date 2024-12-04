@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import axios from "axios";
 import { toast } from "sonner";
 import { useDataStore } from "@/stores/use-data-store";
 import { useEffect } from "react";
@@ -60,37 +61,34 @@ export default function FileList() {
     });
 
     try {
-      const response = await fetch("/api/files/delete-files", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ fileUri }),
+      const { data } = await axios.delete("/api/files/delete-files", {
+        data: { fileUri },
       });
 
-      const data = await response.json();
+      removeFile(fileUri);
+      toast.success("File removed", {
+        id: deleteToastId,
+        description: `${fileName} has been deleted successfully`,
+      });
+    } catch (error) {
+      console.error("Failed to delete file", error);
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.error || error.message
+        : "Failed to delete file";
 
-      // Remove from store if delete was successful OR if file wasn't found
-      if (response.ok || (response.status === 404 && data.fileNotFound)) {
+      // If file not found, still remove it from the store
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
         removeFile(fileUri);
         toast.success("File removed", {
           id: deleteToastId,
-          description: response.ok
-            ? `${fileName} has been deleted successfully`
-            : `${fileName} has been removed from your list`,
+          description: `${fileName} has been removed from your list`,
         });
         return;
       }
 
-      throw new Error(data.error || "Failed to delete file");
-    } catch (error: unknown) {
-      console.error("Failed to delete file", error);
       toast.error("Failed to delete file", {
         id: deleteToastId,
-        description:
-          error instanceof Error
-            ? `Error: ${error.message}`
-            : "There was a problem deleting the file. Please try again.",
+        description: `Error: ${errorMessage}`,
       });
     }
   };

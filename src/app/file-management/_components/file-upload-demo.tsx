@@ -2,6 +2,7 @@ import { memo, useCallback, useState, useMemo } from "react";
 import { type FileWithPath, useDropzone } from "react-dropzone";
 import { useShallow } from "zustand/shallow";
 import { toast } from "sonner";
+import axios from "axios";
 
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -182,19 +183,16 @@ const FileUploadDemo = () => {
             const formData = new FormData();
             formData.append("file", file);
 
-            const response = await fetch("/api/files/post-files", {
-              method: "POST",
-              body: formData,
-            });
+            const { data: result } = await axios.post<UploadResponse>(
+              "/api/files/post-files",
+              formData,
+              {
+                headers: {
+                  "Content-Type": "multipart/form-data",
+                },
+              },
+            );
 
-            if (!response.ok) {
-              const errorData = (await response.json()) as { error?: string };
-              throw new Error(
-                errorData.error ?? `Failed to upload ${file.name}`,
-              );
-            }
-
-            const result = (await response.json()) as UploadResponse;
             addFile({
               ...result,
               name: result.displayName,
@@ -207,7 +205,14 @@ const FileUploadDemo = () => {
 
             return { file, success: true };
           } catch (error) {
-            return { file, success: false, error };
+            return {
+              file,
+              success: false,
+              error: axios.isAxiosError(error)
+                ? (error.response?.data?.error ??
+                  `Failed to upload ${file.name}`)
+                : error,
+            };
           }
         }),
       );

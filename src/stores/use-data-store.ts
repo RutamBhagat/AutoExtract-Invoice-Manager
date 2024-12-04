@@ -6,6 +6,7 @@ import {
   type Product,
   type Customer,
 } from "@/lib/validations/pdf-generate";
+import axios from "axios";
 
 export interface ProcessedFile {
   fileUri: string;
@@ -179,33 +180,10 @@ const store = createStore<DataStore>()(
         const toastId = toast.loading("Processing file...");
 
         try {
-          const response = await fetch("/api/generate/structured-data", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              files: [{ fileUri, mimeType }],
-              prompt: "EXTRACTION_PROMPT",
-            }),
+          const { data } = await axios.post("/api/generate/structured-data", {
+            files: [{ fileUri, mimeType }],
+            prompt: "EXTRACTION_PROMPT",
           });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            const error = {
-              message: data.error || "Failed to process file",
-              details: data.details || "An unexpected error occurred",
-              code: data.code || "PROCESSING_ERROR",
-            };
-
-            toast.error("Failed to process file", {
-              id: toastId,
-              description: error.message,
-            });
-
-            return { success: false, error };
-          }
 
           const { result } = data;
 
@@ -222,15 +200,16 @@ const store = createStore<DataStore>()(
           return { success: true };
         } catch (error) {
           const errorDetails = {
-            message: error instanceof Error ? error.message : "Unknown error",
+            message: axios.isAxiosError(error)
+              ? error.response?.data?.error || error.message
+              : "Unknown error",
             details: "Failed to communicate with the server",
             code: "NETWORK_ERROR",
           };
 
           toast.error("Failed to process file", {
             id: toastId,
-            description:
-              error instanceof Error ? error.message : "Unknown error",
+            description: errorDetails.message,
           });
 
           return { success: false, error: errorDetails };
