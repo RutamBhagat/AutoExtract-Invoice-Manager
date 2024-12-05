@@ -57,7 +57,7 @@ export type Customer = z.infer<typeof customerSchema>;
 /**
  * Combined schema for validating the response content.
  */
-export const combinedZodSchema = z.object({
+export const combinedZodInvoiceSchema = z.object({
   invoices: z.array(invoiceSchema).optional(),
   products: z.array(productSchema).optional(),
   customers: z.array(customerSchema).optional(),
@@ -66,7 +66,7 @@ export const combinedZodSchema = z.object({
 /**
  * Combined schema describing the expected structured output format for Gemini AI.
  */
-export const combinedGeminiSchema = {
+export const combinedGeminiInvoiceSchema = {
   type: SchemaType.OBJECT,
   properties: {
     invoices: {

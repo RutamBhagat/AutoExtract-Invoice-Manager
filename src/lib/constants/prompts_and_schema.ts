@@ -1,6 +1,6 @@
 import {
-  combinedGeminiSchema,
-  combinedZodSchema,
+  combinedGeminiInvoiceSchema,
+  combinedZodInvoiceSchema,
 } from "../validations/invoice-generate";
 
 import { ZodObject } from "zod";
@@ -78,8 +78,8 @@ export const GEMINI_PROMPTS = {
       ]
     }
     `,
-    zod_schema: combinedZodSchema,
-    gemini_schema: combinedGeminiSchema,
+    zod_schema: combinedZodInvoiceSchema,
+    gemini_schema: combinedGeminiInvoiceSchema,
   },
   PROCESSING_ORDER: {
     prompt: `PROCESSING_ORDER`,
