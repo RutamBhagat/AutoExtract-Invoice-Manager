@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     const { result } = data;
 
-    return NextResponse.json({ extractedData });
+    return NextResponse.json({ result });
   } catch (error: any) {
     consola.error(
       `Error in /api/purchase-orders/route.ts: ${requestId}`,
