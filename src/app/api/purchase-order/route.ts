@@ -5,33 +5,19 @@ import { consola } from "consola";
 import { emailThreadSchema } from "@/lib/validations/purchase-order-generate";
 
 function extractEmailData(emailThread: any[]): string {
-  /**
-   * Extracts information from an array of email messages in a thread
-   * Returns a formatted string containing details from all emails
-   */
-  const threadData: string[] = [];
+  let extractedData = "";
 
   for (const email of emailThread) {
-    const emailData: string[] = [];
-    emailData.push(`Email ID: ${email.id}`);
-
-    const extractHeaderValue = (name: string) => {
-      const header = email.payload.headers.find(
-        (h: { name: string }) => h.name === name,
-      );
-      return header ? header.value : "";
-    };
-
-    emailData.push(`Subject: ${extractHeaderValue("Subject")}`);
-    emailData.push(`Snippet: ${email.snippet}`);
-    emailData.push(`From: ${extractHeaderValue("From")}`);
-    emailData.push(`Date: ${extractHeaderValue("Date")}`);
-    emailData.push(`To: ${extractHeaderValue("To")}`);
+    extractedData += `Email Subject: ${email.payload.headers.find((h: { name: string }) => h.name === "Subject")?.value || "N/A"}\n`;
+    extractedData += `From: ${email.payload.headers.find((h: { name: string }) => h.name === "From")?.value || "N/A"}\n`;
+    extractedData += `To: ${email.payload.headers.find((h: { name: string }) => h.name === "To")?.value || "N/A"}\n`;
+    extractedData += `Date: ${email.payload.headers.find((h: { name: string }) => h.name === "Date")?.value || "N/A"}\n`;
+    extractedData += `Snippet:\n${email.snippet}\n`;
 
     const attachments: string[] = [];
     const processAttachments = (part: any) => {
       if (ALLOWED_EMAIL_MIME_TYPES.includes(part.mimeType)) {
-        attachments.push(`Attachment: ${part.mimeType}, ${part.filename}`);
+        attachments.push(`- ${part.filename} (${part.mimeType})\n`);
       }
       if (part.parts) {
         part.parts.forEach(processAttachments);
@@ -41,12 +27,15 @@ function extractEmailData(emailThread: any[]): string {
     if (email.payload.parts) {
       email.payload.parts.forEach(processAttachments);
     }
-    emailData.push(...attachments);
 
-    threadData.push(emailData.join("\n"));
+    if (attachments.length > 0) {
+      extractedData += `Attachments:\n${attachments.join("")}`;
+    }
+    extractedData += "\n";
+    extractedData += `----------------------------------------\n`; // Separator between emails
   }
 
-  return threadData.join("\n\n");
+  return extractedData;
 }
 
 export async function POST(request: NextRequest) {
@@ -69,7 +58,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ extractedData });
   } catch (error: any) {
-    consola.error("Error in /api/purchase-orders/route.ts:", error);
+    consola.error(
+      `Error in /api/purchase-orders/route.ts: ${requestId}`,
+      error,
+    ); // Include requestId
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
