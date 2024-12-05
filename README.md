@@ -121,9 +121,8 @@ Swipe Invoice demonstrates effective implementation of AI-powered data processin
 
 # Screenshots
 
-![1](https://github.com/user-attachments/assets/b497990c-c886-4d1c-8409-9c84bf5b50ad)
+![1](https://github.com/user-attachments/assets/5b279dee-3d6c-4f91-932d-e0621b404c32)
 ![2](https://github.com/user-attachments/assets/ad8faf8f-dce3-4fa0-849a-ff558f51cd94)
 ![3](https://github.com/user-attachments/assets/8f92fff3-6ef4-4891-ae79-0e8775e47b96)
 ![4](https://github.com/user-attachments/assets/4c0c1e36-3012-4d1f-8b5c-031bb5c63135)
 ![5](https://github.com/user-attachments/assets/78d05094-afa5-415f-a245-fc65ca78d09a)
-
