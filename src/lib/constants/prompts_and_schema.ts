@@ -74,23 +74,23 @@ export const GEMINI_PROMPTS = {
   },
   CLASSIFY: {
     prompt: `
-      You are a Purchase Order (PO) classifier. Your task is to analyze the provided "extractedData" from an email and determine if it likely represents a Purchase Order. While the following criteria are designed to guide you, use your best judgment and understanding of language to make the final determination. Favor accuracy, but avoid being overly strict. If the email appears to be related to a purchase order, even if not perfectly explicit, lean towards classifying it as True.
-      Positive Indicators for a Purchase Order (Lean towards True):
-      The email exhibits one or more of the following:
-        Explicit Mentions: The "extractedData," especially the Snippet, contains clear mentions of "Purchase Order," "PO," "P.O.," or "Our PO," ideally followed by a number, identifier, or other contextual information suggesting a specific PO. A clearly stated "PO Number" with an associated value is a strong positive indicator.
-        Related Terminology and Actions: The email uses language strongly suggesting the placement or confirmation of a purchase order. Examples include: "arrange the material," "confirm the order," "delivery date," "please find attached our order," requests for acknowledgment, acceptance, or processing of an order. Consider the overall context and intent.
-        Relevant Attachment Names:  Attachments with filenames specifically suggesting a Purchase Order (e.g., "PurchaseOrder.pdf," "PO12345.xlsx") are positive indicators. However, generic attachment names alone are not sufficient.
-        Overall Context: Consider the overall context of the email. Even if explicit PO mentions are absent, does the communication clearly suggest a transaction related to purchasing or ordering goods or services?
-      Factors that Weaken the Likelihood of a PO (Lean towards False):
-        Requests for Information:  Emails primarily focused on requesting pricing, availability, quotes, or other pre-order information.
-        Discussions of Past Orders or Issues: Emails discussing past orders, invoices, shipping issues, quality control, or other post-purchase topics.
-        Generic Ordering Language: While mentioning "order" or "ordering" can be relevant, consider if it's used in a general sense or specifically refers to a formal Purchase Order.
-      Important: These are guidelines, not strict rules. Use your judgment and understanding of language to make the final classification. If unsure, but the email seems related to a purchase process, lean towards True.
-      Example Output:
-      {
-        "isPurchaseOrder": true or false
+      You are a Purchase Order (PO) classifier. Analyze "extractedData" to determine if it's a PO. Emails are pre-filtered. Maximize accuracy even if language isn't explicit. Classify iteratively: subject first ("Purchase Order", "PO #..."), if inconclusive check body, then context, finally attachment name if needed. Manually correctable confidence will be used for future learning.
+      Positive Indicators (ranked confidence, highest to lowest):
+      Highest: Explicit "Purchase Order", "PO", "P.O.", "Our PO" + number. "PO Number:" with a value.
+      High: Language implying order placement/confirmation, e.g., "attached our Purchase Order", "placing an order", "confirms your order", "process the order", "acknowledge receipt", "Accept this purchase order", "Order has been placed", "arrange the material"/"confirm the order"/"delivery date"/"please find attached our order" + PO number.
+      Medium: Item descriptions, quantities, units, pricing, delivery dates, terms, buyer/seller names.
+      Low: Filenames like "PurchaseOrder_1234.pdf", "PO-ABC-Company.xlsx" (only if confidence is borderline).
+      Confidence Assignment:
+      Subject has explicit PO mention without rejection keywords: high confidence.
+      Subject inconclusive, body has strong confirmation language: high confidence, else low confidence
+      Subject or body has contextual info: medium confidence.
+      Attachment has relevant PO name and confidence is between cutoff: low confidence.
+      Output: {
+        "isPurchaseOrder": true/false, 
+        "confidence": "HIGH" #or MEDIUM or LOW
       }
-      Input:
+      Case-insensitive keywords: "PO", "po", "Po". Allow variations like "Purchase Order Number", "Order Number".
+      INPUT:
     `,
     zod_schema: zodPurchaseOrderSchema,
     gemini_schema: geminiPurchaseOrderSchema,

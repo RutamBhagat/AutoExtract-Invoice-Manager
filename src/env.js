@@ -12,6 +12,7 @@ export const env = createEnv({
       .default("development"),
     GEMINI_API_KEY: z.string(),
     MODEL_NAME: z.string().default("gemini-1.5-flash"),
+    SERVER_BASE_URL: z.string().default("http://localhost:3000"),
   },
 
   /**
@@ -31,6 +32,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     MODEL_NAME: process.env.MODEL_NAME,
+    SERVER_BASE_URL: process.env.SERVER_BASE_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

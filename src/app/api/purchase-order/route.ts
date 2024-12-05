@@ -4,6 +4,7 @@ import { ALLOWED_EMAIL_MIME_TYPES } from "@/lib/files/consts";
 import axios from "axios";
 import { consola } from "consola";
 import { emailThreadSchema } from "@/lib/validations/purchase-order-generate";
+import { env } from "@/env";
 
 function extractEmailData(emailThread: any[]): string {
   let extractedData = "";
@@ -57,10 +58,13 @@ export async function POST(request: NextRequest) {
     const emailThread = validationResult.data.messages;
     const extractedData = extractEmailData(emailThread);
 
-    const { data } = await axios.post("/api/generate/without-files", {
-      extractedData,
-      prompt: "CLASSIFY",
-    });
+    const { data } = await axios.post(
+      `${env.SERVER_BASE_URL}/api/generate/without-files`,
+      {
+        extractedData,
+        prompt: "CLASSIFY",
+      },
+    );
 
     const { result } = data;
 
