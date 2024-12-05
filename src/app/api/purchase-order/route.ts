@@ -2,37 +2,51 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ALLOWED_EMAIL_MIME_TYPES } from "@/lib/files/consts";
 import { consola } from "consola";
-import { emailSchema } from "@/lib/validations/purchase-order-generate";
+import { emailThreadSchema } from "@/lib/validations/purchase-order-generate";
 
-function extractEmailData(email: any): string {
-  const extractedData: string[] = [];
+function extractEmailData(emailThread: any[]): string {
+  /**
+   * Extracts information from an array of email messages in a thread
+   * Returns a formatted string containing details from all emails
+   */
+  const threadData: string[] = [];
 
-  const extractHeaderValue = (name: string) => {
-    const header = email.payload.headers.find(
-      (h: { name: string }) => h.name === name,
-    );
-    return header ? header.value : "";
-  };
+  for (const email of emailThread) {
+    const emailData: string[] = [];
+    emailData.push(`Email ID: ${email.id}`);
 
-  extractedData.push(`Subject: ${extractHeaderValue("Subject")}`);
-  extractedData.push(`Snippet: ${email.snippet}`);
-  extractedData.push(`From: ${extractHeaderValue("From")}`);
-  extractedData.push(`Date: ${extractHeaderValue("Date")}`);
-  extractedData.push(`To: ${extractHeaderValue("To")}`);
+    const extractHeaderValue = (name: string) => {
+      const header = email.payload.headers.find(
+        (h: { name: string }) => h.name === name,
+      );
+      return header ? header.value : "";
+    };
 
-  const processAttachments = (part: any) => {
-    if (ALLOWED_EMAIL_MIME_TYPES.includes(part.mimeType)) {
-      extractedData.push(`Attachment: ${part.mimeType}, ${part.filename}`);
+    emailData.push(`Subject: ${extractHeaderValue("Subject")}`);
+    emailData.push(`Snippet: ${email.snippet}`);
+    emailData.push(`From: ${extractHeaderValue("From")}`);
+    emailData.push(`Date: ${extractHeaderValue("Date")}`);
+    emailData.push(`To: ${extractHeaderValue("To")}`);
+
+    const attachments: string[] = [];
+    const processAttachments = (part: any) => {
+      if (ALLOWED_EMAIL_MIME_TYPES.includes(part.mimeType)) {
+        attachments.push(`Attachment: ${part.mimeType}, ${part.filename}`);
+      }
+      if (part.parts) {
+        part.parts.forEach(processAttachments);
+      }
+    };
+
+    if (email.payload.parts) {
+      email.payload.parts.forEach(processAttachments);
     }
+    emailData.push(...attachments);
 
-    if (part.parts) {
-      part.parts.forEach(processAttachments);
-    }
-  };
+    threadData.push(emailData.join("\n"));
+  }
 
-  email.payload.parts.forEach(processAttachments);
-
-  return extractedData.join("\n");
+  return threadData.join("\n\n");
 }
 
 export async function POST(request: NextRequest) {
@@ -40,7 +54,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const validationResult = emailSchema.safeParse(body);
+    const validationResult = emailThreadSchema.safeParse(body);
     if (!validationResult.success) {
       const errors = validationResult.error.errors
         .map((e) => e.message)
@@ -50,8 +64,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const email = validationResult.data;
-    const extractedData = extractEmailData(email);
+    const emailThread = validationResult.data.messages;
+    const extractedData = extractEmailData(emailThread);
 
     return NextResponse.json({ extractedData });
   } catch (error: any) {

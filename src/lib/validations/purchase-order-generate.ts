@@ -64,3 +64,9 @@ export const emailSchema = z.object({
   historyId: z.string(),
   internalDate: z.string(),
 });
+
+export const emailThreadSchema = z.object({
+  id: z.string(),
+  historyId: z.string(),
+  messages: z.array(emailSchema),
+});
