@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { ALLOWED_EMAIL_MIME_TYPES } from "@/lib/files/consts";
+import axios from "axios";
 import { consola } from "consola";
 import { emailThreadSchema } from "@/lib/validations/purchase-order-generate";
 
@@ -55,6 +56,13 @@ export async function POST(request: NextRequest) {
 
     const emailThread = validationResult.data.messages;
     const extractedData = extractEmailData(emailThread);
+
+    // const { data } = await axios.post("/api/generate/structured-data", {
+    //   files: [{ fileUri, mimeType }],
+    //   prompt: "EXTRACTION_PROMPT",
+    // });
+
+    // const { result } = data;
 
     return NextResponse.json({ extractedData });
   } catch (error: any) {

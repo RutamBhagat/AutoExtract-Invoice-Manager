@@ -180,7 +180,7 @@ const store = createStore<DataStore>()(
         const toastId = toast.loading("Processing file...");
 
         try {
-          const { data } = await axios.post("/api/generate/structured-data", {
+          const { data } = await axios.post("/api/generate/with-files", {
             files: [{ fileUri, mimeType }],
             prompt: "EXTRACTION_PROMPT",
           });
