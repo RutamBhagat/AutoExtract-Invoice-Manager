@@ -4,9 +4,9 @@ import { consola } from "consola";
 import { mkdir } from "fs/promises";
 import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
-import { generateContentSchema } from "@/lib/validations/invoice-generate";
 import { ALLOWED_GEMINI_MIME_TYPES } from "@/lib/files/consts";
-import { GEMINI_PROMPTS } from "@/lib/constants/extraction-prompt";
+import { GEMINI_PROMPTS } from "@/lib/constants/prompts_and_schema";
+import { generateContentSchema } from "@/lib/validations/gemini-file";
 
 /**
  * Custom error class for content generation errors

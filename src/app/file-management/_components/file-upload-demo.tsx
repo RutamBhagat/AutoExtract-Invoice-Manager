@@ -15,7 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { fileUploadSchema } from "@/lib/validations/file";
+import { fileUploadSchema } from "@/lib/validations/gemini-file";
 import { supportedTypes } from "@/lib/types/supported-files";
 import { useUploadStore } from "@/stores/use-upload-store";
 

@@ -2,7 +2,7 @@ import { EXCEL_MIME_TYPES, MAX_FILE_SIZE, UPLOAD_DIR } from "./consts";
 import { FileOperationError, UploadResult } from "./utils";
 
 import { convertExcelToCSV } from "./convert-excel-to-csv";
-import { fileUploadApiSchema } from "../validations/file";
+import { fileUploadApiSchema } from "../validations/gemini-file";
 import { promises as fs } from "fs";
 import path from "path";
 

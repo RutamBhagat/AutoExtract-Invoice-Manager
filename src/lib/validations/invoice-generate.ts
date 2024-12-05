@@ -3,22 +3,6 @@ import { validateId } from "../ids/ids";
 import { z } from "zod";
 
 /**
- * Schema for validating file item structure.
- */
-export const fileItemSchema = z.object({
-  fileUri: z.string().url(),
-  mimeType: z.string(),
-});
-
-/**
- * Schema for validating the overall request body for content generation.
- */
-export const generateContentSchema = z.object({
-  files: z.array(fileItemSchema),
-  prompt: z.enum(["EXTRACTION_PROMPT", "PROCESSING_ORDER", "CLASSIFY"]),
-});
-
-/**
  * Schema for validating individual invoice data.
  */
 export const invoiceSchema = z.object({

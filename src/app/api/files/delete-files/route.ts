@@ -2,7 +2,7 @@ import { FileOperationError, createErrorResponse } from "@/lib/files/utils";
 
 import { NextResponse } from "next/server";
 import { consola } from "consola";
-import { fileDeleteSchema } from "@/lib/validations/file";
+import { fileDeleteSchema } from "@/lib/validations/gemini-file";
 import { initializeFileManager } from "@/lib/files/google-file-manager";
 import { z } from "zod";
 
