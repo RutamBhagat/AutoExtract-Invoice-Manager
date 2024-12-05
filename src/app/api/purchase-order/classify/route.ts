@@ -9,22 +9,22 @@ const routeBodySchema = z.object({
   extractedData: z.string(),
 });
 
+const validateRequestBody = (body: unknown) => {
+  const validationResult = routeBodySchema.safeParse(body);
+  if (!validationResult.success) {
+    const errors = validationResult.error.errors
+      .map((e) => e.message)
+      .join(",");
+    throw new Error(`Invalid request body: ${errors}`);
+  }
+  return validationResult.data;
+};
+
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID();
   try {
     const body = await request.json();
-
-    const validationResult = routeBodySchema.safeParse(body);
-    if (!validationResult.success) {
-      const errors = validationResult.error.errors
-        .map((e) => e.message)
-        .join(",");
-      return new NextResponse(`Invalid request body: ${errors}`, {
-        status: 400,
-      });
-    }
-
-    const extractedData = validationResult.data.extractedData;
+    const { extractedData } = validateRequestBody(body);
 
     const { data } = await axios.post(
       `${env.SERVER_BASE_URL}/api/generate/without-files`,
@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ result });
   } catch (error: any) {
+    if (error.message.startsWith("Invalid request body:")) {
+      return new NextResponse(error.message, { status: 400 });
+    }
     consola.error(
       `Error in /api/purchase-orders/classify/route.ts: ${requestId}`,
       error,
