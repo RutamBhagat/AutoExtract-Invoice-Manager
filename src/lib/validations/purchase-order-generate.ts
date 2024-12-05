@@ -1,3 +1,4 @@
+import { SchemaType } from "@google/generative-ai";
 import { z } from "zod";
 
 export const emailPayloadPartSchema: z.ZodSchema = z.object({
@@ -70,3 +71,15 @@ export const emailThreadSchema = z.object({
   historyId: z.string(),
   messages: z.array(emailSchema),
 });
+
+export const zodPurchaseOrderSchema = z.object({
+  isPurchaseOrder: z.boolean(),
+});
+
+export const geminiPurchaseOrderSchema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    isPurchaseOrder: { type: SchemaType.BOOLEAN },
+  },
+  required: ["isPurchaseOrder"],
+};
