@@ -90,6 +90,7 @@ export const GEMINI_PROMPTS = {
       {
         "isPurchaseOrder": true or false
       }
+      Input:
     `,
     zod_schema: zodPurchaseOrderSchema,
     gemini_schema: geminiPurchaseOrderSchema,

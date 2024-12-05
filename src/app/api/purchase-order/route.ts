@@ -57,12 +57,12 @@ export async function POST(request: NextRequest) {
     const emailThread = validationResult.data.messages;
     const extractedData = extractEmailData(emailThread);
 
-    // const { data } = await axios.post("/api/generate/structured-data", {
-    //   files: [{ fileUri, mimeType }],
-    //   prompt: "EXTRACTION_PROMPT",
-    // });
+    const { data } = await axios.post("/api/generate/without-files", {
+      extractedData,
+      prompt: "CLASSIFY",
+    });
 
-    // const { result } = data;
+    const { result } = data;
 
     return NextResponse.json({ extractedData });
   } catch (error: any) {

@@ -2,11 +2,10 @@ import path from "path";
 import { env } from "@/env";
 import { consola } from "consola";
 import { mkdir } from "fs/promises";
-import { GoogleGenerativeAI, type Part } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { type NextRequest, NextResponse } from "next/server";
-import { ALLOWED_GEMINI_MIME_TYPES } from "@/lib/files/consts";
 import { GEMINI_PROMPTS } from "@/lib/constants/prompts_and_schema";
-import { generateContentSchema } from "@/lib/validations/gemini-file";
+import { z } from "zod";
 
 /**
  * Custom error class for content generation errors
@@ -38,19 +37,22 @@ function createErrorResponse(
   );
 }
 
+const textInputSchema = z.object({
+  extractedData: z.string().min(1, "Extracted data cannot be empty"),
+  prompt: z.enum(["CLASSIFY"]),
+});
+
 /**
- * Handles POST requests to process files and generate structured content.
+ * Handles POST requests to generate structured content from text.
  * @param request - The incoming HTTP request.
  * @returns A JSON response with structured content or an error message.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const requestId = crypto.randomUUID();
   consola.info(`Processing content generation request ${requestId}`);
-  const startTime = Date.now(); // Start time
 
   const UPLOAD_DIR = "/tmp";
 
-  // Ensure upload directory exists
   try {
     await mkdir(UPLOAD_DIR, { recursive: true });
   } catch (error) {
@@ -61,9 +63,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
   try {
-    // Parse and validate the request body
     const body: unknown = await request.json();
-    const validation = generateContentSchema.safeParse(body);
+    const validation = textInputSchema.safeParse(body);
 
     if (!validation.success) {
       const validationError =
@@ -74,33 +75,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return createErrorResponse(validationError, 400);
     }
 
-    const { files, prompt } = validation.data;
+    const { extractedData, prompt } = validation.data;
+    const combinedText = `${extractedData}\n\n${GEMINI_PROMPTS[prompt].prompt}`;
+    consola.info(`Combined Text: ${combinedText}`);
 
-    const fileParts: Part[] = files.map((file) => {
-      consola.info("Processing file: ", file);
-      // Validate each file before processing
-      if (!file.fileUri || !file.fileUri.startsWith("https://")) {
-        throw new ContentGenerationError("Invalid file URI format", null, 400);
-      }
-
-      // Validate MIME type
-      if (
-        !file.mimeType ||
-        !ALLOWED_GEMINI_MIME_TYPES.includes(file.mimeType)
-      ) {
-        consola.log(`Unsupported MIME type: ${file.mimeType}`);
-        throw new ContentGenerationError("Unsupported MIME type", null, 400);
-      }
-
-      return {
-        fileData: {
-          mimeType: file.mimeType,
-          fileUri: file.fileUri,
-        },
-      };
-    });
-
-    // Use a more specific model configuration
     const model = genAI.getGenerativeModel({
       model: env.MODEL_NAME,
       generationConfig: {
@@ -110,26 +88,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     try {
-      // Generate content with explicit JSON formatting instruction
-      const generateContentResult = await model.generateContent([
-        {
-          text: GEMINI_PROMPTS[prompt].prompt,
-        },
-        ...fileParts,
-      ]);
+      const generateContentResult = await model.generateContent(combinedText);
 
-      // Get response as structured data
       const response = generateContentResult.response.text();
-      // // Save response to file
+
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
       const filename = `response-${requestId}-${timestamp}.json`;
       const filepath = path.join(UPLOAD_DIR, filename);
 
-      // await writeFile(filepath, response, "utf-8");
-      // consola.debug(`Raw Gemini response for ${requestId}:`, response);
-
       try {
-        // Parse and format JSON properly
         const responseJson = JSON.parse(response.trim());
         const validationResult =
           GEMINI_PROMPTS[prompt].zod_schema.safeParse(responseJson);
@@ -152,7 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         });
       } catch (jsonError) {
         throw new ContentGenerationError(
-          "Response exceeded Gemini's token limit. Please try with smaller files.",
+          "Response exceeded Gemini's token limit or is not valid JSON. Please try again.",
           jsonError,
           413,
         );
@@ -180,13 +147,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return createErrorResponse(
       "An unexpected error occurred while generating content",
       500,
-    );
-  } finally {
-    const endTime = Date.now(); // End time
-    const durationMs = endTime - startTime;
-    const durationSec = (durationMs / 1000).toFixed(2);
-    consola.info(
-      `Request ${requestId} completed in ${durationMs}ms (${durationSec}s)`,
     );
   }
 }
